@@ -47,7 +47,7 @@ bool SessionRecorder::record(Session *session, Recording* recording)
     m_recordStartDateTime = QDateTime::currentDateTime();
     m_recordEndDateTime   = m_recordStartDateTime;
 
-    Interval interval;
+    Interval2 interval;
     interval.startTime = m_recordStartDateTime.toMSecsSinceEpoch();
     interval.endTime = m_recordEndDateTime.toMSecsSinceEpoch();
     if (m_recording->intervals.count() == 0)
@@ -116,7 +116,7 @@ Recording* SessionRecorder::recording() const
     return m_recording;
 }
 
-Interval* SessionRecorder::recordingInterval() const
+Interval2* SessionRecorder::recordingInterval() const
 {
     return m_recordingInterval;
 }

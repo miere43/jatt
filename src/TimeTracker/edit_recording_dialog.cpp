@@ -40,7 +40,7 @@ QString EditRecordingDialog::recordingNote()
     return ui->noteLineEdit->text();
 }
 
-QVector<Tag*>* EditRecordingDialog::recordingTags()
+QVector<Tag2*>* EditRecordingDialog::recordingTags()
 {
     Q_ASSERT(m_recording);
     Q_ASSERT(m_isValidationPassed);
@@ -52,7 +52,7 @@ void EditRecordingDialog::populateFieldsFromRecordingData()
     Q_ASSERT(m_recording);
     ui->nameLineEdit->setText(m_recording->name);
     ui->noteLineEdit->setText(m_recording->note);
-    QVector<Tag*> recordingTags;
+    QVector<Tag2*> recordingTags;
     if (!g_app.database()->loadTagsAssociatedWithRecording(m_recording, &recordingTags))
     {
         qCritical() << "just crash right now @TODO";
@@ -75,7 +75,7 @@ void EditRecordingDialog::onDialogFinished(int result)
     QStringList tagNames = ui->tagsLineEdit->text().split(",", QString::SkipEmptyParts);
     for (const QString& tagName : tagNames)
     {
-        Tag* tag = g_app.database()->getTagByNameOrCreateIt(tagName);
+        Tag2* tag = g_app.database()->getTagByNameOrCreateIt(tagName);
         if (tag == nullptr)
         {
             m_isValidationPassed = false;

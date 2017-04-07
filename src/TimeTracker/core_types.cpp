@@ -16,7 +16,7 @@
 //    return true;
 //}
 
-QString tagsToString(Tag** tags, size_t length)
+QString tagsToString(Tag2** tags, size_t length)
 {
     QString result;
     size_t reserveSize = 0;

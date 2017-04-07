@@ -23,7 +23,7 @@ public:
 
     Session*   m_session = nullptr;
     Recording* m_recording = nullptr;
-    Interval*  m_recordingInterval = nullptr;
+    Interval2*  m_recordingInterval = nullptr;
 
     bool record(Session* session, Recording* recording);
     void stop();
@@ -33,7 +33,7 @@ public:
     void updateRecordingAndIntervalState();
 
     Recording* recording() const;
-    Interval*  recordingInterval() const;
+    Interval2*  recordingInterval() const;
     Session*   session() const;
 private:
     QDateTime m_recordStartDateTime;

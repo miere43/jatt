@@ -27,7 +27,7 @@ private:
     Ui::EditTagsDialog *ui;
     TagListModel* m_tagListModel;
 
-    Tag* m_editTag = nullptr;
+    Tag2* m_editTag = nullptr;
 };
 
 #endif // EDIT_TAGS_DIALOG_H

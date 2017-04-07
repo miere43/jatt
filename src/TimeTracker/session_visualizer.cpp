@@ -57,7 +57,7 @@ void SessionVisualizer::paintEvent(QPaintEvent *event)
         painter.setBrush(QBrush(colors[i]));
         for (int k = 0; k < recording->intervals.count(); ++k)
         {
-            const Interval& interval = recording->intervals.at(k);
+            const Interval2& interval = recording->intervals.at(k);
             double start = (interval.startTime - min) * ratio;
             double end   = (interval.endTime   - min) * ratio;
             painter.drawRect(QRectF(start, 0, end - start, height()));

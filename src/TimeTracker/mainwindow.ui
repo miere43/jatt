@@ -16,6 +16,61 @@
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout_4">
     <item>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QPushButton" name="nextDayButton">
+          <property name="text">
+           <string>&lt; Prev</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label">
+          <property name="layoutDirection">
+           <enum>Qt::LeftToRight</enum>
+          </property>
+          <property name="text">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Day&lt;span style=&quot; font-weight:600;&quot;&gt; X&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="textFormat">
+           <enum>Qt::RichText</enum>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="prevDayButton">
+          <property name="text">
+           <string>Next &gt;</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QLabel" name="activityLabel">
+        <property name="text">
+         <string>Day X activities</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QListView" name="activitiesListView"/>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QPushButton" name="startActivityButton">
+      <property name="text">
+       <string>Start Activity</string>
+      </property>
+     </widget>
+    </item>
+    <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -86,9 +141,7 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="newSessionAction"/>
-   <addaction name="createRecordingAction"/>
-   <addaction name="editTagsAction"/>
+   <addaction name="addActivityAction"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="newSessionAction">
@@ -128,6 +181,11 @@
   <action name="editTagsAction">
    <property name="text">
     <string>Edit Tags</string>
+   </property>
+  </action>
+  <action name="addActivityAction">
+   <property name="text">
+    <string>Add Activity</string>
    </property>
   </action>
  </widget>

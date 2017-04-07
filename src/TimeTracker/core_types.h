@@ -3,7 +3,10 @@
 
 #include <QSqlQuery>
 #include <QVector>
+#include <QHash>
+#include "date_time.h"
 
+// old stuff
 struct Recording;
 
 struct Session {
@@ -17,12 +20,12 @@ struct Session {
     void dumpToQDebug() const;
 };
 
-struct Interval {
+struct Interval2 {
     qint64 startTime;
     qint64 endTime;
 };
 
-struct Tag {
+struct Tag2 {
     qint64 id = -1;
     // Color of the tag. Stored as RGBA value, alpha component is unused.
     qint64 color = -1;
@@ -37,44 +40,53 @@ struct Recording {
     QString note = "";
     qint64 startTime = 0;
     qint64 endTime = 0;
-    QVector<Interval> intervals;
-    QVector<Tag*> tags;
+    QVector<Interval2> intervals;
+    QVector<Tag2*> tags;
 
     void dumpToQDebug() const;
 };
 
+// old stuff end
+
+struct Interval {
+    DateTime startTime;
+    DateTime endTime;
+};
+
+struct ActivityInfo
+{
+    qint64 id = 0;
+    qint64 color = 0;
+    QStringList fieldNames;
+    QStringList fieldTypes;
+    QString displayFormat;
+    QString displayRules;
+};
+
+struct Activity
+{
+    qint64 id = 0;
+    ActivityInfo* info = nullptr;
+    QStringList fieldValues;
+    DateTime startTime;
+    DateTime endTime;
+    QVector<Interval> intervals;
+};
+
+struct Tag
+{
+    qint64 id = 0;
+    QString name;
+    QString note;
+};
+
+struct UserProperties
+{
+    qint64 firstActivityDay = 0;
+    QHash<QString, QString> customProperties;
+};
+
 int clamp(int value, int min, int max);
-
-//struct IntervalTag {
-//    int id;
-//    QString name;
-//    int color;
-
-//    static bool createFromDatabaseQuery(IntervalTag* target, QSqlQuery* query);
-//};
-
-//struct Interval {
-//    int id;
-//    QString name;
-//    QString note;
-//    Session* session;
-//    qint64 timestamp;
-//    qint64 duration;
-//    QVector<IntervalTag*> tags;
-
-//    // @TODO: Add GUI-related stuff here (maybe):
-//    // int listModelPos; // position in intervalListModel associated with session.
-//                         // removes linear search for sendDataChangedHint.
-//};
-
-//struct Session {
-//    int id = -1;
-//    QString name = "";
-//    QString note = "";
-//    int created = 0;
-//    int timezone = 0;
-//    QVector<Interval*> intervals;
-//};
 
 /**
  * @brief Creates string in format hh:mm:ss from milliseconds.
@@ -89,6 +101,6 @@ QString createDurationStringFromMsecs(qint64 msecs);
  * @param length Length of 'tags' array, in elements.
  * @return String of tag names seperated by comma.
  */
-QString tagsToString(Tag** tags, size_t length);
+QString tagsToString(Tag2** tags, size_t length);
 
 #endif // CORE_TYPES_H

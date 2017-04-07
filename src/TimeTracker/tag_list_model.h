@@ -12,15 +12,15 @@ class TagListModel : public QAbstractListModel
 public:
     explicit TagListModel(QObject *parent = 0);
 
-    void addTag(Tag* tag);
-    Tag* tagAtRow(int row) const;
+    void addTag(Tag2* tag);
+    Tag2* tagAtRow(int row) const;
 
 //    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
 private:
-    QVector<Tag*> m_tags;
+    QVector<Tag2*> m_tags;
 };
 
 #endif // TAGLISTMODEL_H

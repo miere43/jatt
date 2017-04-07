@@ -20,15 +20,17 @@ class ApplicationState : public QObject
 private:
     BlockAllocator<Session> m_sessionAllocator;
     BlockAllocator<Recording> m_recordingAllocator;
-    BlockAllocator<Tag> m_tagAllocator;
+    BlockAllocator<Tag2> m_tagAllocator;
     QVector<Session*> m_sessions;
     QVector<Recording*> m_recordings;
-    QVector<Tag*> m_tags;
+    QVector<Tag2*> m_tags;
     QVector<Session*> m_dirtySessions;
     QVector<Recording*> m_dirtyRecordings;
     SessionRecorder m_recorder;
     DatabaseManager m_databaseManager;
 public:
+    UserProperties m_properties; // @TODO shouldn't be public.
+
     explicit ApplicationState(QObject *parent = 0);
 
     // @TODO
@@ -37,7 +39,7 @@ public:
     bool openDatabase(); // @Obsolete
     Session*   createSession();
     Recording* createRecording();
-    Tag*       createTag();
+    Tag2*       createTag();
 
     void       freeRecording(Recording* recording);
 

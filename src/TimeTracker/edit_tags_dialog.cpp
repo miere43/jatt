@@ -66,7 +66,7 @@ void EditTagsDialog::tagListViewSelectionChanged(const QItemSelection& selection
     }
     else
     {
-        Tag* tag = m_tagListModel->tagAtRow(index.row());
+        Tag2* tag = m_tagListModel->tagAtRow(index.row());
         if (tag == nullptr)
         {
             APP_ERRSTREAM << "weird";

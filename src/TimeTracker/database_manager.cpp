@@ -4,6 +4,7 @@
 #include <QVariant>
 #include <QByteArray>
 
+#include "utilities.h"
 #include "common.h"
 #include "application_state.h"
 
@@ -134,7 +135,7 @@ bool DatabaseManager::saveRecording(Recording *recording)
         query.bindValue(":end_time", QVariant(recording->endTime));
 
         // @TODO: big endian / little endian stuff
-        QByteArray intervals((const char*)recording->intervals.data(), sizeof(Interval) * recording->intervals.count());
+        QByteArray intervals((const char*)recording->intervals.data(), sizeof(Interval2) * recording->intervals.count());
         query.bindValue(":intervals", intervals);
 
         for (int j = 0; j < recording->intervals.count(); ++j)
@@ -172,7 +173,7 @@ bool DatabaseManager::saveRecording(Recording *recording)
         query.bindValue(":end_time", QVariant(recording->endTime));
 
         // @TODO: big endian / little endian stuff
-        QByteArray intervals((const char*)recording->intervals.data(), sizeof(Interval) * recording->intervals.count());
+        QByteArray intervals((const char*)recording->intervals.data(), sizeof(Interval2) * recording->intervals.count());
         query.bindValue(":intervals", intervals);
 
         if (query.exec())
@@ -188,7 +189,7 @@ bool DatabaseManager::saveRecording(Recording *recording)
 #endif
 }
 
-bool DatabaseManager::saveTag(Tag *tag)
+bool DatabaseManager::saveTag(Tag2 *tag)
 {
     Q_ASSERT(tag);
 
@@ -440,7 +441,7 @@ bool DatabaseManager::loadAllTags()
                 continue;
             }
             // @TODO: it's slow to load tags one by one, it's better to batch stuff.
-            Tag* tag = loadTagWithId(tagId);
+            Tag2* tag = loadTagWithId(tagId);
             if (!tag)
             {
                 APP_ERRSTREAM << "Unable to load tag" << tagId;
@@ -453,7 +454,7 @@ bool DatabaseManager::loadAllTags()
     return true;
 }
 
-bool DatabaseManager::loadRecordingTags(Recording *recording, QVector<Tag *> *tags)
+bool DatabaseManager::loadRecordingTags(Recording *recording, QVector<Tag2 *> *tags)
 {
     return true;
 //    Q_ASSERT(recording);
@@ -529,7 +530,7 @@ bool DatabaseManager::loadSessionFromQuery(Session *session, QSqlQuery *query)
     return true;
 }
 
-Tag* DatabaseManager::getTagByNameOrCreateIt(const QString& tagNameUntrimmed)
+Tag2* DatabaseManager::getTagByNameOrCreateIt(const QString& tagNameUntrimmed)
 {
     QString tagName = tagNameUntrimmed.trimmed();
     if (tagName.isNull() || tagName.isEmpty())
@@ -539,7 +540,7 @@ Tag* DatabaseManager::getTagByNameOrCreateIt(const QString& tagNameUntrimmed)
 
     // Find tag in cache, if exists.
     {
-        Tag* tag = nullptr;
+        Tag2* tag = nullptr;
         for (auto it = m_tags.begin(); it != m_tags.end(); ++it)
         {
             if (it.value()->name == tagName)
@@ -577,7 +578,7 @@ Tag* DatabaseManager::getTagByNameOrCreateIt(const QString& tagNameUntrimmed)
 
             if (query.next())
             {
-                Tag* newTag = g_app.createTag();
+                Tag2* newTag = g_app.createTag();
                 if (newTag == nullptr)
                 {
                     return nullptr;
@@ -597,7 +598,7 @@ Tag* DatabaseManager::getTagByNameOrCreateIt(const QString& tagNameUntrimmed)
 
     // If there are no tag in the database, create it.
     {
-        Tag* tag = g_app.createTag();
+        Tag2* tag = g_app.createTag();
         if (tag == nullptr)
         {
             return nullptr;
@@ -634,14 +635,14 @@ bool DatabaseManager::loadRecordingFromQuery(Recording *recording, QSqlQuery *qu
     recording->note = query->value("note").value<QString>();
 
     QByteArray binaryIntervals = query->value("intervals").toByteArray();
-    Q_ASSERT(binaryIntervals.count() % sizeof(Interval) == 0);
+    Q_ASSERT(binaryIntervals.count() % sizeof(Interval2) == 0);
 
-    int numIntervals = binaryIntervals.count() / sizeof(Interval);
+    int numIntervals = binaryIntervals.count() / sizeof(Interval2);
     qint64* data = (qint64*)binaryIntervals.data();
     binaryIntervals.reserve(numIntervals);
     for (int i = 0; i < numIntervals; ++i)
     {
-        recording->intervals.append(Interval {
+        recording->intervals.append(Interval2 {
                                        *(data + (i * 2)),
                                        *(data + (i * 2) + 1)
                                     });
@@ -653,7 +654,7 @@ bool DatabaseManager::loadRecordingFromQuery(Recording *recording, QSqlQuery *qu
     return true;
 }
 
-bool DatabaseManager::loadTagFromQuery(Tag *tag, QSqlQuery *query)
+bool DatabaseManager::loadTagFromQuery(Tag2 *tag, QSqlQuery *query)
 {
     Q_ASSERT(tag);
     Q_ASSERT(query);
@@ -667,11 +668,11 @@ bool DatabaseManager::loadTagFromQuery(Tag *tag, QSqlQuery *query)
     return tag;
 }
 
-Tag* DatabaseManager::loadTagWithId(qint64 tagId)
+Tag2* DatabaseManager::loadTagWithId(qint64 tagId)
 {
     Q_ASSERT(tagId > 0);
 
-    Tag* tag = m_tags.value(tagId);
+    Tag2* tag = m_tags.value(tagId);
     if (tag != nullptr)
     {
         return tag;
@@ -715,7 +716,7 @@ Tag* DatabaseManager::loadTagWithId(qint64 tagId)
     return tag;
 }
 
-bool DatabaseManager::loadTagsAssociatedWithRecording(Recording* recording, QVector<Tag*>* recordingTags)
+bool DatabaseManager::loadTagsAssociatedWithRecording(Recording* recording, QVector<Tag2*>* recordingTags)
 {
     Q_ASSERT(recording);
     Q_ASSERT(recording->id > 0);
@@ -740,7 +741,7 @@ bool DatabaseManager::loadTagsAssociatedWithRecording(Recording* recording, QVec
             continue;
         }
 
-        Tag* tag = loadTagWithId(tagId);
+        Tag2* tag = loadTagWithId(tagId);
         if (tag == nullptr)
         {
             APP_ERRSTREAM << "Unable to load tag with ID =" << tagId << "!";
@@ -753,7 +754,7 @@ bool DatabaseManager::loadTagsAssociatedWithRecording(Recording* recording, QVec
     return true;
 }
 
-bool DatabaseManager::associateTagsWithRecording(Recording* recording, QVector<Tag*>* recordingTags)
+bool DatabaseManager::associateTagsWithRecording(Recording* recording, QVector<Tag2*>* recordingTags)
 {
     Q_ASSERT(recording);
     Q_ASSERT(recordingTags);
@@ -768,7 +769,7 @@ bool DatabaseManager::associateTagsWithRecording(Recording* recording, QVector<T
     QVariantList tagIds;
     tagIds.reserve(recordingTags->count());
 
-    for (Tag* tag : *recordingTags)
+    for (Tag2* tag : *recordingTags)
     {
         if (tag->id < 0)
         {
@@ -799,7 +800,55 @@ bool DatabaseManager::associateTagsWithRecording(Recording* recording, QVector<T
     return true;
 }
 
-QList<Tag*> DatabaseManager::getCachedTags() const
+QList<Tag2*> DatabaseManager::getCachedTags() const
 {
     return m_tags.values();
+}
+
+bool DatabaseManager::loadProperties(UserProperties* properties)
+{
+    Q_ASSERT(properties);
+
+    QSqlQuery query = QSqlQuery(m_database);
+    query.setForwardOnly(true);
+    if (!query.exec("SELECT * FROM user_property"))
+    {
+        APP_ERRSTREAM << "Query failed." << query.lastError().text();
+        return false;
+    }
+
+    while (query.next())
+    {
+        QString property = query.value("property").toString();
+        QVariant value = query.value("value");
+        if (property == QLatin1Literal("firstActivityDay"))
+        {
+            properties->firstActivityDay = value.value<qint64>();
+        }
+        else
+        {
+            QString stringValue = value.value<QString>();
+            properties->customProperties.insert(stringValue, stringValue);
+        }
+    }
+
+    return true;
+}
+
+bool DatabaseManager::saveProperty(QString property, QString value)
+{
+    Q_ASSERT(!property.isNull() && !property.isEmpty());
+
+    QSqlQuery query = QSqlQuery(m_database);
+    query.prepare("INSERT INTO user_property(property, data) VALUES(:property, :data)");
+    query.bindValue(":property", property);
+    query.bindValue(":data", value);
+
+    if (!query.exec())
+    {
+        APP_ERRSTREAM << "Query failed." << query.lastError().text();
+        return false;
+    }
+
+    return true;
 }

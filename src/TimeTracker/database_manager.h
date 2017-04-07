@@ -20,7 +20,7 @@ public:
 
     bool saveSession(Session* session);
     bool saveRecording(Recording* recording);
-    bool saveTag(Tag* tag);
+    bool saveTag(Tag2* tag);
 
     Session* loadSession(qint64 sessionId);
     /**
@@ -33,7 +33,7 @@ public:
 
     bool loadAllSessions(QVector<Session*>* sessions);
 
-    bool loadRecordingTags(Recording* recording, QVector<Tag*>* tags);
+    bool loadRecordingTags(Recording* recording, QVector<Tag2*>* tags);
     /**
      * @brief Loads all recordings of specified session into 'recordings' array.
      * @param session
@@ -44,18 +44,18 @@ public:
 
     bool loadRecordingFromQuery(Recording* recording, QSqlQuery* query);
     bool loadSessionFromQuery(Session* session, QSqlQuery* query);
-    bool loadTagFromQuery(Tag* tag, QSqlQuery* query);
+    bool loadTagFromQuery(Tag2* tag, QSqlQuery* query);
 
     bool loadAllTags();
 
-    Tag* loadTagWithId(qint64 tagId);
+    Tag2* loadTagWithId(qint64 tagId);
 
     /**
      * @brief Returns tag with name 'tagName' from cache or loads it from the database or creates it with such name.
      * @param tagName Name of the tag.
      * @return Pointer to allocated 'Tag' instance with name 'tagName' or nullptr if error occured.
      */
-    Tag* getTagByNameOrCreateIt(const QString& tagName);
+    Tag2* getTagByNameOrCreateIt(const QString& tagName);
 
     /**
      * @brief Loads tags associated with 'recording' in 'recordingTags' QVector.
@@ -64,16 +64,21 @@ public:
      * @return True on success, false on failure. 'recordingsTags' may be changed even if this
      * function returns 'false'.
      */
-    bool loadTagsAssociatedWithRecording(Recording* recording, QVector<Tag*>* recordingTags);
+    bool loadTagsAssociatedWithRecording(Recording* recording, QVector<Tag2*>* recordingTags);
 
-    bool associateTagsWithRecording(Recording* recording, QVector<Tag*>* recordingTags);
+    bool associateTagsWithRecording(Recording* recording, QVector<Tag2*>* recordingTags);
 
-    QList<Tag*> getCachedTags() const;
+    QList<Tag2*> getCachedTags() const;
+
+
+    bool loadProperties(UserProperties* properties);
+    bool saveProperty(QString property, QString value);
+
 
     QSqlDatabase m_database;
     QHash<qint64, Recording*> m_recordings;
     QHash<qint64, Session*>   m_sessions;
-    QHash<qint64, Tag*>       m_tags;
+    QHash<qint64, Tag2*>       m_tags;
 };
 
 #endif // DATABASE_MANAGER_H

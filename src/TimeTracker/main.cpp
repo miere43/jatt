@@ -2,6 +2,8 @@
 #include <QApplication>
 #include "application_state.h"
 #include <QMessageBox>
+#include <QDateTime>
+#include <QDebug>
 
 int main(int argc, char *argv[])
 {
@@ -14,6 +16,8 @@ int main(int argc, char *argv[])
         a.exit(1);
         return 1; // I just don't know if a.exit(1) terminates program.
     }
+
+    qDebug() << sizeof(QDateTime);
 
     g_app.initialize();
     MainWindow w;

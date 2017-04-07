@@ -40,7 +40,10 @@ SOURCES += main.cpp\
     edit_session_dialog.cpp \
     edit_recording_dialog.cpp \
     edit_tags_dialog.cpp \
-    tag_list_model.cpp
+    tag_list_model.cpp \
+    date_time.cpp \
+    utilities.cpp \
+    add_activity_dialog.cpp
 
 HEADERS  += mainwindow.h \
     newcategorydialog.h \
@@ -59,10 +62,14 @@ HEADERS  += mainwindow.h \
     edit_session_dialog.h \
     edit_recording_dialog.h \
     edit_tags_dialog.h \
-    tag_list_model.h
+    tag_list_model.h \
+    date_time.h \
+    utilities.h \
+    add_activity_dialog.h
 
 FORMS    += mainwindow.ui \
     newcategorydialog.ui \
     edit_session_dialog.ui \
     edit_recording_dialog.ui \
-    edit_tags_dialog.ui
+    edit_tags_dialog.ui \
+    add_activity_dialog.ui

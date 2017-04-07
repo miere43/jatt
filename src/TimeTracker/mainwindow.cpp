@@ -448,7 +448,7 @@ void MainWindow::editRecordingDialogFinished(int result)
     Q_ASSERT(dialogTargetRecording);
     dialogTargetRecording->name = dialog->recordingName();
     dialogTargetRecording->note = dialog->recordingNote();
-    QVector<Tag*>* recordingTags = dialog->recordingTags();
+    QVector<Tag2*>* recordingTags = dialog->recordingTags();
     dialogTargetRecording->tags = *recordingTags;
 
     if (!g_app.database()->saveRecording(dialogTargetRecording))

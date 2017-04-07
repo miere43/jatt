@@ -6,6 +6,7 @@
 #include <QVariant>
 #include <QCoreApplication>
 #include "common.h"
+#include "date_time.h"
 
 ApplicationState::ApplicationState(QObject *parent)
     : QObject(parent)
@@ -20,13 +21,23 @@ void ApplicationState::initialize()
 {
     connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
             this, &ApplicationState::appAboutToQuit);
+
+    m_properties.firstActivityDay = -1;
+    Q_ASSERT(database()->loadProperties(&m_properties));
+    qDebug() << "firstActivityDay =" << m_properties.firstActivityDay;
+
+    if (m_properties.firstActivityDay == -1)
+    {
+        m_properties.firstActivityDay = getCurrentDateTime().completeDaysSinceEpoch();
+        qDebug() << "firstActivityDay property is missing, setting it to " << m_properties.firstActivityDay;
+        Q_ASSERT(database()->saveProperty("firstActivityDay", QString::number(m_properties.firstActivityDay)));
+    }
 }
 
 SessionRecorder* ApplicationState::recorder()
 {
     return &m_recorder;
 }
-
 
 Session* ApplicationState::createSession()
 {
@@ -48,9 +59,9 @@ Recording* ApplicationState::createRecording()
     return recording;
 }
 
-Tag* ApplicationState::createTag()
+Tag2* ApplicationState::createTag()
 {
-    Tag* tag = m_tagAllocator.allocate();
+    Tag2* tag = m_tagAllocator.allocate();
     if (tag == nullptr) return nullptr;
     tag->id = -1;
     m_tags.append(tag);

@@ -5,13 +5,13 @@ TagListModel::TagListModel(QObject *parent)
 {
 }
 
-void TagListModel::addTag(Tag *tag)
+void TagListModel::addTag(Tag2 *tag)
 {
     Q_ASSERT(tag);
     m_tags.append(tag);
 }
 
-Tag* TagListModel::tagAtRow(int row) const
+Tag2* TagListModel::tagAtRow(int row) const
 {
     if (row < 0 || row >= m_tags.count())
         return nullptr;
@@ -40,7 +40,7 @@ QVariant TagListModel::data(const QModelIndex &index, int role) const
     if (pos < 0 || pos >= m_tags.count())
         return QVariant();
 
-    Tag* tag = m_tags[pos];
+    Tag2* tag = m_tags[pos];
     if (role == Qt::DisplayRole)
     {
         return QVariant(tag->name);

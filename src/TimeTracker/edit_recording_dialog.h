@@ -22,7 +22,7 @@ public:
 
     QString recordingName();
     QString recordingNote();
-    QVector<Tag*>* recordingTags();
+    QVector<Tag2*>* recordingTags();
 
     bool isValidationPassed() const;
 private slots:
@@ -32,7 +32,7 @@ private:
 
     Ui::EditRecordingDialog *ui = nullptr;
 
-    QVector<Tag*> m_validatedTags;
+    QVector<Tag2*> m_validatedTags;
     bool m_isValidationPassed = false;
     Recording* m_recording = nullptr;
 };
