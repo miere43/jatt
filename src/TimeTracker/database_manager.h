@@ -46,6 +46,8 @@ public:
     bool loadSessionFromQuery(Session* session, QSqlQuery* query);
     bool loadTagFromQuery(Tag* tag, QSqlQuery* query);
 
+    bool loadAllTags();
+
     Tag* loadTagWithId(qint64 tagId);
 
     /**
@@ -65,6 +67,8 @@ public:
     bool loadTagsAssociatedWithRecording(Recording* recording, QVector<Tag*>* recordingTags);
 
     bool associateTagsWithRecording(Recording* recording, QVector<Tag*>* recordingTags);
+
+    QList<Tag*> getCachedTags() const;
 
     QSqlDatabase m_database;
     QHash<qint64, Recording*> m_recordings;

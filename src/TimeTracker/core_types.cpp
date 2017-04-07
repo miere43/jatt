@@ -63,3 +63,10 @@ void Recording::dumpToQDebug() const
 {
     qDebug().nospace() << "<Recording '" << name << "', id=" << id << ", intervals=" << intervals.count() << ">";
 }
+
+int clamp(int value, int min, int max)
+{
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
+}

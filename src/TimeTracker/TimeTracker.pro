@@ -39,7 +39,8 @@ SOURCES += main.cpp\
     session_visualizer.cpp \
     edit_session_dialog.cpp \
     edit_recording_dialog.cpp \
-    edit_tags_dialog.cpp
+    edit_tags_dialog.cpp \
+    tag_list_model.cpp
 
 HEADERS  += mainwindow.h \
     newcategorydialog.h \
@@ -57,7 +58,8 @@ HEADERS  += mainwindow.h \
     session_visualizer.h \
     edit_session_dialog.h \
     edit_recording_dialog.h \
-    edit_tags_dialog.h
+    edit_tags_dialog.h \
+    tag_list_model.h
 
 FORMS    += mainwindow.ui \
     newcategorydialog.ui \

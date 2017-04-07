@@ -55,6 +55,8 @@ private slots:
     void recordUpdateTimerTimeout();
     void on_editRecordingAction_triggered();
 
+    void on_editTagsAction_triggered();
+
 private:
     Session* selectedSession();
     Recording* selectedRecording();

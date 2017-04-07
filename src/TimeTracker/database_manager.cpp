@@ -391,6 +391,68 @@ bool DatabaseManager::loadAllSessions(QVector<Session *> *sessions)
     return true;
 }
 
+bool DatabaseManager::loadAllTags()
+{
+    QSqlQuery query(m_database);
+    query.prepare("SELECT COUNT(1) FROM tag");
+    if (!query.exec())
+    {
+        APP_ERRSTREAM << "Unable get count of tags in 'tag' table.";
+        return false;
+    }
+
+    qint64 numTags = -1;
+    if (query.next())
+    {
+        numTags = query.value(0).value<qint64>();
+        if (numTags == m_tags.size())
+        {
+            // Assume that all tags are loaded.
+            return true;
+        }
+    }
+    else
+    {
+        APP_ERRSTREAM << "weird stuff";
+    }
+
+    //Q_ASSERT(m_tags.size() > numTags); // Upload stuff to DB ASAP.
+    query.clear();
+
+    query.prepare("SELECT * FROM tag");
+    query.setForwardOnly(true);
+    if (!query.exec())
+    {
+        APP_ERRSTREAM << "Unable to load all tags.";
+        return false;
+    }
+    else
+    {
+//        QVector<qint64> unloadedTagIds;
+//        unloadedTagIds.reserve(clamp(query.count() - m_tags.size(), 0, 8192 / sizeof(qint64)));
+
+        m_tags.reserve(query.size());
+        while (query.next())
+        {
+            qint64 tagId = query.value("id").value<qint64>();
+            if (m_tags.contains(tagId))
+            {
+                continue;
+            }
+            // @TODO: it's slow to load tags one by one, it's better to batch stuff.
+            Tag* tag = loadTagWithId(tagId);
+            if (!tag)
+            {
+                APP_ERRSTREAM << "Unable to load tag" << tagId;
+                continue;
+            }
+            m_tags.insert(tag->id, tag);
+        }
+    }
+
+    return true;
+}
+
 bool DatabaseManager::loadRecordingTags(Recording *recording, QVector<Tag *> *tags)
 {
     return true;
@@ -735,4 +797,9 @@ bool DatabaseManager::associateTagsWithRecording(Recording* recording, QVector<T
     }
 
     return true;
+}
+
+QList<Tag*> DatabaseManager::getCachedTags() const
+{
+    return m_tags.values();
 }

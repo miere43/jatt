@@ -88,6 +88,7 @@
    </attribute>
    <addaction name="newSessionAction"/>
    <addaction name="createRecordingAction"/>
+   <addaction name="editTagsAction"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="newSessionAction">
@@ -122,6 +123,11 @@
   <action name="editRecordingAction">
    <property name="text">
     <string>Edit Recording</string>
+   </property>
+  </action>
+  <action name="editTagsAction">
+   <property name="text">
+    <string>Edit Tags</string>
    </property>
   </action>
  </widget>

@@ -3,6 +3,7 @@
 #include "application_state.h"
 #include "common.h"
 #include "recording_dialog.h"
+#include "edit_tags_dialog.h"
 
 #include <QDebug>
 #include <QMessageBox>
@@ -461,4 +462,10 @@ void MainWindow::editRecordingDialogFinished(int result)
 
     skipLabel:
     dialog->deleteLater(); // we are in event loop, should not delete object here.
+}
+
+void MainWindow::on_editTagsAction_triggered()
+{
+    EditTagsDialog* dialog = new EditTagsDialog(this);
+    dialog->exec();
 }

@@ -24,6 +24,7 @@ struct Interval {
 
 struct Tag {
     qint64 id = -1;
+    // Color of the tag. Stored as RGBA value, alpha component is unused.
     qint64 color = -1;
     QString name = "";
     QString note = "";
@@ -41,6 +42,8 @@ struct Recording {
 
     void dumpToQDebug() const;
 };
+
+int clamp(int value, int min, int max);
 
 //struct IntervalTag {
 //    int id;
