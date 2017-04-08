@@ -1,31 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>EditSessionDialog</class>
- <widget class="QDialog" name="EditSessionDialog">
+ <class>AddFieldDialog</class>
+ <widget class="QDialog" name="AddFieldDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>325</width>
-    <height>125</height>
+    <width>400</width>
+    <height>93</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Edit Session</string>
+   <string>Add Field</string>
   </property>
-  <layout class="QFormLayout">
-   <item row="0" column="0">
-    <widget class="QLabel" name="nameLabel">
-     <property name="text">
-      <string>Name</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="1">
-    <widget class="QLineEdit" name="nameLineEdit"/>
-   </item>
-   <item row="4" column="0" colspan="2">
-    <widget class="QDialogButtonBox" name="actionsBox">
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="2" column="1">
+    <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
@@ -34,27 +24,32 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="noteLabel">
-     <property name="text">
-      <string>Note</string>
-     </property>
-    </widget>
-   </item>
    <item row="1" column="1">
-    <widget class="QLineEdit" name="noteLineEdit"/>
+    <widget class="QComboBox" name="fieldTypeComboBox">
+     <property name="currentText">
+      <string>String</string>
+     </property>
+     <item>
+      <property name="text">
+       <string>String</string>
+      </property>
+     </item>
+    </widget>
    </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="tagsLabel">
+   <item row="1" column="0">
+    <widget class="QLabel" name="fieldTypeLabel">
      <property name="text">
-      <string>Tags</string>
+      <string>Field Type</string>
      </property>
     </widget>
    </item>
-   <item row="2" column="1">
-    <widget class="QLineEdit" name="tagsLineEdit">
-     <property name="enabled">
-      <bool>false</bool>
+   <item row="0" column="1">
+    <widget class="QLineEdit" name="fieldNameLineEdit"/>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="fieldNameLabel">
+     <property name="text">
+      <string>Field Name</string>
      </property>
     </widget>
    </item>
@@ -63,9 +58,9 @@
  <resources/>
  <connections>
   <connection>
-   <sender>actionsBox</sender>
+   <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>EditSessionDialog</receiver>
+   <receiver>AddFieldDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -79,9 +74,9 @@
    </hints>
   </connection>
   <connection>
-   <sender>actionsBox</sender>
+   <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>EditSessionDialog</receiver>
+   <receiver>AddFieldDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

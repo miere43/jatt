@@ -1,9 +1,8 @@
-#include "mainwindow.h"
 #include <QApplication>
-#include "application_state.h"
 #include <QMessageBox>
-#include <QDateTime>
-#include <QDebug>
+
+#include "application_state.h"
+#include "mainwindow.h"
 
 int main(int argc, char *argv[])
 {
@@ -14,10 +13,8 @@ int main(int argc, char *argv[])
                                  "Unable to open database. Program will be terminated.",
                                  QMessageBox::Ok);
         a.exit(1);
-        return 1; // I just don't know if a.exit(1) terminates program.
+        Q_UNREACHABLE();
     }
-
-    qDebug() << sizeof(QDateTime);
 
     g_app.initialize();
     MainWindow w;

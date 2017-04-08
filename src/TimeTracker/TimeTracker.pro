@@ -25,51 +25,34 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    newcategorydialog.cpp \
     application_state.cpp \
-    session_list_model.cpp \
     core_types.cpp \
-    session_item_delegate.cpp \
     block_allocator.cpp \
-    session_recorder.cpp \
     database_manager.cpp \
-    recording_list_model.cpp \
-    recording_item_delegate.cpp \
-    recording_dialog.cpp \
-    session_visualizer.cpp \
-    edit_session_dialog.cpp \
-    edit_recording_dialog.cpp \
-    edit_tags_dialog.cpp \
-    tag_list_model.cpp \
     date_time.cpp \
     utilities.cpp \
-    add_activity_dialog.cpp
+    add_activity_dialog.cpp \
+    add_field_dialog.cpp \
+    activity_list_model.cpp \
+    display_format.cpp \
+    activity_recorder.cpp \
+    activity_visualizer.cpp
 
 HEADERS  += mainwindow.h \
-    newcategorydialog.h \
     application_state.h \
-    session_list_model.h \
     core_types.h \
-    session_item_delegate.h \
     block_allocator.h \
-    session_recorder.h \
     database_manager.h \
     common.h \
-    recording_list_model.h \
-    recording_item_delegate.h \
-    recording_dialog.h \
-    session_visualizer.h \
-    edit_session_dialog.h \
-    edit_recording_dialog.h \
-    edit_tags_dialog.h \
-    tag_list_model.h \
     date_time.h \
     utilities.h \
-    add_activity_dialog.h
+    add_activity_dialog.h \
+    add_field_dialog.h \
+    activity_list_model.h \
+    display_format.h \
+    activity_recorder.h \
+    activity_visualizer.h
 
 FORMS    += mainwindow.ui \
-    newcategorydialog.ui \
-    edit_session_dialog.ui \
-    edit_recording_dialog.ui \
-    edit_tags_dialog.ui \
-    add_activity_dialog.ui
+    add_activity_dialog.ui \
+    add_field_dialog.ui

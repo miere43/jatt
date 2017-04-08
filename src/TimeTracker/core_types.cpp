@@ -16,31 +16,31 @@
 //    return true;
 //}
 
-QString tagsToString(Tag2** tags, size_t length)
-{
-    QString result;
-    size_t reserveSize = 0;
+//QString tagsToString(Tag2** tags, size_t length)
+//{
+//    QString result;
+//    size_t reserveSize = 0;
 
-    for (size_t i = 0; i < length; ++i)
-    {
-        reserveSize += tags[i]->name.length();
-        reserveSize += 2;
-    }
+//    for (size_t i = 0; i < length; ++i)
+//    {
+//        reserveSize += tags[i]->name.length();
+//        reserveSize += 2;
+//    }
 
-    if (reserveSize >= 2)
-        reserveSize -= 2;
+//    if (reserveSize >= 2)
+//        reserveSize -= 2;
 
-    result.reserve(reserveSize);
+//    result.reserve(reserveSize);
 
-    for (size_t i = 0; i < length; ++i)
-    {
-        result.append(tags[i]->name);
-        if (i != length - 1)
-            result.append(QLatin1String(", "));
-    }
+//    for (size_t i = 0; i < length; ++i)
+//    {
+//        result.append(tags[i]->name);
+//        if (i != length - 1)
+//            result.append(QLatin1String(", "));
+//    }
 
-    return result;
-}
+//    return result;
+//}
 
 QString createDurationStringFromMsecs(qint64 msecs)
 {
@@ -54,19 +54,24 @@ QString createDurationStringFromMsecs(qint64 msecs)
                               .arg(secs,  2, 10, QChar('0'));
 }
 
-void Session::dumpToQDebug() const
+QString ActivityInfo::formatActivity(Activity *activity)
 {
-    qDebug().nospace() << "<Session '" << name << "', id=" << id << ", created=" << created << ">";
+    Q_ASSERT(activity);
+    Q_ASSERT(activity->id > 0);
+    Q_ASSERT(activity->info == this);
+
+    return m_formatter.format(activity->fieldValues);
 }
 
-void Recording::dumpToQDebug() const
+void ActivityInfo::updateFormatter()
 {
-    qDebug().nospace() << "<Recording '" << name << "', id=" << id << ", intervals=" << intervals.count() << ">";
+    m_formatter.setFormat(displayFormat, fieldNames);
 }
 
-int clamp(int value, int min, int max)
+QString Activity::displayString()
 {
-    if (value < min) return min;
-    if (value > max) return max;
-    return value;
+    Q_ASSERT(id > 0);
+    Q_ASSERT(info != nullptr);
+
+    return info->formatActivity(this);
 }

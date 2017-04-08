@@ -10,12 +10,9 @@
 #include <QContextMenuEvent>
 
 #include "application_state.h"
-#include "session_item_delegate.h"
-#include "recording_item_delegate.h"
-#include "recording_dialog.h"
-#include "session_visualizer.h"
-#include "edit_session_dialog.h"
-#include "edit_recording_dialog.h"
+#include "activity_visualizer.h"
+#include "activity_list_model.h"
+#include "activity_recorder.h"
 
 namespace Ui {
 class MainWindow;
@@ -29,68 +26,32 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-signals:
-    // void currentSessionChanged(Session* prev, Session* new);
-
-public slots:
-    void createSession();
-    void startStopSession();
-    void createRecording();
+    void setViewTimePeriod(qint64 startTime, qint64 endTime);
+    void setViewDay(qint64 day);
 
 private slots:
-    void sessionListViewDoubleClicked(const QModelIndex& index);
-    void sessionListViewSelectionChanged(const QItemSelection& index);
-    void sessionListViewContextMenuRequested(const QPoint& pos);
-    void sessionRecordStateChanged(SessionRecorder* recorder, RecordingState state);
+    void on_addActivityAction_triggered();
+    void addActivityDialogFinished(int result);
 
-    void recordingListViewContextMenuRequested(const QPoint& pos);
+    void on_nextDayButton_clicked();
+    void on_prevDayButton_clicked();
+    void on_startActivityButton_clicked();
 
-    void editSessionDialogFinished(int result);
-    void editRecordingDialogFinished(int result);
-
-    void on_newSessionAction_triggered();
-    void on_createRecordingAction_triggered();
-    void on_editSessionAction_triggered();
-
-    void recordUpdateTimerTimeout();
-    void on_editRecordingAction_triggered();
-
-    void on_editTagsAction_triggered();
-
+    void activityRecorderRecordEvent(ActivityRecorderEvent event);
 private:
-    Session* selectedSession();
-    Recording* selectedRecording();
-    // called from startStopSession();
-//    void intervalDialogAccepted();
-//    void intervalDialogRejected();
-//    RecordingDialog* currentRecordingDialog = nullptr;
+    Activity* selectedActivity();
 
-    void loadAllSessions();
-    void setCurrentSession(Session* session);
+    Ui::MainWindow *ui = nullptr;
+    ActivityListModel* m_activityListModel = nullptr;
+    ActivityVisualizer* m_activityVisualizer = nullptr;
+    QVector<Activity*> m_currentViewTimePeriodActivities;
+    // Starts with 0!
+    qint64 m_viewDay = -1;
 
-    RecordingListModel* getOrCreateRecordingListModelForSession(Session* session);
+    qint64 m_currentViewTimePeriodStartTime = -1;
+    qint64 m_currentViewTimePeriodEndTime = -1;
 
-    SessionListModel sessionListModel;
-    //RecordingListModel recordingListModel;
-
-    Session* m_currentSession = nullptr;
-    RecordingListModel* m_currentSessionRecordingListModel = nullptr;
-    QHash<Session*, RecordingListModel*> m_sessionRecordingListModels;
-
-    Ui::MainWindow *ui;
-    SessionVisualizer* vvis;
-    SessionItemDelegate sessionItemDelegate;
-    RecordingItemDelegate recordingItemDelegate;
-    QTimer m_recordUpdateTimer;
-
-    // Shown when context menu requested at empty space.
-    QMenu sessionListViewMenu;
-    // Shown when context menu requested at item.
-    QMenu sessionListViewItemMenu;
-    // Shown when context menu requested at item.
-    QMenu recordingListViewItemMenu;
-
-    //EditSessionDialog* m_currentEditSessionDialog = nullptr;
+    ActivityRecorder m_activityRecorder;
 };
 
 #endif // MAINWINDOW_H

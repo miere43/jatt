@@ -5,72 +5,47 @@
 #include <QVector>
 #include <QHash>
 #include "date_time.h"
+#include "display_format.h"
 
-// old stuff
-struct Recording;
+struct Activity;
 
-struct Session {
-    qint64 id = -1;
-    QString name = "";
-    QString note = "";
-    qint64 timezone = 0;
-    qint64 created = 0;
-    QVector<Recording*> recordings;
-
-    void dumpToQDebug() const;
-};
-
-struct Interval2 {
+struct Interval
+{
     qint64 startTime;
     qint64 endTime;
 };
 
-struct Tag2 {
-    qint64 id = -1;
-    // Color of the tag. Stored as RGBA value, alpha component is unused.
-    qint64 color = -1;
-    QString name = "";
-    QString note = "";
-};
-
-struct Recording {
-    qint64 id = -1;
-    Session* session = nullptr;
-    QString name = "";
-    QString note = "";
-    qint64 startTime = 0;
-    qint64 endTime = 0;
-    QVector<Interval2> intervals;
-    QVector<Tag2*> tags;
-
-    void dumpToQDebug() const;
-};
-
-// old stuff end
-
-struct Interval {
-    DateTime startTime;
-    DateTime endTime;
+enum class ActivityInfoFieldType
+{
+    String,
 };
 
 struct ActivityInfo
 {
     qint64 id = 0;
     qint64 color = 0;
+    QString name;
     QStringList fieldNames;
-    QStringList fieldTypes;
+    QVector<ActivityInfoFieldType> fieldTypes;
     QString displayFormat;
     QString displayRules;
+
+    void updateFormatter();
+    QString formatActivity(Activity* activity);
+private:
+    DisplayFormat m_formatter;
 };
 
 struct Activity
 {
-    qint64 id = 0;
-    ActivityInfo* info = nullptr;
+    qint64 id;
+    ActivityInfo* info;
     QStringList fieldValues;
-    DateTime startTime;
-    DateTime endTime;
+    qint64 startTime;
+    qint64 endTime;
     QVector<Interval> intervals;
+
+    QString displayString();
 };
 
 struct Tag
@@ -82,11 +57,10 @@ struct Tag
 
 struct UserProperties
 {
-    qint64 firstActivityDay = 0;
+    qint64 firstActivityDayUtc = 0;
+    qint64 localTimeZoneOffsetFromUtc = 0;
     QHash<QString, QString> customProperties;
 };
-
-int clamp(int value, int min, int max);
 
 /**
  * @brief Creates string in format hh:mm:ss from milliseconds.
@@ -101,6 +75,6 @@ QString createDurationStringFromMsecs(qint64 msecs);
  * @param length Length of 'tags' array, in elements.
  * @return String of tag names seperated by comma.
  */
-QString tagsToString(Tag2** tags, size_t length);
+//QString tagsToString(Tag2** tags, size_t length);
 
 #endif // CORE_TYPES_H

@@ -4,7 +4,12 @@
 #include <QString>
 #include <QStringList>
 
-QString stringListToString(const QStringList& list);
-QStringList stringToStringList(const QString& list);
+#include "core_types.h"
+
+QString dbStringListToString(const QStringList& list);
+QStringList dbStringToStringList(const QString& list);
+QString dbActivityInfoFieldTypeVectorToString(const QVector<ActivityInfoFieldType>& vector);
+QVector<ActivityInfoFieldType> dbStringToActivityInfoFieldTypeVector(const QString& list);
+void addFieldToActivityInfo(ActivityInfo* info, QString fieldName, ActivityInfoFieldType type);
 
 #endif // UTILITIES_H
