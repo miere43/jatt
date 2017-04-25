@@ -74,6 +74,10 @@ void DisplayFormat::setFormat(QString format, QStringList names)
                 run.dsIndex = nameIndex;
                 m_parsedFormat.append(run);
             }
+            else
+            {
+                csStart = (i);
+            }
 
             i += jumpOffset;
             continue;

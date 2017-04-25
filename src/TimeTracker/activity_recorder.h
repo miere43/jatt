@@ -28,6 +28,8 @@ public:
 
     inline bool isRecording() const { return m_isRecording; }
     inline Activity* activity() const { return m_activity; }
+    inline Interval* interval() const { return m_activityInterval; }
+    qint64 duration() const;
 signals:
     void recordEvent(ActivityRecorderEvent state);
 private slots:

@@ -25,6 +25,9 @@
        </widget>
       </item>
       <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_3"/>
+      </item>
+      <item>
        <widget class="QLabel" name="dayLabel">
         <property name="layoutDirection">
          <enum>Qt::LeftToRight</enum>
@@ -52,7 +55,7 @@
     <item>
      <widget class="QLabel" name="activityLabel">
       <property name="text">
-       <string>Day X activities</string>
+       <string>Activities</string>
       </property>
      </widget>
     </item>
@@ -60,11 +63,25 @@
      <widget class="QListView" name="activitiesListView"/>
     </item>
     <item>
-     <widget class="QPushButton" name="startActivityButton">
-      <property name="text">
-       <string>Start Activity</string>
-      </property>
-     </widget>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QLabel" name="activityDurationLabel">
+        <property name="text">
+         <string>00:00:00</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="startActivityButton">
+        <property name="text">
+         <string>Start Activity</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>
@@ -76,6 +93,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="addActivityAction"/>
+   <addaction name="editActivityAction"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="newSessionAction">
@@ -120,6 +138,16 @@
   <action name="addActivityAction">
    <property name="text">
     <string>Add Activity</string>
+   </property>
+  </action>
+  <action name="editActivityAction">
+   <property name="text">
+    <string>Edit Activity</string>
+   </property>
+  </action>
+  <action name="deleteActivityIntervalAction">
+   <property name="text">
+    <string>Delete Interval</string>
    </property>
   </action>
  </widget>

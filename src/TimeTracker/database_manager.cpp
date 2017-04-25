@@ -196,16 +196,12 @@ bool DatabaseManager::saveActivity(Activity* activity)
 
     bool isInsertAction = activity->id <= 0;
 
-    // Update activity.
-    if (!isInsertAction)
-    {
+    if (!isInsertAction) {
+        // Update activity.
         query.prepare("UPDATE activity SET activity_info_id = :activity_info_id, field_values = :field_values, start_time = :start_time, end_time = :end_time, intervals = :intervals WHERE id = :id");
         query.bindValue(":id", activity->id);
-
-    }
-    // Insert activity.
-    else
-    {
+    } else {
+        // Insert activity.
         query.prepare("INSERT INTO activity(activity_info_id, field_values, start_time, end_time, intervals) VALUES(:activity_info_id, :field_values, :start_time, :end_time, :intervals)");
     }
 
@@ -232,13 +228,30 @@ bool DatabaseManager::saveActivity(Activity* activity)
     return true;
 }
 
+bool DatabaseManager::deleteActivity(qint64 activityId) {
+    Q_ASSERT(activityId > 0);
+
+    QSqlQuery query = QSqlQuery(m_database);
+    query.prepare("DELETE FROM activity WHERE id = :id");
+    query.bindValue(":id", activityId);
+
+    if (!query.exec()) {
+        APP_ERRSTREAM << "unable to delete:" << query.lastError().text();
+        return false;
+    }
+
+    return true;
+}
+
 bool DatabaseManager::saveActivityInfo(ActivityInfo* info)
 {
     Q_ASSERT(info);
 
     QSqlQuery query = QSqlQuery(m_database);
 
-    if (info->id > 0)
+    bool isInsertAction = info->id <= 0;
+
+    if (!isInsertAction)
     {
         // Update activity info.
         query.prepare("UPDATE activity_info SET name = :name, color = :color, field_names = :field_names, field_types = :field_types, display_format = :display_format, display_rules = :display_rules WHERE id = :id");
@@ -263,10 +276,16 @@ bool DatabaseManager::saveActivityInfo(ActivityInfo* info)
         return false;
     }
 
+    if (isInsertAction)
+    {
+        info->id = query.lastInsertId().value<qint64>();
+        Q_ASSERT(info->id > 0);
+    }
+
     return true;
 }
 
-bool DatabaseManager::loadActivitiesBetweenStartAndEndTime(QVector<Activity*>* activities, qint64 startTime, qint64 endTime)
+bool DatabaseManager::loadActivitiesBetweenStartAndEndTime(QVector<Activity*>* activities, qint64 startTime, qint64 endTime, bool checkIntervals)
 {
     Q_ASSERT(activities);
     Q_ASSERT(startTime >= 0);
@@ -274,7 +293,8 @@ bool DatabaseManager::loadActivitiesBetweenStartAndEndTime(QVector<Activity*>* a
     Q_ASSERT(startTime < endTime);
 
     QSqlQuery query = QSqlQuery(m_database);
-    query.prepare("SELECT * FROM activity WHERE start_time >= :start_time AND end_time <= :end_time");
+    // oh god forgive me for this query, this is the best I can do.
+    query.prepare("SELECT * FROM activity WHERE (:start_time >= start_time AND :end_time <= end_time) OR (:start_time >= start_time AND :end_time >= start_time AND end_time >= :start_time) OR (:start_time <= start_time AND :end_time >= start_time)");
     query.bindValue(":start_time", startTime);
     query.bindValue(":end_time", endTime);
 
@@ -310,11 +330,13 @@ bool DatabaseManager::loadActivitiesBetweenStartAndEndTime(QVector<Activity*>* a
             }
             activity->info = info;
             copyActivityValuesFromQuery(activity, &query);
-            m_activities.insert(activity->id, activity);
         }
 
-        qDebug() << "-" << activity->id << activity->displayString() << "|" << activity->startTime / (double)86400000 << activity->endTime / (double)86400000;
-        activities->append(activity);
+        // qDebug() << "-" << activity->id << activity->displayString() << "|" << activity->startTime / (double)86400000 << activity->endTime / (double)86400000;
+
+        if (!checkIntervals || (checkIntervals && activity->hasIntervalsBetweenTime(startTime, endTime))) {
+           activities->append(activity);
+        }
     }
 
     return true;

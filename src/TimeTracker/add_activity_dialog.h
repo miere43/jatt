@@ -24,14 +24,14 @@ private slots:
     void addFieldDialogFieldAdded();
     void addFieldDialogFinished(int result);
 
+    void on_addActivityInfo_clicked();
+    void addActivityInfoDialogInfoAdded();
+    void addActivityInfoDialogFinished(int result);
+
     void on_activityInfoComboBox_currentIndexChanged(int index);
-
     void on_AddActivityDialog_finished(int result);
-
     void on_buttonBox_accepted();
-
     void on_buttonBox_rejected();
-
 private:
     Ui::AddActivityDialog *ui;
     ActivityInfo* m_currentActivityInfo;

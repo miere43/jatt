@@ -13,7 +13,12 @@ struct Interval
 {
     qint64 startTime;
     qint64 endTime;
+
+    bool isInTimePeriod(qint64 start, qint64 end) const;
+    inline qint64 duration() const { return endTime - startTime; }
 };
+
+// bool operator==(const Interval& lhs, const Interval& rhs) const;
 
 enum class ActivityInfoFieldType
 {
@@ -45,7 +50,11 @@ struct Activity
     qint64 endTime;
     QVector<Interval> intervals;
 
+    bool hasIntervalsBetweenTime(qint64 startTime, qint64 endTime);
+    void updateStartAndEndTime();
     QString displayString();
+
+    qint64 duration() const;
 };
 
 struct Tag

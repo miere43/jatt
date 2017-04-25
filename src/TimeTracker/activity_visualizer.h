@@ -19,6 +19,7 @@ public:
 
     void setTimePeriod(qint64 startTime, qint64 endTime, QVector<Activity*>* activities);
     void setTimelineRenderMode(TimelineRenderMode mode);
+    void selectInterval(const Interval* interval);
 
     void paintEvent(QPaintEvent *event) override;
     QSize sizeHint() const;
@@ -26,6 +27,7 @@ private:
     qint64 m_startTime;
     qint64 m_endTime;
     TimelineRenderMode m_timelineRenderMode = Effective;
+    const Interval* m_selectedInterval = nullptr;
     QVector<Activity*>* m_activities;
 };
 

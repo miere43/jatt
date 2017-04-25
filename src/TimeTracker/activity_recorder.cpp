@@ -45,6 +45,7 @@ void ActivityRecorder::record(Activity *activity)
     if (activity->intervals.count() == 0)
     {
         activity->startTime = m_startTime;
+        activity->endTime = m_startTime;
     }
 
     activity->intervals.append(Interval { m_startTime, m_startTime });
@@ -71,4 +72,13 @@ void ActivityRecorder::syncActivityState()
     Q_ASSERT(isRecording());
     m_activity->endTime = getCurrentDateTimeUtc();
     m_activityInterval->endTime = m_activity->endTime;
+}
+
+inline qint64 qint64_max(qint64 a, qint64 b) {
+    return a > b ? a : b;
+}
+
+qint64 ActivityRecorder::duration() const {
+    if (!isRecording()) return 0;
+    return qint64_max(0, getCurrentDateTimeUtc() - m_activityInterval->startTime);
 }

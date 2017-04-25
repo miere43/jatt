@@ -29,7 +29,9 @@ public:
     bool saveActivity(Activity* activity);
     bool saveActivityInfo(ActivityInfo* activityInfo);
 
-    bool loadActivitiesBetweenStartAndEndTime(QVector<Activity*>* activities, qint64 startTime, qint64 endTime);
+    bool deleteActivity(qint64 activityId);
+
+    bool loadActivitiesBetweenStartAndEndTime(QVector<Activity*>* activities, qint64 startTime, qint64 endTime, bool checkIntervals = false);
     bool m_activityInfosLoaded = false;
 
     static void copyActivityValuesFromQuery(Activity* activity, QSqlQuery* query);

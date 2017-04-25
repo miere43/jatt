@@ -3,6 +3,7 @@
 
 #include "add_field_dialog.h"
 #include "application_state.h"
+#include "add_activity_info_dialog.h"
 
 #include <QMessageBox>
 #include <QLineEdit>
@@ -126,6 +127,7 @@ Activity* AddActivityDialog::constructActivity()
     activity->info = m_currentActivityInfo;
     activity->startTime = getCurrentDateTimeUtc();
     activity->endTime = activity->startTime;
+    qDebug() << "Constructed, start time:" << activity->startTime << "end time:" << activity->endTime << "diff:" << activity->endTime - activity->startTime;
     activity->fieldValues.reserve(m_activityInfoFieldWidgets.size());
 
     for (const QWidget* fieldWidget : m_activityInfoFieldWidgets)
@@ -155,3 +157,38 @@ void AddActivityDialog::on_buttonBox_rejected()
 {
     this->reject();
 }
+
+void AddActivityDialog::on_addActivityInfo_clicked()
+{
+    AddActivityInfoDialog* dialog = new AddActivityInfoDialog();
+    connect(dialog, &AddActivityInfoDialog::finished,
+            this, &AddActivityDialog::addActivityInfoDialogFinished);
+    connect(dialog, &AddActivityInfoDialog::infoAdded,
+            this, &AddActivityDialog::addActivityInfoDialogInfoAdded);
+
+    dialog->exec();
+}
+
+void AddActivityDialog::addActivityInfoDialogInfoAdded()
+{
+    QObject* sender = QObject::sender();
+    AddActivityInfoDialog* dialog = qobject_cast<AddActivityInfoDialog*>(sender);
+    Q_ASSERT(dialog);
+
+    ActivityInfo* info = dialog->constructActivityInfo();
+    Q_ASSERT(info);
+
+    ui->activityInfoComboBox->addItem(info->name, QVariant::fromValue((void*)info));
+    ui->activityInfoComboBox->setCurrentIndex(ui->activityInfoComboBox->children().count() - 1);
+}
+
+void AddActivityDialog::addActivityInfoDialogFinished(int result)
+{
+    Q_UNUSED(result);
+    QObject* sender = QObject::sender();
+    AddActivityInfoDialog* dialog = qobject_cast<AddActivityInfoDialog*>(sender);
+    Q_ASSERT(dialog);
+
+    dialog->deleteLater();
+}
+
