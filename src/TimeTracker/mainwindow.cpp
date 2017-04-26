@@ -35,8 +35,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_activityVisualizer->setTimelineRenderMode(ActivityVisualizer::Full);
 
-    m_activityMenu.addAction(ui->editActivityAction);
-    m_activityMenu.addAction(ui->deleteActivityIntervalAction);
+    m_activityItemMenu.addAction(ui->editActivityAction);
+    m_activityItemMenu.addAction(ui->deleteActivityIntervalAction);
+
+    m_activityMenu.addAction(ui->addActivityAction);
 
     connect(ui->deleteActivityIntervalAction, &QAction::triggered,
             this, &MainWindow::deleteSelectedActivityIntervalTriggered);
@@ -51,10 +53,17 @@ MainWindow::~MainWindow()
 void MainWindow::activitiesListViewMenuRequested(const QPoint &pos)
 {
     if (ui->activitiesListView->indexAt(pos).isValid())
+        m_activityItemMenu.exec(ui->activitiesListView->mapToGlobal(pos));
+    else
         m_activityMenu.exec(ui->activitiesListView->mapToGlobal(pos));
 }
 
 void MainWindow::on_addActivityAction_triggered()
+{
+    showAddActivityDialog();
+}
+
+void MainWindow::showAddActivityDialog()
 {
     AddActivityDialog* dialog = new AddActivityDialog(this);
     connect(dialog, &AddActivityDialog::finished,

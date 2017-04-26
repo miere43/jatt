@@ -45,6 +45,8 @@ private slots:
 
     void deleteSelectedActivityIntervalTriggered(bool checked);
 private:
+    void showAddActivityDialog();
+
     Activity* selectedActivity() const;
     ActivityListItem* selectedActivityListItem() const;
 
@@ -61,6 +63,7 @@ private:
 
     ActivityRecorder m_activityRecorder;
 
+    QMenu m_activityItemMenu;
     QMenu m_activityMenu;
 };
 
