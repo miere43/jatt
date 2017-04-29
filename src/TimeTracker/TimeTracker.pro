@@ -41,6 +41,7 @@ SOURCES += main.cpp\
     activity_item_delegate.cpp \
     plugin_manager.cpp \
     duk/duktape.c \
+    edit_activity_field_dialog.cpp
 
 HEADERS  += mainwindow.h \
     application_state.h \
@@ -60,12 +61,14 @@ HEADERS  += mainwindow.h \
     activity_item_delegate.h \
     plugin_manager.h \
     duk/duk_config.h \
-    duk/duktape.h
+    duk/duktape.h \
+    edit_activity_field_dialog.h
 
 FORMS    += mainwindow.ui \
     add_activity_dialog.ui \
     add_field_dialog.ui \
-    add_activity_info_dialog.ui
+    add_activity_info_dialog.ui \
+    edit_activity_field_dialog.ui
 
 DISTFILES += \
     js_app_module.inc

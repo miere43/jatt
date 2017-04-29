@@ -8,6 +8,7 @@
 #include <QHash>
 #include <QMenu>
 #include <QContextMenuEvent>
+#include <QHash>
 
 #include "application_state.h"
 #include "activity_visualizer.h"
@@ -16,8 +17,13 @@
 #include "activity_item_delegate.h"
 
 namespace Ui {
-class MainWindow;
+    class MainWindow;
 }
+
+//struct ActivityListMenuData {
+//    QMenu* menu;
+//    QVector<QAction*> actions;
+//};
 
 class MainWindow : public QMainWindow
 {
@@ -46,6 +52,8 @@ private slots:
     void deleteSelectedActivityIntervalTriggered(bool checked);
     void on_joinNextActivityAction_triggered();
 
+    void editActivityFieldDialogFinished(int result);
+    void activityMenuItemActionTriggered(bool checked);
 private:
     void setViewTimePeriod(qint64 startTime, qint64 endTime);
     void setViewDay(qint64 day);
@@ -72,6 +80,10 @@ private:
 
     QMenu m_activityItemMenu;
     QMenu m_activityMenu;
+
+    QHash<ActivityInfo*, QMenu*> m_listMenus;
+
+    QMenu* createActivityInfoMenu(ActivityInfo* info);
 };
 
 #endif // MAINWINDOW_H

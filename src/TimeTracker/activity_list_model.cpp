@@ -102,3 +102,10 @@ bool ActivityListModel::removeActivity(Activity *activity) {
 
     return false;
 }
+
+void ActivityListModel::dataChangedHint(Activity *activity) {
+    Q_ASSERT(activity);
+    int index = m_activities.indexOf(activity);
+    Q_ASSERT(index != -1);
+    emit dataChanged(this->index(index), this->index(index));
+}

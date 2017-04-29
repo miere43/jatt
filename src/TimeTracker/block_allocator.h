@@ -143,7 +143,12 @@ public:
     }
 
     ~BlockAllocator() {
-        Block* block = 0;
+        Block* block = first;
+        while (block) {
+            Block* next = block->next;
+            delete block;
+            block = next;
+        }
     }
 };
 

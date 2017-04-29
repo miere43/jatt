@@ -4,6 +4,7 @@
 #include "common.h"
 
 #include "add_activity_dialog.h"
+#include "edit_activity_field_dialog.h"
 
 #include <QtAlgorithms>
 #include <QDebug>
@@ -37,11 +38,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_activityVisualizer->setTimelineRenderMode(ActivityVisualizer::Full);
 
-    m_activityItemMenu.addAction(ui->editActivityAction);
-    m_activityItemMenu.addAction(ui->deleteActivityIntervalAction);
-    m_activityItemMenu.addSeparator();
-    m_activityItemMenu.addAction(ui->joinNextActivityAction);
-
     m_activityMenu.addAction(ui->addActivityAction);
 
     connect(ui->deleteActivityIntervalAction, &QAction::triggered,
@@ -49,7 +45,29 @@ MainWindow::MainWindow(QWidget *parent)
 
     g_app.m_pluginManager.initialize();
 
+    QList<ActivityInfo*> list = g_app.database()->activityInfos();
+    for (ActivityInfo* info : list) {
+        m_listMenus.insert(info, createActivityInfoMenu(info));
+    }
+
     addQuickActivityButtons();
+}
+
+QMenu* MainWindow::createActivityInfoMenu(ActivityInfo *info) {
+    QMenu* m = new QMenu(this);
+    m->addAction(ui->editActivityAction);
+    m->addAction(ui->deleteActivityIntervalAction);
+    m->addSeparator();
+    m->addAction(ui->joinNextActivityAction);
+    m->addSeparator();
+    for (const QString& fieldName : info->fieldNames) {
+        QAction* action = m->addAction(QString("Edit \"") + fieldName + "\"");
+        // @TODO: this is so eh, maybe there is a better solution?
+        action->setProperty("fieldName", QVariant(fieldName));
+        connect(action, &QAction::triggered,
+                this, &MainWindow::activityMenuItemActionTriggered);
+    }
+    return m;
 }
 
 MainWindow::~MainWindow()
@@ -58,12 +76,60 @@ MainWindow::~MainWindow()
     delete m_activityListModel;
 }
 
+void MainWindow::editActivityFieldDialogFinished(int result) {
+    QObject* sender = QObject::sender();
+    EditActivityFieldDialog* dialog = qobject_cast<EditActivityFieldDialog*>(sender);
+    Q_ASSERT(dialog);
+
+    if (result == QDialog::Accepted) {
+        Activity* activity = dialog->activity();
+        int i = activity->info->fieldNames.indexOf(dialog->fieldName());
+        Q_ASSERT(i != -1);
+        Q_ASSERT(activity->info->fieldNames.count() == activity->fieldValues.count());
+        activity->fieldValues[i] = dialog->newValue().toString();
+        m_activityListModel->dataChangedHint(activity);
+
+        g_app.database()->saveActivity(activity);
+    }
+
+    dialog->deleteLater();
+}
+
+void MainWindow::activityMenuItemActionTriggered(bool checked) {
+    Q_UNUSED(checked);
+
+    QObject* sender = QObject::sender();
+    QAction* action = qobject_cast<QAction*>(sender);
+    Q_ASSERT(action);
+
+    Activity* activity = selectedActivity();
+    Q_ASSERT(activity);
+    QString fieldName = action->property("fieldName").value<QString>();
+
+    EditActivityFieldDialog* dialog = new EditActivityFieldDialog(activity, fieldName, this);
+    connect(dialog, &EditActivityFieldDialog::finished,
+            this, &MainWindow::editActivityFieldDialogFinished);
+    dialog->showNormal();
+}
+
 void MainWindow::activitiesListViewMenuRequested(const QPoint &pos)
 {
-    if (ui->activitiesListView->indexAt(pos).isValid())
-        m_activityItemMenu.exec(ui->activitiesListView->mapToGlobal(pos));
-    else
+    QModelIndex item = ui->activitiesListView->indexAt(pos);
+    if (!item.isValid()){
         m_activityMenu.exec(ui->activitiesListView->mapToGlobal(pos));
+    } else {
+        Activity* activity = (Activity*)item.data(Qt::UserRole).value<void*>();
+        Q_ASSERT(activity);
+        Q_ASSERT(activity->info);
+
+        // @TODO: can move QMenu* from hashtable to ActivityInfo struct (because all AI's have a menu)
+        QMenu* menu = m_listMenus.value(activity->info, nullptr);
+        if (menu == nullptr) {
+            Q_ASSERT(false); // All Activity Info instances should have a menu associated with them.
+        }
+
+        menu->exec(ui->activitiesListView->mapToGlobal(pos));
+    }
 }
 
 void MainWindow::on_addActivityAction_triggered()
@@ -123,7 +189,7 @@ void MainWindow::setViewTimePeriod(qint64 startTime, qint64 endTime)
 
         if (currentActivity->hasIntervalsBetweenTime(startTime, endTime)) {
             if (!m_currentViewTimePeriodActivities.contains(currentActivity)) {
-                qDebug() << "added current activity " << currentActivity->fieldValues[0];
+                // qDebug() << "added current activity " << currentActivity->fieldValues[0];
                 m_currentViewTimePeriodActivities.append(currentActivity);
             }
         }
@@ -268,64 +334,8 @@ void MainWindow::selectedActivityChanged(const QItemSelection &selected, const Q
 
 void MainWindow::deleteSelectedActivityIntervalTriggered(bool checked)
 {
-//    Q_UNUSED(checked);
-//    QModelIndexList selection = ui->activitiesListView->selectionModel()->selection().indexes();
-//    if (selection.count() == 0 ) {
-//        APP_ERRSTREAM << "nothing to delete, this action should be disabled.";
-//        return;
-//    }
+    Q_UNUSED(checked);
 
-//    const QModelIndex& selectionIndex = selection.at(0);
-//    if (!selectionIndex.isValid()) {
-//        APP_ERRSTREAM << "selectionIndex is invalid";
-//        return;
-//    }
-
-//    Activity* listItem = (Activity*)selectionIndex.data(Qt::UserRole).value<void*>();
-//    Q_ASSERT(activity);
-
-//    if (listItem->interval == nullptr) {
-//        if (0 != listItem->activity->intervals.count()) {
-//            APP_ERRSTREAM << "invalid interval";
-//            Q_ASSERT(false);
-//            return;
-//        }
-
-//        // If activity doesn't have any intervals, just delete activity.
-//        Q_ASSERT(g_app.database()->deleteActivity(listItem->activity->id));
-
-//        m_activityListModel->removeActivity(listItem->activity);
-//        g_app.m_activityAllocator.deallocate(listItem->activity);
-//    } else {
-//        // If activity has interval, remove it.
-//        int intervalPos = -1;
-//        for (int i = 0; i < listItem->activity->intervals.count(); ++i) {
-//            Interval* interval = listItem->activity->intervals.data() + i;
-//            if (interval == listItem->interval) {
-//                intervalPos = i;
-//                break;
-//            }
-//        }
-
-//        if (intervalPos == -1) {
-//            APP_ERRSTREAM << "something is wrong";
-//            return;
-//        }
-
-//        if (m_activityRecorder.interval() == listItem->interval) {
-//            QMessageBox::critical(this, "Error", "You cannot delete currenly recording interval.");
-//            return;
-//        }
-
-//        listItem->activity->intervals.remove(intervalPos);
-//        ui->activitiesListView->model()->removeRow(selectionIndex.row());
-
-//        if (!g_app.database()->saveActivity(listItem->activity)) {
-//            QMessageBox::critical(this, "Error", "Error while trying to update activity.");
-//            APP_ERRSTREAM << "error removing interval";
-//            return;
-//        }
-//    }
 }
 
 const QVector<Activity*>& MainWindow::currentActivities() const {
@@ -392,7 +402,6 @@ void MainWindow::startQuickActivity(ActivityInfo* info) {
 void MainWindow::onAppAboutToQuit() {
     if (m_activityRecorder.isRecording())
         m_activityRecorder.stop();
-
 }
 
 void MainWindow::on_joinNextActivityAction_triggered()
@@ -441,6 +450,7 @@ void MainWindow::on_joinNextActivityAction_triggered()
         m_activityListModel->removeActivity(next);
     }
 
+    g_app.database()->saveActivity(sel);
     g_app.database()->deleteActivity(next->id);
     g_app.m_activityAllocator.deallocate(next);
 }
