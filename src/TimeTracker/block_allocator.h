@@ -10,11 +10,11 @@ template <typename T>
 class BlockAllocator
 {
 public:
-    // don't change from 32.
-    static const int BLOCK_MAX_ITEMS = 32;
+    // set this const to amount of bits of 'usedSlots' type.
+    static const int BLOCK_MAX_ITEMS = 32; // 32 = sizeof(qint32) * 8 bits
 
     struct Block {
-        qint32 usedSlots;
+        quint32 usedSlots; // if you change type, make sure everything works
         T      items[BLOCK_MAX_ITEMS];
         Block* next;
 
@@ -32,12 +32,15 @@ public:
             uintptr_t slot = ((uintptr_t)value - ((uintptr_t)this + (uintptr_t)itemsOffset)) / (uintptr_t)sizeof(T);
             Q_ASSERT(slot >= 0 && slot <= BLOCK_MAX_ITEMS);
             usedSlots = usedSlots & (~(1 << slot));
+#ifdef QT_DEBUG
+            memset(value, 0xCD, sizeof(T));
+#endif
         }
 
         int getFreeSlotIndex()
         {
             // INT32_MAX doesn't work for some reason :/
-            if (usedSlots == 2147483647)
+            if (usedSlots == 0xFFFFFFFF)
             {
                 return -1;
             }
@@ -73,14 +76,9 @@ public:
         if (last != nullptr)
         {
             last->next = block;
+            last = block;
         }
         return block;
-    }
-
-    void insertInBlock(Block* block, int position, const T& value) {
-        Q_ASSERT(block);
-        Q_ASSERT(block->usedSlots & (1 << position));
-
     }
 
     T* allocate() {
@@ -123,7 +121,7 @@ public:
         Block* block = first;
         do
         {
-            if ((void*)value > (void*)block && (void*)value < (void*)((char*)block + sizeof(Block)))
+            if ((void*)value >= (void*)block && (void*)value <= (void*)((char*)block + sizeof(Block)))
             {
                 // @TODO call destructor.
                 //value->~T();
@@ -141,6 +139,11 @@ public:
 
     BlockAllocator() {
         first = pushNewBlock();
+        last = first;
+    }
+
+    ~BlockAllocator() {
+        Block* block = 0;
     }
 };
 

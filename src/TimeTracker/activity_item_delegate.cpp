@@ -15,9 +15,7 @@ void ActivityItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &
     painter->setPen(Qt::NoPen);
     painter->drawRect(option.rect);
 
-    ActivityListItem* listItem = (ActivityListItem*)index.data(Qt::UserRole).value<void*>();
-    Activity* activity = listItem->activity;
-    Q_ASSERT(listItem);
+    Activity* activity = (Activity*)index.data(Qt::UserRole).value<void*>();
     Q_ASSERT(activity);
 
     QString displayText = index.data(Qt::DisplayRole).value<QString>();

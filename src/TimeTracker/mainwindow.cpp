@@ -39,6 +39,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_activityItemMenu.addAction(ui->editActivityAction);
     m_activityItemMenu.addAction(ui->deleteActivityIntervalAction);
+    m_activityItemMenu.addSeparator();
+    m_activityItemMenu.addAction(ui->joinNextActivityAction);
 
     m_activityMenu.addAction(ui->addActivityAction);
 
@@ -186,32 +188,36 @@ void MainWindow::on_startActivityButton_clicked()
     }
 }
 
-ActivityListItem* MainWindow::selectedActivityListItem() const
+//ActivityListItem* MainWindow::selectedActivityListItem() const
+//{
+//    QModelIndexList selection = ui->activitiesListView->selectionModel()->selection().indexes();
+//    if (selection.count() == 0)
+//    {
+//        return nullptr;
+//    }
+//    return ((ActivityListItem*)selection.at(0).data(Qt::UserRole).value<void*>());
+//}
+
+Activity* MainWindow::selectedActivity() const
 {
     QModelIndexList selection = ui->activitiesListView->selectionModel()->selection().indexes();
     if (selection.count() == 0)
     {
         return nullptr;
     }
-    return ((ActivityListItem*)selection.at(0).data(Qt::UserRole).value<void*>());
-}
-
-Activity* MainWindow::selectedActivity() const
-{
-    return selectedActivityListItem()->activity;
+    return ((Activity*)selection.at(0).data(Qt::UserRole).value<void*>());
 }
 
 void MainWindow::activityRecorderRecordEvent(ActivityRecorderEvent event)
 {
     // qDebug() << m_activityRecorder.activity()->endTime;
-
     Activity* currentActivity = m_activityRecorder.activity();
     // Interval* currentInterval = m_activityRecorder.interval();
 
     if (event == ActivityRecorderEvent::RecordingStarted)
     {
         ui->startActivityButton->setText("Stop Activity");
-        m_activityListModel->addActivityInterval(currentActivity, m_activityRecorder.interval());
+        // m_activityListModel->addActivityInterval(currentActivity, m_activityRecorder.interval());
     }
     else if (event == ActivityRecorderEvent::RecordingStopped)
     {
@@ -235,92 +241,91 @@ void MainWindow::selectedActivityChanged(const QItemSelection &selected, const Q
 {
     Q_UNUSED(deselected);
 
-    ActivityListItem* listItem = nullptr;
+    Activity* activity = nullptr;
     QModelIndexList indexes = selected.indexes();
     if (indexes.count() > 0)
     {
         const QModelIndex& index = indexes.at(0);
         if (index.isValid())
-            listItem = static_cast<ActivityListItem*>(index.data(Qt::UserRole).value<void*>());
+            activity = static_cast<Activity*>(index.data(Qt::UserRole).value<void*>());
     }
 
     if (m_activityRecorder.isRecording()) return;
 
-    if (listItem == nullptr)
+    if (activity == nullptr)
     {
         ui->activityDurationLabel->setText(QStringLiteral("00:00:00"));
-        m_activityVisualizer->selectInterval(nullptr);
+        m_activityVisualizer->selectActivity(nullptr);
         qDebug() << "select null";
     }
     else
     {
-        ui->activityDurationLabel->setText(createDurationStringFromMsecs(listItem->activity->duration()));
-        m_activityVisualizer->selectInterval(listItem->interval);
+        ui->activityDurationLabel->setText(createDurationStringFromMsecs(activity->duration()));
+        m_activityVisualizer->selectActivity(activity);
     }
 
 }
 
 void MainWindow::deleteSelectedActivityIntervalTriggered(bool checked)
 {
-    Q_UNUSED(checked);
-    QModelIndexList selection = ui->activitiesListView->selectionModel()->selection().indexes();
-    if (selection.count() == 0 ) {
-        APP_ERRSTREAM << "nothing to delete, this action should be disabled.";
-        return;
-    }
+//    Q_UNUSED(checked);
+//    QModelIndexList selection = ui->activitiesListView->selectionModel()->selection().indexes();
+//    if (selection.count() == 0 ) {
+//        APP_ERRSTREAM << "nothing to delete, this action should be disabled.";
+//        return;
+//    }
 
-    const QModelIndex& selectionIndex = selection.at(0);
-    if (!selectionIndex.isValid()) {
-        APP_ERRSTREAM << "selectionIndex is invalid";
-        return;
-    }
+//    const QModelIndex& selectionIndex = selection.at(0);
+//    if (!selectionIndex.isValid()) {
+//        APP_ERRSTREAM << "selectionIndex is invalid";
+//        return;
+//    }
 
-    ActivityListItem* listItem = (ActivityListItem*)selectionIndex.data(Qt::UserRole).value<void*>();
-    Q_ASSERT(listItem);
-    Q_ASSERT(listItem->activity);
+//    Activity* listItem = (Activity*)selectionIndex.data(Qt::UserRole).value<void*>();
+//    Q_ASSERT(activity);
 
-    if (listItem->interval == nullptr) {
-        if (0 != listItem->activity->intervals.count()) {
-            APP_ERRSTREAM << "invalid interval";
-            Q_ASSERT(false);
-            return;
-        }
+//    if (listItem->interval == nullptr) {
+//        if (0 != listItem->activity->intervals.count()) {
+//            APP_ERRSTREAM << "invalid interval";
+//            Q_ASSERT(false);
+//            return;
+//        }
 
-        // If activity doesn't have any intervals, just delete activity.
-        Q_ASSERT(g_app.database()->deleteActivity(listItem->activity->id));
+//        // If activity doesn't have any intervals, just delete activity.
+//        Q_ASSERT(g_app.database()->deleteActivity(listItem->activity->id));
 
-        m_activityListModel->removeActivity(listItem->activity);
-        g_app.m_activityAllocator.deallocate(listItem->activity);
-    } else {
-        // If activity has interval, remove it.
-        int intervalPos = -1;
-        for (int i = 0; i < listItem->activity->intervals.count(); ++i) {
-            Interval* interval = listItem->activity->intervals.data() + i;
-            if (interval == listItem->interval) {
-                intervalPos = i;
-                break;
-            }
-        }
+//        m_activityListModel->removeActivity(listItem->activity);
+//        g_app.m_activityAllocator.deallocate(listItem->activity);
+//    } else {
+//        // If activity has interval, remove it.
+//        int intervalPos = -1;
+//        for (int i = 0; i < listItem->activity->intervals.count(); ++i) {
+//            Interval* interval = listItem->activity->intervals.data() + i;
+//            if (interval == listItem->interval) {
+//                intervalPos = i;
+//                break;
+//            }
+//        }
 
-        if (intervalPos == -1) {
-            APP_ERRSTREAM << "something is wrong";
-            return;
-        }
+//        if (intervalPos == -1) {
+//            APP_ERRSTREAM << "something is wrong";
+//            return;
+//        }
 
-        if (m_activityRecorder.interval() == listItem->interval) {
-            QMessageBox::critical(this, "Error", "You cannot delete currenly recording interval.");
-            return;
-        }
+//        if (m_activityRecorder.interval() == listItem->interval) {
+//            QMessageBox::critical(this, "Error", "You cannot delete currenly recording interval.");
+//            return;
+//        }
 
-        listItem->activity->intervals.remove(intervalPos);
-        ui->activitiesListView->model()->removeRow(selectionIndex.row());
+//        listItem->activity->intervals.remove(intervalPos);
+//        ui->activitiesListView->model()->removeRow(selectionIndex.row());
 
-        if (!g_app.database()->saveActivity(listItem->activity)) {
-            QMessageBox::critical(this, "Error", "Error while trying to update activity.");
-            APP_ERRSTREAM << "error removing interval";
-            return;
-        }
-    }
+//        if (!g_app.database()->saveActivity(listItem->activity)) {
+//            QMessageBox::critical(this, "Error", "Error while trying to update activity.");
+//            APP_ERRSTREAM << "error removing interval";
+//            return;
+//        }
+//    }
 }
 
 const QVector<Activity*>& MainWindow::currentActivities() const {
@@ -382,4 +387,60 @@ void MainWindow::startQuickActivity(ActivityInfo* info) {
     m_activityListModel->addActivity(activity);
 
     m_activityRecorder.record(activity);
+}
+
+void MainWindow::onAppAboutToQuit() {
+    if (m_activityRecorder.isRecording())
+        m_activityRecorder.stop();
+
+}
+
+void MainWindow::on_joinNextActivityAction_triggered()
+{
+    QModelIndexList selection = ui->activitiesListView->selectionModel()->selection().indexes();
+    if (selection.count() == 0)
+    {
+        QMessageBox::critical(this, "Error", "Activity is not selected.");
+        return;
+    }
+
+    Activity* sel = ((Activity*)selection.at(0).data(Qt::UserRole).value<void*>());
+    Q_ASSERT(sel);
+
+    int row = selection.at(0).row();
+    QModelIndex idx = m_activityListModel->index(row + 1);
+    if (!idx.isValid()) {
+        QMessageBox::critical(this, "Error", "Next item is invalid.");
+        return;
+    }
+
+    Activity* next = (Activity*)m_activityListModel->data(idx, Qt::UserRole).value<void*>();
+    if (!next) {
+        QMessageBox::critical(this, "Error", "Next item is invalid (2).");
+        return;
+    }
+
+    if (next->id <= 0) {
+        QMessageBox::critical(this, "Error", "Activity is not uploaded yet.");
+        return;
+    }
+
+    if (sel->info != next->info) {
+        QMessageBox::critical(this, "Error", "Activity Infos should match.");
+        return;
+    }
+
+    for (const Interval& interval : next->intervals) {
+        sel->intervals.append(interval);
+    }
+
+    int index = m_currentViewTimePeriodActivities.indexOf(next);
+    if (index != -1) {
+        m_currentViewTimePeriodActivities.remove(index);
+        m_activityVisualizer->update();
+        m_activityListModel->removeActivity(next);
+    }
+
+    g_app.database()->deleteActivity(next->id);
+    g_app.m_activityAllocator.deallocate(next);
 }

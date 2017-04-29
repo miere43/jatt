@@ -51,6 +51,7 @@ void ActivityRecorder::record(Activity *activity)
     activity->intervals.append(Interval { m_startTime, m_startTime });
     m_activityInterval = &activity->intervals.last();
 
+//    g_app.database().saveActivity(activity);
     emit recordEvent(ActivityRecorderEvent::RecordingStarted);
 
     m_timer.start();

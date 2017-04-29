@@ -3,6 +3,7 @@
 
 #include "application_state.h"
 #include "mainwindow.h"
+#include "block_allocator.h"
 
 int main(int argc, char *argv[])
 {

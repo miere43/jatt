@@ -28,6 +28,7 @@ public:
     ~MainWindow();
 
     const QVector<Activity*>& currentActivities() const;
+    void onAppAboutToQuit();
 private slots:
     void on_addActivityAction_triggered();
     void addActivityDialogFinished(int result);
@@ -43,6 +44,8 @@ private slots:
 
     void startQuickActivityButtonClicked();
     void deleteSelectedActivityIntervalTriggered(bool checked);
+    void on_joinNextActivityAction_triggered();
+
 private:
     void setViewTimePeriod(qint64 startTime, qint64 endTime);
     void setViewDay(qint64 day);
@@ -52,7 +55,7 @@ private:
     void startQuickActivity(ActivityInfo* info);
 
     Activity* selectedActivity() const;
-    ActivityListItem* selectedActivityListItem() const;
+    // ActivityListItem* selectedActivityListItem() const;
 
     Ui::MainWindow *ui = nullptr;
     ActivityListModel* m_activityListModel = nullptr; // bunch of stuff relies on this variable, don't touch.

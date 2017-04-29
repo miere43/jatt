@@ -5,7 +5,18 @@
 
 ActivityVisualizer::ActivityVisualizer(QWidget *parent) : QWidget(parent)
 {
+    connect(this, &ActivityVisualizer::customContextMenuRequested,
+            this, &ActivityVisualizer::contextMenuRequested);
+    this->setContextMenuPolicy(Qt::CustomContextMenu);
+    m_test = new QAction(this);
+    m_test->setText("test");
+    m_menu = new QMenu(this);
+    m_menu->addAction(m_test);
+}
 
+void ActivityVisualizer::contextMenuRequested(const QPoint &pos)
+{
+    m_menu->exec(this->mapToGlobal(pos));
 }
 
 void ActivityVisualizer::setTimelineRenderMode(TimelineRenderMode mode)
@@ -89,23 +100,17 @@ void ActivityVisualizer::paintEvent(QPaintEvent *event)
         Q_ASSERT(activity);
         if (activity->intervals.count() == 0)
             continue;
-        currentBrush = QBrush(QColor((QRgb)activity->info->color));
+        currentBrush = activity == m_selectedActivity ? QBrush(QColor(127, 201, 255, 255)) : QBrush(QColor((QRgb)activity->info->color));
         painter.setBrush(currentBrush);
 
         for (const Interval& interval : activity->intervals)
         {
-            if (&interval == m_selectedInterval) {
-                painter.setBrush(QBrush(QColor(127, 201, 255, 255)));
-            }
             double startPixel = (interval.startTime - startTime) * unit;
             double endPixel   = (interval.endTime   - startTime) * unit;
 
             if (endPixel - startPixel < 1) endPixel += 1;
             if (startPixel == INFINITY || endPixel == INFINITY) continue;
             painter.drawRect(QRectF(startPixel, 0, endPixel - startPixel, height()));
-            if (&interval == m_selectedInterval) {
-                painter.setBrush(currentBrush);
-            }
         }
     }
 }
@@ -115,15 +120,25 @@ QSize ActivityVisualizer::sizeHint() const
     return QSize(100, 100);
 }
 
-void ActivityVisualizer::selectInterval(const Interval *interval)
-{
-    if (interval == nullptr) {
-        m_selectedInterval = nullptr;
-        this->update();
-        return;
-    }
+//void ActivityVisualizer::selectInterval(const Interval *interval)
+//{
+//    if (interval == nullptr) {
+//        m_selectedInterval = nullptr;
+//        this->update();
+//        return;
+//    }
 
-    Q_ASSERT(m_activities->count() > 0);
-    m_selectedInterval = interval;
+//    Q_ASSERT(m_activities->count() > 0);
+//    m_selectedInterval = interval;
+//    this->update();
+//}
+
+void ActivityVisualizer::selectActivity(const Activity *activity)
+{
+    if (activity == nullptr) {
+        m_selectedActivity = nullptr;
+    } else {
+        m_selectedActivity = activity;
+    }
     this->update();
 }

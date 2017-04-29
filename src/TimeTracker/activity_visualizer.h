@@ -2,6 +2,8 @@
 #define SESSION_VISUALIZER_H
 
 #include <QWidget>
+#include <QMenu>
+#include <QAction>
 #include <QPaintEvent>
 #include "core_types.h"
 
@@ -19,16 +21,22 @@ public:
 
     void setTimePeriod(qint64 startTime, qint64 endTime, QVector<Activity*>* activities);
     void setTimelineRenderMode(TimelineRenderMode mode);
-    void selectInterval(const Interval* interval);
+//    void selectInterval(const Interval* interval);
+    void selectActivity(const Activity* activity);
 
     void paintEvent(QPaintEvent *event) override;
     QSize sizeHint() const;
+private slots:
+    void contextMenuRequested(const QPoint& pos);
 private:
     qint64 m_startTime;
     qint64 m_endTime;
     TimelineRenderMode m_timelineRenderMode = Effective;
-    const Interval* m_selectedInterval = nullptr;
+    const Activity* m_selectedActivity = nullptr;
     QVector<Activity*>* m_activities;
+
+    QMenu* m_menu;
+    QAction* m_test;
 };
 
 #endif // SESSION_VISUALIZER_H

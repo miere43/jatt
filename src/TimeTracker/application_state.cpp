@@ -55,7 +55,7 @@ void ApplicationState::setMainWindow(MainWindow* mainWindow) {
 
 void ApplicationState::appAboutToQuit()
 {
-
+    mainWindow()->onAppAboutToQuit();
 }
 
 ApplicationState g_app;
