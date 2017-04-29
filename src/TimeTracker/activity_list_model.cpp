@@ -19,9 +19,9 @@ void ActivityListModel::addActivity(Activity *activity)
     if (itemsCount > 0) {
         beginInsertRows(QModelIndex(), m_items.count(), itemsCount + m_items.count());
         endInsertRows();
-    }
 
-    sortListItems();
+        sortListItems();
+    }
 }
 
 void ActivityListModel::addActivities(QVector<Activity *> *activities)
@@ -43,9 +43,9 @@ void ActivityListModel::addActivities(QVector<Activity *> *activities)
         int itemsCountInitial = m_items.count();
         beginInsertRows(QModelIndex(), itemsCountInitial, itemsCountInitial + addedItemsCount);
         endInsertRows();
-    }
 
-    sortListItems();
+        sortListItems();
+    }
 }
 
 void ActivityListModel::setTimePeriod(qint64 startTime, qint64 endTime)
@@ -109,22 +109,14 @@ bool ActivityListModel::removeRows(int row, int count, const QModelIndex &parent
 int ActivityListModel::addListItemsFor(Activity *activity)
 {
     int count = 0;
-    if (activity->intervals.count() == 0) {
-        ActivityListItem obj;
-        obj.interval = nullptr;
-        obj.activity = activity;
-        m_items.append(obj);
-        ++count;
-    } else {
-        for (const Interval& interval : activity->intervals)
-        {
-            if (interval.isInTimePeriod(m_startTime, m_endTime)) {
-                ActivityListItem obj;
-                obj.interval = &interval;
-                obj.activity = activity;
-                m_items.append(obj);
-                ++count;
-            }
+    for (const Interval& interval : activity->intervals)
+    {
+        if (interval.isInTimePeriod(m_startTime, m_endTime)) {
+            ActivityListItem obj;
+            obj.interval = &interval;
+            obj.activity = activity;
+            m_items.append(obj);
+            ++count;
         }
     }
     return count;
@@ -139,7 +131,6 @@ void ActivityListModel::sortListItems()
 void ActivityListModel::addActivityInterval(Activity *activity, const Interval *interval, bool forceSort) {
     Q_ASSERT(activity);
     Q_ASSERT(interval);
-
 
 #ifdef QT_DEBUG
     Q_ASSERT(m_activities.contains(activity));

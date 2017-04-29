@@ -27,9 +27,7 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-    void setViewTimePeriod(qint64 startTime, qint64 endTime);
-    void setViewDay(qint64 day);
-
+    const QVector<Activity*>& currentActivities() const;
 private slots:
     void on_addActivityAction_triggered();
     void addActivityDialogFinished(int result);
@@ -43,9 +41,15 @@ private slots:
 
     void activityRecorderRecordEvent(ActivityRecorderEvent event);
 
+    void startQuickActivityButtonClicked();
     void deleteSelectedActivityIntervalTriggered(bool checked);
 private:
+    void setViewTimePeriod(qint64 startTime, qint64 endTime);
+    void setViewDay(qint64 day);
     void showAddActivityDialog();
+
+    void addQuickActivityButtons();
+    void startQuickActivity(ActivityInfo* info);
 
     Activity* selectedActivity() const;
     ActivityListItem* selectedActivityListItem() const;

@@ -7,6 +7,7 @@
 #include <QCoreApplication>
 #include "common.h"
 #include "date_time.h"
+#include "mainwindow.h"
 
 ApplicationState::ApplicationState(QObject *parent)
     : QObject(parent)
@@ -42,6 +43,14 @@ bool ApplicationState::openDatabase()
 DatabaseManager* ApplicationState::database()
 {
     return &m_databaseManager;
+}
+
+MainWindow* ApplicationState::mainWindow() {
+    return m_mainWindow;
+}
+
+void ApplicationState::setMainWindow(MainWindow* mainWindow) {
+    m_mainWindow = mainWindow;
 }
 
 void ApplicationState::appAboutToQuit()

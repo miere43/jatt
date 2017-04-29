@@ -17,12 +17,14 @@ MainWindow::MainWindow(QWidget *parent)
     , m_activityVisualizer(new ActivityVisualizer)
     , m_activityItemDelegate(new ActivityItemDelegate)
 {
+    g_app.setMainWindow(this);
+
     ui->setupUi(this);
     ui->activitiesListView->setModel(m_activityListModel);
     ui->activitiesListView->setItemDelegate(m_activityItemDelegate);
     ui->activitiesListView->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    setViewDay(g_app.m_currentDaySinceEpochUtc - g_app.m_properties.firstActivityDayUtc);
+    setViewDay(g_app.m_currentDaySinceEpochUtc);
 
     ui->verticalLayout_4->addWidget(m_activityVisualizer);
 
@@ -42,6 +44,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->deleteActivityIntervalAction, &QAction::triggered,
             this, &MainWindow::deleteSelectedActivityIntervalTriggered);
+
+    g_app.m_pluginManager.initialize();
+
+    addQuickActivityButtons();
 }
 
 MainWindow::~MainWindow()
@@ -132,7 +138,7 @@ void MainWindow::setViewDay(qint64 day)
 {
     if (day < 0) day = 0;
 
-    qint64 startTime = (day + g_app.m_properties.firstActivityDayUtc) * 86400000LL - g_app.m_properties.localTimeZoneOffsetFromUtc;
+    qint64 startTime = (day * 86400000LL) + g_app.m_properties.localTimeZoneOffsetFromUtc;
     qint64 endTime = startTime + 86400000LL;
     setViewTimePeriod(startTime, endTime);
 
@@ -315,4 +321,65 @@ void MainWindow::deleteSelectedActivityIntervalTriggered(bool checked)
             return;
         }
     }
+}
+
+const QVector<Activity*>& MainWindow::currentActivities() const {
+    return m_currentViewTimePeriodActivities;
+}
+
+void MainWindow::startQuickActivityButtonClicked()
+{
+    QObject* sender = QObject::sender();
+    QPushButton* button = qobject_cast<QPushButton*>(sender);
+    Q_ASSERT(button);
+
+    ActivityInfo* info = (ActivityInfo*)button->property("activityInfo").value<void*>();
+    Q_ASSERT(info);
+
+    startQuickActivity(info);
+}
+
+void MainWindow::addQuickActivityButtons()
+{/*
+    g_app.database()->loadActivityInfos();*/
+    QList<ActivityInfo*> infos = g_app.database()->activityInfos();
+    for (ActivityInfo* info : infos) {
+        QPushButton* button = new QPushButton(this);
+        button->setText(info->name);
+        connect(button, &QPushButton::clicked,
+                this, &MainWindow::startQuickActivityButtonClicked);
+        button->setProperty("activityInfo", QVariant::fromValue<void*>(info));
+        ui->quickActivityLayout->addWidget(button);
+    }
+}
+
+void MainWindow::startQuickActivity(ActivityInfo* info) {
+    Q_ASSERT(info);
+    if (m_activityRecorder.isRecording()) {
+        QMessageBox::critical(this, "Error", "Unable to create quick activity because already recording.");
+        return;
+    }
+
+    Activity* activity = g_app.m_activityAllocator.allocate();
+    activity->id = -1;
+    activity->info = info;
+
+    if (info->fieldNames.count() > 0) {
+        activity->fieldValues.reserve(info->fieldNames.count());
+        for (int i = 0; i < info->fieldNames.count(); ++i) {
+            if (i == 0) {
+                activity->fieldValues.append(info->name);
+            } else {
+                activity->fieldValues.append(QStringLiteral(""));
+            }
+        }
+    }
+
+    activity->startTime = getCurrentDateTimeUtc();
+    activity->endTime = activity->startTime;
+
+    Q_ASSERT(g_app.database()->saveActivity(activity));
+    m_activityListModel->addActivity(activity);
+
+    m_activityRecorder.record(activity);
 }

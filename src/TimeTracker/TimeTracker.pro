@@ -38,7 +38,9 @@ SOURCES += main.cpp\
     activity_recorder.cpp \
     activity_visualizer.cpp \
     add_activity_info_dialog.cpp \
-    activity_item_delegate.cpp
+    activity_item_delegate.cpp \
+    plugin_manager.cpp \
+    duk/duktape.c \
 
 HEADERS  += mainwindow.h \
     application_state.h \
@@ -55,9 +57,15 @@ HEADERS  += mainwindow.h \
     activity_recorder.h \
     activity_visualizer.h \
     add_activity_info_dialog.h \
-    activity_item_delegate.h
+    activity_item_delegate.h \
+    plugin_manager.h \
+    duk/duk_config.h \
+    duk/duktape.h
 
 FORMS    += mainwindow.ui \
     add_activity_dialog.ui \
     add_field_dialog.ui \
     add_activity_info_dialog.ui
+
+DISTFILES += \
+    js_app_module.inc

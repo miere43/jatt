@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>490</width>
-    <height>382</height>
+    <width>513</width>
+    <height>419</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -50,6 +50,20 @@
         </property>
        </widget>
       </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>Quick Add Activity</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="quickActivityLayout">
+      <property name="sizeConstraint">
+       <enum>QLayout::SetFixedSize</enum>
+      </property>
      </layout>
     </item>
     <item>

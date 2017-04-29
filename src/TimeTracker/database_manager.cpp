@@ -8,9 +8,6 @@
 #include "common.h"
 #include "application_state.h"
 
-#define APP_STRINGIFY(x) #x
-#define APP_LOAD_FROM_QUERY(query, instance, name, type) instance->name = query.value(STRINGIFY(name)).value<type>();
-
 DatabaseManager::DatabaseManager(QObject *parent)
     : QObject(parent)
 {
@@ -26,8 +23,13 @@ bool DatabaseManager::establishDatabaseConnection()
         return false;
     }
 
-    m_database.setDatabaseName("D:/test.s3db"); // @TODO temporary
-    if (!m_database.open())
+    const char* databaseName =
+            "D:/test_debug.s3db";
+            //"D:/test.s3db";
+    qDebug() << databaseName;
+    m_database.setConnectOptions(QString("QSQLITE_OPEN_URI=") + databaseName);
+    m_database.setDatabaseName(databaseName); // @TODO temporary
+    if (!m_database.open()) // @TODO: this is always true because it will create database if one doesn't exist.
     {
         qCritical() << "Unable to open SQLite database: " << m_database.lastError().text();
         // QSqlDatabase::removeDatabase @TODO is this required?

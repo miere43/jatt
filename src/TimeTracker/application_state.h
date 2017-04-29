@@ -10,6 +10,9 @@
 #include "core_types.h"
 #include "block_allocator.h"
 #include "database_manager.h"
+#include "plugin_manager.h"
+
+class MainWindow;
 
 class ApplicationState : public QObject
 {
@@ -17,8 +20,11 @@ class ApplicationState : public QObject
 
 private:
     DatabaseManager m_databaseManager;
+    MainWindow* m_mainWindow = nullptr;
 public:
     UserProperties m_properties; // @TODO shouldn't be public.
+    PluginManager m_pluginManager;
+
     int m_currentDaySinceEpochUtc;
 
     explicit ApplicationState(QObject *parent = 0);
@@ -30,6 +36,9 @@ public:
     void initialize();
 
     DatabaseManager* database();
+    MainWindow* mainWindow();
+
+    void setMainWindow(MainWindow* mainWindow);
 
     BlockAllocator<ActivityInfo> m_activityInfoAllocator;
     BlockAllocator<Activity> m_activityAllocator;
