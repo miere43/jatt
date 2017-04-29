@@ -23,8 +23,15 @@ QVariant EditActivityFieldDialog::newValue() const {
     return ui->propertyLineEdit->text();
 }
 
-void EditActivityFieldDialog::setupUi() {
-    ui->fieldNameLabel->setText(QStringLiteral("Edit <b>") + m_fieldName + QStringLiteral("</b>"));
+void EditActivityFieldDialog::setupUi()
+{
+    ui->fieldNameLabel->setText(QStringLiteral("Edit <b>") + m_fieldName +
+                                QStringLiteral("</b> field of \"") + m_activity->displayString() + QStringLiteral("\"."));
+    int i = m_activity->info->fieldNames.indexOf(m_fieldName);
+    Q_ASSERT(i != -1);
+    Q_ASSERT(m_activity->info->fieldNames.count() == m_activity->fieldValues.count());
+
+    ui->propertyLineEdit->setText(m_activity->fieldValues[i]);
 }
 
 EditActivityFieldDialog::~EditActivityFieldDialog()
