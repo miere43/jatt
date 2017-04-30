@@ -228,6 +228,7 @@ bool DatabaseManager::saveActivity(Activity* activity)
     {
         activity->id = query.lastInsertId().value<qint64>();
         Q_ASSERT(activity->id > 0);
+        m_activities.insert(activity->id, activity);
     }
 
     return true;
@@ -285,6 +286,7 @@ bool DatabaseManager::saveActivityInfo(ActivityInfo* info)
     {
         info->id = query.lastInsertId().value<qint64>();
         Q_ASSERT(info->id > 0);
+        m_activityInfos.insert(info->id, info);
     }
 
     return true;
@@ -335,6 +337,7 @@ bool DatabaseManager::loadActivitiesBetweenStartAndEndTime(QVector<Activity*>* a
             }
             activity->info = info;
             copyActivityValuesFromQuery(activity, &query);
+            m_activities.insert(activityId, activity);
         }
 
         // qDebug() << "-" << activity->id << activity->displayString() << "|" << activity->startTime / (double)86400000 << activity->endTime / (double)86400000;

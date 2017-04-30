@@ -288,6 +288,13 @@ void MainWindow::activityRecorderRecordEvent(ActivityRecorderEvent event)
     if (event == ActivityRecorderEvent::RecordingStarted)
     {
         ui->startActivityButton->setText("Stop Activity");
+        // @TODO: now we assume that setViewTimePeriod was called already, that may change in the future.
+        if (currentActivity->hasIntervalsBetweenTime(m_currentViewTimePeriodStartTime, m_currentViewTimePeriodEndTime))
+        {
+            m_currentViewTimePeriodActivities.append(currentActivity);
+            m_activityVisualizer->selectActivity(currentActivity);
+        }
+        // m_currentViewTimePeriodActivities.append(currentActivity);
         // m_activityListModel->addActivityInterval(currentActivity, m_activityRecorder.interval());
     }
     else if (event == ActivityRecorderEvent::RecordingStopped)
@@ -334,7 +341,6 @@ void MainWindow::selectedActivityChanged(const QItemSelection &selected, const Q
         ui->activityDurationLabel->setText(createDurationStringFromMsecs(activity->duration()));
         m_activityVisualizer->selectActivity(activity);
     }
-
 }
 
 void MainWindow::deleteSelectedActivityIntervalTriggered(bool checked)
