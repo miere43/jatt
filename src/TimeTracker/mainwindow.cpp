@@ -19,8 +19,12 @@ MainWindow::MainWindow(QWidget *parent)
     , m_activityItemDelegate(new ActivityItemDelegate)
 {
     g_app.setMainWindow(this);
-
     ui->setupUi(this);
+
+#ifndef APP_DEBUG_DB
+    this->setWindowTitle(QStringLiteral("(Debug) ") + this->windowTitle());
+#endif
+
     ui->activitiesListView->setModel(m_activityListModel);
     ui->activitiesListView->setItemDelegate(m_activityItemDelegate);
     ui->activitiesListView->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -45,6 +49,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     g_app.m_pluginManager.initialize();
 
+    g_app.database()->loadActivityInfos();
     QList<ActivityInfo*> list = g_app.database()->activityInfos();
     for (ActivityInfo* info : list) {
         m_listMenus.insert(info, createActivityInfoMenu(info));
@@ -360,6 +365,20 @@ void MainWindow::addQuickActivityButtons()
     QList<ActivityInfo*> infos = g_app.database()->activityInfos();
     for (ActivityInfo* info : infos) {
         QPushButton* button = new QPushButton(this);
+        button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+        button->setCursor(QCursor(Qt::PointingHandCursor));
+        button->setStyleSheet(
+                    QStringLiteral(
+                    "QPushButton {"
+                    "    border: none;"
+                    "    background: transparent;"
+                    "}"
+                    ":hover {"
+                    "    color: #2800FF;"
+                    "    text-decoration: underline;"
+                    "}"
+                    )
+                    );
         button->setText(info->name);
         connect(button, &QPushButton::clicked,
                 this, &MainWindow::startQuickActivityButtonClicked);

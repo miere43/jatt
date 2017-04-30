@@ -24,8 +24,11 @@ bool DatabaseManager::establishDatabaseConnection()
     }
 
     const char* databaseName =
+#ifdef APP_DEBUG_DB
+            "D:/test.s3db"; // that's misleading name for a macro :/
+#else
             "D:/test_debug.s3db";
-            //"D:/test.s3db";
+#endif
     qDebug() << databaseName;
     m_database.setConnectOptions(QString("QSQLITE_OPEN_URI=") + databaseName);
     m_database.setDatabaseName(databaseName); // @TODO temporary
