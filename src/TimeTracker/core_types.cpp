@@ -3,6 +3,10 @@
 #include <QVariant>
 #include <QDebug>
 
+Activity::Activity() {
+    int a = 10;
+}
+
 //bool IntervalTag::createFromDatabaseQuery(IntervalTag* target, QSqlQuery* query)
 //{
 //    Q_ASSERT(target);

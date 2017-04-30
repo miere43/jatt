@@ -2,6 +2,7 @@
 #define BLOCK_ALLOCATOR_H
 
 #include <QtGlobal>
+#include <stdlib.h>
 
 /**
  * Represents crappy block allocator.
@@ -13,10 +14,11 @@ public:
     // set this const to amount of bits of 'usedSlots' type.
     static const int BLOCK_MAX_ITEMS = 32; // 32 = sizeof(qint32) * 8 bits
 
+    // allocated using malloc, fields are uninitialized.
     struct Block {
         quint32 usedSlots; // if you change type, make sure everything works
-        T      items[BLOCK_MAX_ITEMS];
-        Block* next;
+        T       items[BLOCK_MAX_ITEMS];
+        Block*  next;
 
         T* set(int slot)
         {
@@ -35,6 +37,17 @@ public:
 #ifdef QT_DEBUG
             memset(value, 0xCD, sizeof(T));
 #endif
+        }
+
+        void freeAll() {
+            if (usedSlots == 0) return;
+            for (int i = 0; i < BLOCK_MAX_ITEMS; ++i) {
+                int bitValue = usedSlots & (1 << i);
+                if (bitValue) {
+                    usedSlots = usedSlots & (~(1 << i));
+                    items[i].~T();
+                }
+            }
         }
 
         int getFreeSlotIndex()
@@ -64,7 +77,7 @@ public:
     Block* last = nullptr;
 
     Block* pushNewBlock() {
-        Block* block = new Block();
+        Block* block = (Block*)malloc(sizeof(Block));
         // @TODO: Handle out of memory condition.
         if (block == nullptr)
         {
@@ -123,7 +136,7 @@ public:
             if ((void*)value >= (void*)block && (void*)value <= (void*)((char*)block + sizeof(Block)))
             {
                 value->~T();
-                block->unset(value);
+                block->unset(value); // unset in debug releases clears up memory with 0xCD bytes, it call after destructor.
                 return;
             }
         } while (block = block->next);
@@ -144,7 +157,7 @@ public:
         Block* block = first;
         while (block) {
             Block* next = block->next;
-            delete block;
+            block->freeAll();
             block = next;
         }
     }

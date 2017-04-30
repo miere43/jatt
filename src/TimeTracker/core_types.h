@@ -50,6 +50,8 @@ struct Activity
     qint64 endTime;
     QVector<Interval> intervals;
 
+    Activity();
+
     bool hasIntervalsBetweenTime(qint64 startTime, qint64 endTime);
     void updateStartAndEndTime();
     QString displayString();
