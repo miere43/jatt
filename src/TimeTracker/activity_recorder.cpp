@@ -48,6 +48,12 @@ void ActivityRecorder::record(Activity *activity)
         activity->endTime = m_startTime;
     }
 
+    // @TODO @FIXME @CRITICAL:
+    // very dangerous stuff going on here, this memory can be
+    // relocated to another location when new item is added to
+    // activity->intervals
+    // when this will happen, pointer to m_activityInterval will become invalid.
+    // I guess storing an index will be more safe?
     activity->intervals.append(Interval { m_startTime, m_startTime });
     m_activityInterval = &activity->intervals.last();
 

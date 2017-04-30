@@ -27,6 +27,7 @@ public:
     void paintEvent(QPaintEvent *event) override;
     QSize sizeHint() const;
 private slots:
+    void switchRenderModeTriggered(bool checked);
     void contextMenuRequested(const QPoint& pos);
 private:
     qint64 m_startTime;
@@ -35,8 +36,8 @@ private:
     const Activity* m_selectedActivity = nullptr;
     QVector<Activity*>* m_activities;
 
+    QAction* m_mode;
     QMenu* m_menu;
-    QAction* m_test;
 };
 
 #endif // SESSION_VISUALIZER_H

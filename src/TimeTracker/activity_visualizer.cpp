@@ -8,10 +8,19 @@ ActivityVisualizer::ActivityVisualizer(QWidget *parent) : QWidget(parent)
     connect(this, &ActivityVisualizer::customContextMenuRequested,
             this, &ActivityVisualizer::contextMenuRequested);
     this->setContextMenuPolicy(Qt::CustomContextMenu);
-    m_test = new QAction(this);
-    m_test->setText("test");
+
     m_menu = new QMenu(this);
-    m_menu->addAction(m_test);
+    m_mode = m_menu->addAction("Switch render mode");
+    connect(m_mode, &QAction::triggered,
+            this, &ActivityVisualizer::switchRenderModeTriggered);
+}
+
+void ActivityVisualizer::switchRenderModeTriggered(bool checked)
+{
+    Q_UNUSED(checked);
+    TimelineRenderMode m = m_timelineRenderMode == TimelineRenderMode::Effective ?
+                           TimelineRenderMode::Full : TimelineRenderMode::Effective;
+    setTimelineRenderMode(m);
 }
 
 void ActivityVisualizer::contextMenuRequested(const QPoint &pos)
@@ -119,19 +128,6 @@ QSize ActivityVisualizer::sizeHint() const
 {
     return QSize(100, 100);
 }
-
-//void ActivityVisualizer::selectInterval(const Interval *interval)
-//{
-//    if (interval == nullptr) {
-//        m_selectedInterval = nullptr;
-//        this->update();
-//        return;
-//    }
-
-//    Q_ASSERT(m_activities->count() > 0);
-//    m_selectedInterval = interval;
-//    this->update();
-//}
 
 void ActivityVisualizer::selectActivity(const Activity *activity)
 {

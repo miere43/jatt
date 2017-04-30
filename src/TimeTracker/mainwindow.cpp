@@ -464,6 +464,11 @@ void MainWindow::on_joinNextActivityAction_triggered()
         return;
     }
 
+    if (!canModifyActivityIntervals(next) || !canModifyActivityIntervals(sel)) {
+        QMessageBox::critical(this, "Error", "Cannot modify intervals right now.");
+        return;
+    }
+
     for (const Interval& interval : next->intervals) {
         sel->intervals.append(interval);
     }
@@ -478,4 +483,14 @@ void MainWindow::on_joinNextActivityAction_triggered()
     g_app.database()->saveActivity(sel);
     g_app.database()->deleteActivity(next->id);
     g_app.m_activityAllocator.deallocate(next);
+}
+
+bool MainWindow::canModifyActivityIntervals(Activity *activity) const
+{
+    Q_ASSERT(activity);
+    if (!m_activityRecorder.isRecording()) return true;
+    // m_activityRecorder stores a pointer to currently recording
+    // interval, if activity->intervals.append is called, memory
+    // may be moved to another location.
+    return activity != m_activityRecorder.activity();
 }

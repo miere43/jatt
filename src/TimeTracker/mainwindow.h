@@ -34,6 +34,7 @@ public:
     ~MainWindow();
 
     const QVector<Activity*>& currentActivities() const;
+    bool canModifyActivityIntervals(Activity* activity) const;
     void onAppAboutToQuit();
 private slots:
     void on_addActivityAction_triggered();
@@ -61,6 +62,7 @@ private:
 
     void addQuickActivityButtons();
     void startQuickActivity(ActivityInfo* info);
+
 
     Activity* selectedActivity() const;
     // ActivityListItem* selectedActivityListItem() const;
