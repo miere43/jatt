@@ -109,8 +109,7 @@ public:
         }
 
         T* value = block->set(freeSlot);
-        // @TODO call constructor.
-        // new(value) T();
+        new(value) T();
         ++totalSlotsUsed;
         return value;
     }
@@ -123,8 +122,7 @@ public:
         {
             if ((void*)value >= (void*)block && (void*)value <= (void*)((char*)block + sizeof(Block)))
             {
-                // @TODO call destructor.
-                //value->~T();
+                value->~T();
                 block->unset(value);
                 return;
             }

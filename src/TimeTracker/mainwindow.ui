@@ -25,9 +25,6 @@
        </widget>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_3"/>
-      </item>
-      <item>
        <widget class="QLabel" name="dayLabel">
         <property name="layoutDirection">
          <enum>Qt::LeftToRight</enum>
@@ -159,9 +156,9 @@
     <string>Edit Activity</string>
    </property>
   </action>
-  <action name="deleteActivityIntervalAction">
+  <action name="deleteActivityAction">
    <property name="text">
-    <string>Delete Interval</string>
+    <string>Delete</string>
    </property>
   </action>
   <action name="joinNextActivityAction">

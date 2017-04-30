@@ -50,7 +50,7 @@ private slots:
     void activityRecorderRecordEvent(ActivityRecorderEvent event);
 
     void startQuickActivityButtonClicked();
-    void deleteSelectedActivityIntervalTriggered(bool checked);
+    void deleteSelectedActivityTriggered(bool checked);
     void on_joinNextActivityAction_triggered();
 
     void editActivityFieldDialogFinished(int result);

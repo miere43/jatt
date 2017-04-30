@@ -48,7 +48,6 @@ void ActivityVisualizer::setTimePeriod(qint64 startTime, qint64 endTime, QVector
 void ActivityVisualizer::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
-    // static QColor colors[] = { QColor(255, 0, 0, 255), QColor(0, 255, 0, 255), QColor(0, 0, 255, 255) };
 
     QPainter painter(this);
     painter.setPen(Qt::NoPen);
@@ -67,6 +66,7 @@ void ActivityVisualizer::paintEvent(QPaintEvent *event)
     if (m_timelineRenderMode == Full)
     {
         width = m_endTime - m_startTime;
+        if (width == 0) return;
         unit  = (double)this->width() / width;
         startTime = m_startTime;
     }
@@ -91,8 +91,7 @@ void ActivityVisualizer::paintEvent(QPaintEvent *event)
             return; // Nothing to render.
         Q_ASSERT(minTime <= maxTime);
         width = maxTime - minTime;
-        if (width == 0)
-            return; // Avoid division by zero.
+        if (width == 0) return; // Avoid division by zero.
         unit = (double)this->width() / width;
         startTime = minTime;
     }

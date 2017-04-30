@@ -44,8 +44,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_activityMenu.addAction(ui->addActivityAction);
 
-    connect(ui->deleteActivityIntervalAction, &QAction::triggered,
-            this, &MainWindow::deleteSelectedActivityIntervalTriggered);
+    connect(ui->deleteActivityAction, &QAction::triggered,
+            this, &MainWindow::deleteSelectedActivityTriggered);
 
     g_app.m_pluginManager.initialize();
 
@@ -61,7 +61,7 @@ MainWindow::MainWindow(QWidget *parent)
 QMenu* MainWindow::createActivityInfoMenu(ActivityInfo *info) {
     QMenu* m = new QMenu(this);
     m->addAction(ui->editActivityAction);
-    m->addAction(ui->deleteActivityIntervalAction);
+    m->addAction(ui->deleteActivityAction);
     m->addSeparator();
     m->addAction(ui->joinNextActivityAction);
     m->addSeparator();
@@ -328,6 +328,8 @@ void MainWindow::selectedActivityChanged(const QItemSelection &selected, const Q
             activity = static_cast<Activity*>(index.data(Qt::UserRole).value<void*>());
     }
 
+    // ui->deleteActivityAction->setEnabled(activity != nullptr);
+
     if (m_activityRecorder.isRecording()) return;
 
     if (activity == nullptr)
@@ -343,10 +345,36 @@ void MainWindow::selectedActivityChanged(const QItemSelection &selected, const Q
     }
 }
 
-void MainWindow::deleteSelectedActivityIntervalTriggered(bool checked)
+void MainWindow::deleteSelectedActivityTriggered(bool checked)
 {
     Q_UNUSED(checked);
 
+    QModelIndexList selection = ui->activitiesListView->selectionModel()->selection().indexes();
+    if (selection.count() == 0) {
+        QMessageBox::critical(this, "Error", "Activity is not selected.");
+        return;
+    }
+
+    Activity* activity = ((Activity*)selection.at(0).data(Qt::UserRole).value<void*>());
+    Q_ASSERT(activity);
+
+    if (m_activityRecorder.isRecording() && m_activityRecorder.activity() == activity) {
+        QMessageBox::critical(this, "Error", "Cannot delete currently recording activity");
+        return;
+    }
+
+    int index = m_currentViewTimePeriodActivities.indexOf(activity);
+    if (index != -1) {
+        m_currentViewTimePeriodActivities.remove(index);
+        m_activityListModel->removeActivity(activity);
+        m_activityVisualizer->update();
+    }
+
+    if (activity->id >= 0) {
+        g_app.database()->deleteActivity(activity->id);
+    }
+
+    g_app.m_activityAllocator.deallocate(activity);
 }
 
 const QVector<Activity*>& MainWindow::currentActivities() const {
