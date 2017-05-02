@@ -3,10 +3,6 @@
 #include <QVariant>
 #include <QDebug>
 
-Activity::Activity() {
-    int a = 10;
-}
-
 //bool IntervalTag::createFromDatabaseQuery(IntervalTag* target, QSqlQuery* query)
 //{
 //    Q_ASSERT(target);
@@ -102,7 +98,7 @@ void Activity::updateStartAndEndTime()
     endTime = max;
 }
 
-bool Activity::hasIntervalsBetweenTime(qint64 startTime, qint64 endTime)
+bool Activity::belongsToTimePeriod(qint64 startTime, qint64 endTime)
 {
     if (intervals.count() == 0) {
         return (startTime >= this->startTime && endTime <= this->endTime) ||
@@ -125,6 +121,13 @@ bool Activity::hasIntervalsBetweenTime(qint64 startTime, qint64 endTime)
     }
 
     return false;
+}
+
+QString Activity::field(int index) const {
+    if (index < 0 || index >= fieldValues.count()) {
+        return QString::null;
+    }
+    return fieldValues[index];
 }
 
 qint64 Activity::duration() const

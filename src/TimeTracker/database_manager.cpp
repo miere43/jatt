@@ -342,7 +342,7 @@ bool DatabaseManager::loadActivitiesBetweenStartAndEndTime(QVector<Activity*>* a
 
         // qDebug() << "-" << activity->id << activity->displayString() << "|" << activity->startTime / (double)86400000 << activity->endTime / (double)86400000;
 
-        if (!checkIntervals || (checkIntervals && activity->hasIntervalsBetweenTime(startTime, endTime))) {
+        if (!checkIntervals || (checkIntervals && activity->belongsToTimePeriod(startTime, endTime))) {
            activities->append(activity);
         }
     }

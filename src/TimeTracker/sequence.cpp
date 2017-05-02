@@ -1,6 +1,6 @@
-#include "sequence.h"
+//#include "sequence.h"
 
-Sequence::Sequence()
-{
+//Sequence::Sequence()
+//{
 
-}
+//}
