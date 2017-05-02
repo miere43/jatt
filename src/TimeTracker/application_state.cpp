@@ -12,7 +12,11 @@
 ApplicationState::ApplicationState(QObject *parent)
     : QObject(parent)
 {
-
+#if APP_RELEASE_DB
+    appTitle = QStringLiteral("Qt Time Tracker");
+#else
+    appTitle = QStringLiteral("(Debug) Qt Time Tracker");
+#endif
 }
 
 void ApplicationState::initialize()

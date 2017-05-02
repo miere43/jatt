@@ -5,7 +5,7 @@
 ActivityRecorder::ActivityRecorder(QObject* parent)
     : QObject(parent)
 {
-    m_timer.setInterval(200);
+    m_timer.setInterval(500);
     m_timer.setSingleShot(false);
     m_timer.setTimerType(Qt::PreciseTimer);
 
@@ -18,7 +18,7 @@ void ActivityRecorder::timerTimeout()
     Q_ASSERT(isRecording());
 
     syncActivityState();
-    emit recordEvent(ActivityRecorderEvent::SyncTimer);
+    emit recordEvent(ActivityRecorderEvent::UpdateUITimer);
 }
 
 void ActivityRecorder::setTimerType(Qt::TimerType type)

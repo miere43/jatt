@@ -66,6 +66,8 @@ private:
     void addQuickActivityButtons();
     void startQuickActivity(ActivityInfo* info);
 
+    // void dumpCurrent();
+
     qint64 getCurrentDayIndex() const;
 
 

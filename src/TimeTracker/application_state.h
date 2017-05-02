@@ -24,6 +24,7 @@ private:
 public:
     UserProperties m_properties; // @TODO shouldn't be public.
     PluginManager m_pluginManager;
+    QString appTitle;
 
     int m_currentDaySinceEpochUtc;
 

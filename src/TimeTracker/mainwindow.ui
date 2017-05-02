@@ -59,16 +59,6 @@
      </layout>
     </item>
     <item>
-     <widget class="QLabel" name="label">
-      <property name="styleSheet">
-       <string>#timePeriodTotalTimeLabel { font-size: 18pt; }</string>
-      </property>
-      <property name="text">
-       <string>Quick Add Activity</string>
-      </property>
-     </widget>
-    </item>
-    <item>
      <layout class="QHBoxLayout" name="quickActivityLayout">
       <property name="sizeConstraint">
        <enum>QLayout::SetFixedSize</enum>
@@ -79,6 +69,19 @@
      <widget class="QLabel" name="timePeriodTotalTimeLabel">
       <property name="styleSheet">
        <string notr="true">#timePeriodTotalTimeLabel { font-size: 18pt; }</string>
+      </property>
+      <property name="text">
+       <string>00:00:00</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="activityDurationLabel">
+      <property name="styleSheet">
+       <string>#timePeriodTotalTimeLabel { font-size: 18pt; }</string>
       </property>
       <property name="text">
        <string>00:00:00</string>
@@ -107,19 +110,6 @@
     </item>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
-      <item>
-       <widget class="QLabel" name="activityDurationLabel">
-        <property name="styleSheet">
-         <string>#timePeriodTotalTimeLabel { font-size: 18pt; }</string>
-        </property>
-        <property name="text">
-         <string>00:00:00</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
       <item>
        <widget class="QPushButton" name="startActivityButton">
         <property name="styleSheet">

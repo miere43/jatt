@@ -137,6 +137,7 @@ qint64 Activity::duration() const
     for (int i = 0; i < length; ++i) {
         duration += intervals[i].duration();
     }
+    // qDebug() << field(0) << duration / (1000.0 * 60.0);
     return duration;
 }
 

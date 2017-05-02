@@ -60,7 +60,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 inline qint64 activitiesDuration(const QVector<Activity*>& activities) {
     qint64 sum = 0;
-    for (const Activity* a : activities) sum += a->duration();
+    for (const Activity* a : activities) { sum += a->duration(); }
     return sum;
 }
 
@@ -211,8 +211,8 @@ void MainWindow::setViewTimePeriod(qint64 startTime, qint64 endTime)
     m_activityListModel->addActivities(&m_currentViewTimePeriodActivities);
 
     m_activityVisualizer->setTimePeriod(startTime, endTime, &m_currentViewTimePeriodActivities);
-
     ui->timePeriodTotalTimeLabel->setText(createDurationStringFromMsecs(activitiesDuration(m_currentViewTimePeriodActivities)));
+
 }
 
 void MainWindow::setViewDay(qint64 day)
@@ -299,29 +299,30 @@ void MainWindow::activityRecorderRecordEvent(ActivityRecorderEvent event)
         // @TODO: now we assume that setViewTimePeriod was called already, that may change in the future.
         if (currentActivity->belongsToTimePeriod(m_currentViewTimePeriodStartTime, m_currentViewTimePeriodEndTime))
         {
-            m_currentViewTimePeriodActivities.append(currentActivity);
+            if (!m_currentViewTimePeriodActivities.contains(currentActivity)) {
+                m_currentViewTimePeriodActivities.append(currentActivity);
+            }
             m_activityVisualizer->selectActivity(currentActivity);
         }
-        // m_currentViewTimePeriodActivities.append(currentActivity);
-        // m_activityListModel->addActivityInterval(currentActivity, m_activityRecorder.interval());
+
+        this->setWindowTitle("(" + currentActivity->info->name + ") " + g_app.appTitle);
     }
     else if (event == ActivityRecorderEvent::RecordingStopped)
     {
         g_app.database()->saveActivity(currentActivity);
 
-        ui->startActivityButton->setText("Continue");
-        // ui->activityDurationLabel->setText(QStringLiteral("00:00:00"));
+        ui->startActivityButton->setText("Continue"); // @HARDCODE
+        this->setWindowTitle(g_app.appTitle);
     }
 
-    if (event == ActivityRecorderEvent::RecordingStarted
-        || event == ActivityRecorderEvent::SyncTimer)
+    if (event == ActivityRecorderEvent::RecordingStarted || event == ActivityRecorderEvent::UpdateUITimer)
     {
         Q_ASSERT(currentActivity);
         ui->activityDurationLabel->setText(createDurationStringFromMsecs(currentActivity->duration()));
+    }
 
-        if (m_activityRecorder.isRecording() && currentActivity->belongsToTimePeriod(m_currentViewTimePeriodStartTime, m_currentViewTimePeriodEndTime)) {
-            ui->timePeriodTotalTimeLabel->setText(createDurationStringFromMsecs(activitiesDuration(m_currentViewTimePeriodActivities)));
-        }
+    if (currentActivity->belongsToTimePeriod(m_currentViewTimePeriodStartTime, m_currentViewTimePeriodEndTime)) {
+        ui->timePeriodTotalTimeLabel->setText(createDurationStringFromMsecs(activitiesDuration(m_currentViewTimePeriodActivities)));
     }
 
     m_activityVisualizer->update();
@@ -330,6 +331,7 @@ void MainWindow::activityRecorderRecordEvent(ActivityRecorderEvent event)
 void MainWindow::selectedActivityChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
     Q_UNUSED(deselected);
+
 
     Activity* activity = nullptr;
     QModelIndexList indexes = selected.indexes();
@@ -543,3 +545,11 @@ qint64 MainWindow::getCurrentDayIndex() const {
     // @TODO: doesn't work if program was launched at 23:59, but now is 00:00, will still return previous day.
     return g_app.m_currentDaySinceEpochUtc;
 }
+
+//void MainWindow::dumpCurrent() {
+//    qDebug().nospace() << '[';
+//    for (const Activity* a : m_currentViewTimePeriodActivities) {
+//        qDebug() << a->id;
+//    }
+//    qDebug().nospace() << ']';
+//}

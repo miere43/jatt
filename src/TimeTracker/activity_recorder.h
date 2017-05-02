@@ -7,7 +7,7 @@
 enum class ActivityRecorderEvent
 {
     RecordingStarted,
-    SyncTimer,
+    UpdateUITimer,
     RecordingStopped,
 };
 
