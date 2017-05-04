@@ -22,7 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
 #ifndef APP_DEBUG_DB
-    this->setWindowTitle(QStringLiteral("(Debug) ") + this->windowTitle());
+    this->setWindowTitle(g_app.appTitle);
 #endif
 
     ui->activitiesListView->setModel(m_activityListModel);
