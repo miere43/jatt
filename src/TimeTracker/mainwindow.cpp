@@ -279,12 +279,18 @@ void MainWindow::on_startActivityButton_clicked()
 
 Activity* MainWindow::selectedActivity() const
 {
+    QModelIndex index = selectedActivityIndex();
+    return index.isValid() ? (Activity*)index.data(Qt::UserRole).value<void*>() : nullptr;
+}
+
+QModelIndex MainWindow::selectedActivityIndex() const
+{
     QModelIndexList selection = ui->activitiesListView->selectionModel()->selection().indexes();
     if (selection.count() == 0)
     {
-        return nullptr;
+        return QModelIndex();
     }
-    return ((Activity*)selection.at(0).data(Qt::UserRole).value<void*>());
+    return selection.at(0);
 }
 
 void MainWindow::activityRecorderRecordEvent(ActivityRecorderEvent event)
@@ -303,6 +309,7 @@ void MainWindow::activityRecorderRecordEvent(ActivityRecorderEvent event)
                 m_currentViewTimePeriodActivities.append(currentActivity);
             }
             m_activityVisualizer->selectActivity(currentActivity);
+            m_activityItemDelegate->setCurrentActivity(currentActivity);
         }
 
         this->setWindowTitle("(" + currentActivity->info->name + ") " + g_app.appTitle);
@@ -312,6 +319,8 @@ void MainWindow::activityRecorderRecordEvent(ActivityRecorderEvent event)
         g_app.database()->saveActivity(currentActivity);
 
         ui->startActivityButton->setText("Continue"); // @HARDCODE
+        m_activityItemDelegate->setCurrentActivity(nullptr);
+
         this->setWindowTitle(g_app.appTitle);
     }
 

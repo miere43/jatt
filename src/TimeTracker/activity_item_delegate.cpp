@@ -8,15 +8,28 @@ ActivityItemDelegate::ActivityItemDelegate()
 
 }
 
+void ActivityItemDelegate::setCurrentActivity(Activity *activity)
+{
+    m_currentActivity = activity;
+}
+
+Activity* ActivityItemDelegate::currentActivity() const
+{
+    return m_currentActivity;
+}
+
 void ActivityItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-    // QSize size = sizeHint(option, index);
-    painter->setBrush(option.backgroundBrush);
-    painter->setPen(Qt::NoPen);
-    painter->drawRect(option.rect);
-
     Activity* activity = (Activity*)index.data(Qt::UserRole).value<void*>();
     Q_ASSERT(activity);
+
+    if (m_currentActivity == activity) {
+        painter->setBrush(m_currentActivityBrush);
+    } else {
+        painter->setBrush(option.backgroundBrush);
+    }
+    painter->setPen(Qt::NoPen);
+    painter->drawRect(option.rect);
 
     QString displayText = index.data(Qt::DisplayRole).value<QString>();
 

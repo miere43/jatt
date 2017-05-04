@@ -72,6 +72,7 @@ private:
 
 
     Activity* selectedActivity() const;
+    QModelIndex selectedActivityIndex() const;
     // ActivityListItem* selectedActivityListItem() const;
 
     Ui::MainWindow *ui = nullptr;
