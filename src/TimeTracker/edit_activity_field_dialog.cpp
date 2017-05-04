@@ -32,6 +32,7 @@ void EditActivityFieldDialog::setupUi()
     Q_ASSERT(m_activity->info->fieldNames.count() == m_activity->fieldValues.count());
 
     ui->propertyLineEdit->setText(m_activity->fieldValues[i]);
+    ui->propertyLineEdit->selectAll();
 }
 
 EditActivityFieldDialog::~EditActivityFieldDialog()
