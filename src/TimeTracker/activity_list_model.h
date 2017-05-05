@@ -12,7 +12,7 @@ class ActivityListModel : public QAbstractListModel
 public:
     explicit ActivityListModel(QObject *parent = 0);
 
-    void addActivity(Activity* activity);
+    QModelIndex addActivity(Activity* activity);
     void addActivities(QVector<Activity*>* activities);
 
     void setTimePeriod(qint64 startTime, qint64 endTime);

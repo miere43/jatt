@@ -7,15 +7,17 @@ ActivityListModel::ActivityListModel(QObject *parent)
 {
 }
 
-void ActivityListModel::addActivity(Activity *activity)
+QModelIndex ActivityListModel::addActivity(Activity *activity)
 {
     Q_ASSERT(activity);
     Q_ASSERT(activity->id != -1);
     Q_ASSERT(activity->info != nullptr);
 
-    beginInsertRows(QModelIndex(), m_activities.count(), m_activities.count() + 4);
+    beginInsertRows(QModelIndex(), m_activities.count(), m_activities.count());
     m_activities.append(activity);
     endInsertRows();
+
+    return this->index(m_activities.count() - 1);
 }
 
 void ActivityListModel::addActivities(QVector<Activity *> *activities)

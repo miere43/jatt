@@ -60,16 +60,18 @@ private:
     void setViewDay(qint64 day);
     void showAddActivityDialog();
 
-
     bool isTimePeriodInView(qint64 startTime, qint64 endTime) const;
 
     void addQuickActivityButtons();
     void startQuickActivity(ActivityInfo* info);
 
+//    void setCurrentActivity(Activity* activity);
+//    Activity* currentActivity();
+//    QModelIndex currentActivityIndex();
+
     // void dumpCurrent();
 
     qint64 getCurrentDayIndex() const;
-
 
     Activity* selectedActivity() const;
     QModelIndex selectedActivityIndex() const;

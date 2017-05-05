@@ -471,7 +471,8 @@ void MainWindow::startQuickActivity(ActivityInfo* info) {
     Q_ASSERT(g_app.database()->saveActivity(activity));
 
     if (activity->belongsToTimePeriod(m_currentViewTimePeriodStartTime, m_currentViewTimePeriodEndTime)) {
-        m_activityListModel->addActivity(activity);
+        QModelIndex index = m_activityListModel->addActivity(activity);
+        ui->activitiesListView->selectionModel()->select(index, QItemSelectionModel::ClearAndSelect);
     } else {
         setViewDay(getCurrentDayIndex());
     }
