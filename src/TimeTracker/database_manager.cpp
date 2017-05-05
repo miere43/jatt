@@ -29,10 +29,10 @@ bool DatabaseManager::establishDatabaseConnection()
 #else
             "D:/test_debug.s3db";
 #endif
-    qDebug() << databaseName;
+    qDebug() << "using database name" << databaseName;
     m_database.setConnectOptions(QString("QSQLITE_OPEN_URI=") + databaseName);
     m_database.setDatabaseName(databaseName); // @TODO temporary
-    if (!m_database.open()) // @TODO: this is always true because it will create database if one doesn't exist.
+    if (!m_database.open() || !m_database.isOpen()) // @TODO: this is always true because it will create database if one doesn't exist.
     {
         qCritical() << "Unable to open SQLite database: " << m_database.lastError().text();
         // QSqlDatabase::removeDatabase @TODO is this required?
@@ -123,6 +123,7 @@ bool DatabaseManager::loadActivityInfos()
         return false;
     }
 
+    qDebug() << "loaded " << query.size() << "act infos";
 
     while (query.next())
     {
@@ -141,8 +142,6 @@ bool DatabaseManager::loadActivityInfos()
 
         m_activityInfos.insert(info->id, info);
     }
-
-    qDebug() << "loaded " << query.size() << "act infos";
 
     m_activityInfosLoaded = true;
     return true;

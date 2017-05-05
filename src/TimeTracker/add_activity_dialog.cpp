@@ -16,7 +16,7 @@ AddActivityDialog::AddActivityDialog(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    Q_ASSERT(g_app.database()->loadActivityInfos());
+    g_app.database()->loadActivityInfos();
     QList<ActivityInfo*> infos = g_app.database()->activityInfos();
 
     if (infos.count() == 0)
@@ -89,6 +89,7 @@ void AddActivityDialog::addFieldDialogFieldAdded()
     QObject* sender = QObject::sender();
     AddFieldDialog* dialog = qobject_cast<AddFieldDialog*>(sender);
     Q_ASSERT(dialog);
+    Q_UNUSED(dialog);
 
     setActivityInfo(m_currentActivityInfo);
 }
@@ -138,7 +139,7 @@ Activity* AddActivityDialog::constructActivity()
         activity->fieldValues.append(lineEdit->text());
     }
 
-    Q_ASSERT(g_app.database()->saveActivity(activity));
+    g_app.database()->saveActivity(activity);
     m_activityWasConstructed = true;
     return activity;
 }

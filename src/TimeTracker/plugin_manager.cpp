@@ -9,6 +9,7 @@
 void PluginManager_fatalHandler(void* userdata, const char* msg) {
     PluginManager* manager = (PluginManager*)userdata;
     Q_ASSERT(manager);
+    Q_UNUSED(manager);
 
     qDebug() << msg;
     QMessageBox::critical(nullptr, "Plugin Error", msg);

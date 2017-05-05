@@ -27,14 +27,14 @@ void ApplicationState::initialize()
     m_properties.firstActivityDayUtc = -1;
     m_properties.localTimeZoneOffsetFromUtc = 0;
 
-    Q_ASSERT(database()->loadProperties(&m_properties));
+    database()->loadProperties(&m_properties);
     qDebug() << "firstActivityDayUtc =" << m_properties.firstActivityDayUtc;
 
     if (m_properties.firstActivityDayUtc == -1)
     {
         m_properties.firstActivityDayUtc = getCompleteDaysSinceEpoch(getCurrentDateTimeUtc());
-        qDebug() << "firstActivityDay property is missing, setting it to " << m_properties.firstActivityDayUtc;
-        Q_ASSERT(database()->saveProperty("firstActivityDayUtc", QString::number(m_properties.firstActivityDayUtc)));
+        qDebug() << "firstActivityDay property is missing, setting it to" << m_properties.firstActivityDayUtc;
+        database()->saveProperty("firstActivityDayUtc", QString::number(m_properties.firstActivityDayUtc));
     }
     m_currentDaySinceEpochUtc = getCompleteDaysSinceEpoch(getCurrentDateTimeUtc());
 }

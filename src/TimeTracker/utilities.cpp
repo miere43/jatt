@@ -21,10 +21,10 @@ void addFieldToActivityInfo(ActivityInfo* info, QString fieldName, ActivityInfoF
     info->fieldNames.append(fieldName);
     info->fieldTypes.append(type);
 
-    Q_ASSERT(g_app.database()->saveActivityInfo(info));
+    g_app.database()->saveActivityInfo(info);
 
     QVector<Activity*> activities;
-    Q_ASSERT(g_app.database()->loadActivitiesAssociatedWithActivityInfo(info, &activities));
+    g_app.database()->loadActivitiesAssociatedWithActivityInfo(info, &activities);
 
     for (Activity* activity : activities)
     {

@@ -34,7 +34,7 @@ ActivityInfo* AddActivityInfoDialog::constructActivityInfo()
     info->displayRules = "";
     info->color = m_selectedColor;
 
-    Q_ASSERT(g_app.database()->saveActivityInfo(info));
+    g_app.database()->saveActivityInfo(info);
 
     info->updateFormatter();
     m_activityInfoConstructed = true;
@@ -52,7 +52,7 @@ bool AddActivityInfoDialog::validate(QString* errorMessage)
         return false;
     }
 
-    Q_ASSERT(g_app.database()->loadActivityInfos());
+    g_app.database()->loadActivityInfos();
     for (const ActivityInfo* activityInfo : g_app.database()->activityInfos())
     {
         if (activityInfo->name.compare(name, Qt::CaseInsensitive) == 0)

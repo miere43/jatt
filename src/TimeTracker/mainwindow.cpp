@@ -51,6 +51,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     g_app.database()->loadActivityInfos();
     QList<ActivityInfo*> list = g_app.database()->activityInfos();
+    m_listMenus.reserve(list.count());
     for (ActivityInfo* info : list) {
         m_listMenus.insert(info, createActivityInfoMenu(info));
     }
@@ -191,7 +192,7 @@ void MainWindow::setViewTimePeriod(qint64 startTime, qint64 endTime)
 
     m_currentViewTimePeriodActivities.clear();
 
-    Q_ASSERT(g_app.database()->loadActivitiesBetweenStartAndEndTime(&m_currentViewTimePeriodActivities, startTime, endTime, true));
+    g_app.database()->loadActivitiesBetweenStartAndEndTime(&m_currentViewTimePeriodActivities, startTime, endTime, true);
 
     if (m_activityRecorder.isRecording())
     {
@@ -341,7 +342,6 @@ void MainWindow::selectedActivityChanged(const QItemSelection &selected, const Q
 {
     Q_UNUSED(deselected);
 
-
     Activity* activity = nullptr;
     QModelIndexList indexes = selected.indexes();
     if (indexes.count() > 0)
@@ -468,7 +468,7 @@ void MainWindow::startQuickActivity(ActivityInfo* info) {
 
     activity->startTime = activity->endTime = getCurrentDateTimeUtc();
 
-    Q_ASSERT(g_app.database()->saveActivity(activity));
+    g_app.database()->saveActivity(activity);
 
     if (activity->belongsToTimePeriod(m_currentViewTimePeriodStartTime, m_currentViewTimePeriodEndTime)) {
         QModelIndex index = m_activityListModel->addActivity(activity);
