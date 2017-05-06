@@ -16,11 +16,11 @@ class DatabaseManager : public QObject
 {
 public:
     explicit DatabaseManager(QObject *parent = nullptr);
-    bool establishDatabaseConnection();
+    bool establishDatabaseConnection(QString databasePath, QString* error);
     bool closeDatabaseConnection();
 
-    bool loadProperties(UserProperties* properties);
-    bool saveProperty(QString property, QString value);
+    bool checkTables();
+    bool createTables(QString* error);
 
     bool loadActivityInfos();
     QList<ActivityInfo*> activityInfos() const;

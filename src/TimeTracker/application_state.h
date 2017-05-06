@@ -21,20 +21,20 @@ class ApplicationState : public QObject
 private:
     DatabaseManager m_databaseManager;
     MainWindow* m_mainWindow = nullptr;
+
+    int m_offsetFromUtc;
+    int m_currentDaySinceEpochUtc;
+
+    bool m_initialized = false;
 public:
-    UserProperties m_properties; // @TODO shouldn't be public.
     PluginManager m_pluginManager;
     QString appTitle;
 
-    int m_currentDaySinceEpochUtc;
+    inline int offsetFromUtc() { return m_offsetFromUtc; }
+    inline int currentDaySinceEpochUtc() { return m_currentDaySinceEpochUtc; }
 
     explicit ApplicationState(QObject *parent = 0);
-
-    // @TODO
-    // bool initializeSubsystems();
-
-    bool openDatabase(); // @Obsolete
-    void initialize();
+    bool initialize(QString* errorMessage);
 
     DatabaseManager* database();
     MainWindow* mainWindow();

@@ -1,25 +1,34 @@
 #include <QApplication>
 #include <QMessageBox>
+#include <QSettings>
 
 #include "application_state.h"
 #include "mainwindow.h"
-#include "block_allocator.h"
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    if (!g_app.openDatabase())
-    {
-        QMessageBox::information(nullptr, "Time Tracker Error",
-                                 "Unable to open database. Program will be terminated.",
-                                 QMessageBox::Ok);
-        a.exit(1);
-        Q_UNREACHABLE();
+
+    QSettings::setDefaultFormat(QSettings::IniFormat);
+    QCoreApplication::setOrganizationName("miere");
+    QCoreApplication::setOrganizationDomain("github.com/miere43/timetracker");
+    QCoreApplication::setApplicationName(
+#ifdef QT_DEBUG
+    "Time Tracker debug"
+#else
+    "Time Tracker"
+#endif
+    );
+
+    QString error;
+    if (!g_app.initialize(&error)) {
+        QMessageBox::critical(nullptr, "Error", "Unable to initialize program, error: \"" + error + "\"", QMessageBox::Ok);
+        return 1;
+    } else {
+        MainWindow w;
+        w.show();
+
+        return a.exec();
     }
-
-    g_app.initialize();
-    MainWindow w;
-    w.show();
-
-    return a.exec();
+    Q_UNREACHABLE();
 }

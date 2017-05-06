@@ -220,7 +220,7 @@ void MainWindow::setViewDay(qint64 day)
 {
     if (day < 0) day = 0;
 
-    qint64 startTime = (day * 86400000LL) - g_app.m_properties.localTimeZoneOffsetFromUtc;
+    qint64 startTime = (day * 86400000LL) - g_app.offsetFromUtc();
     qint64 endTime = startTime + 86400000LL;
     setViewTimePeriod(startTime, endTime);
 
@@ -553,7 +553,7 @@ bool MainWindow::canModifyActivityIntervals(Activity *activity) const
 
 qint64 MainWindow::getCurrentDayIndex() const {
     // @TODO: doesn't work if program was launched at 23:59, but now is 00:00, will still return previous day.
-    return g_app.m_currentDaySinceEpochUtc;
+    return g_app.currentDaySinceEpochUtc();
 }
 
 //void MainWindow::dumpCurrent() {

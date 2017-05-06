@@ -65,13 +65,6 @@ struct Tag
     QString note;
 };
 
-struct UserProperties
-{
-    qint64 firstActivityDayUtc = 0;
-    qint64 localTimeZoneOffsetFromUtc = 0;
-    QHash<QString, QString> customProperties;
-};
-
 /**
  * @brief Creates string in format hh:mm:ss from milliseconds.
  * @param msecs

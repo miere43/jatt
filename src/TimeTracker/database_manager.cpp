@@ -14,29 +14,38 @@ DatabaseManager::DatabaseManager(QObject *parent)
 
 }
 
-bool DatabaseManager::establishDatabaseConnection()
+bool DatabaseManager::establishDatabaseConnection(QString databasePath, QString* error)
 {
-    m_database = QSqlDatabase::addDatabase("QSQLITE");
-    if (!m_database.isValid())
-    {
-        qCritical() << "Unable to add SQLite database: " << m_database.lastError().text();
+    Q_ASSERT(error);
+
+    if (!QSqlDatabase::isDriverAvailable("QSQLITE")) {
+        *error = "SQLite driver is not available.";
         return false;
     }
 
-    const char* databaseName =
-#ifdef APP_DEBUG_DB
-            "D:/test.s3db"; // that's misleading name for a macro :/
-#else
-            "D:/test_debug.s3db";
-#endif
-    qDebug() << "using database name" << databaseName;
-    m_database.setConnectOptions(QString("QSQLITE_OPEN_URI=") + databaseName);
-    m_database.setDatabaseName(databaseName); // @TODO temporary
+    m_database = QSqlDatabase::addDatabase("QSQLITE");
+    if (!m_database.isValid())
+    {
+        *error = "Unable to add SQLite database, error: " + m_database.lastError().text();
+        return false;
+    }
+
+    qDebug() << "using database" << databasePath;
+
+    m_database.setDatabaseName(databasePath);
     if (!m_database.open() || !m_database.isOpen()) // @TODO: this is always true because it will create database if one doesn't exist.
     {
-        qCritical() << "Unable to open SQLite database: " << m_database.lastError().text();
         // QSqlDatabase::removeDatabase @TODO is this required?
+        *error = "Unable to open SQLite database: " + m_database.lastError().text();
         return false;
+    }
+
+    if (!checkTables()) {
+        QString createError;
+        if (!createTables(&createError)) {
+            *error = "Unable to create required tables: " + createError;
+            return false;
+        }
     }
 
     return true;
@@ -52,58 +61,6 @@ bool DatabaseManager::closeDatabaseConnection()
     if (m_database.isOpen())
     {
         m_database.close();
-    }
-
-    return true;
-}
-
-bool DatabaseManager::loadProperties(UserProperties* properties)
-{
-    Q_ASSERT(properties);
-
-    QSqlQuery query = QSqlQuery(m_database);
-    query.setForwardOnly(true);
-    if (!query.exec("SELECT * FROM user_property"))
-    {
-        APP_ERRSTREAM << "Query failed." << query.lastError().text();
-        return false;
-    }
-
-    while (query.next())
-    {
-        QString property = query.value("property").toString();
-        QVariant value = query.value("data");
-        if (property == QLatin1Literal("firstActivityDayUtc"))
-        {
-            properties->firstActivityDayUtc = value.value<qint64>();
-        }
-        if (property == QLatin1Literal("localTimeZoneOffsetFromUtc"))
-        {
-            properties->localTimeZoneOffsetFromUtc = value.value<qint64>();
-        }
-        else
-        {
-            QString stringValue = value.value<QString>();
-            properties->customProperties.insert(stringValue, stringValue);
-        }
-    }
-
-    return true;
-}
-
-bool DatabaseManager::saveProperty(QString property, QString value)
-{
-    Q_ASSERT(!property.isNull() && !property.isEmpty());
-
-    QSqlQuery query = QSqlQuery(m_database);
-    query.prepare("INSERT INTO user_property(property, data) VALUES(:property, :data)");
-    query.bindValue(":property", property);
-    query.bindValue(":data", value);
-
-    if (!query.exec())
-    {
-        APP_ERRSTREAM << "Query failed." << query.lastError().text();
-        return false;
     }
 
     return true;
@@ -374,4 +331,71 @@ void DatabaseManager::copyActivityValuesFromQuery(Activity *activity, QSqlQuery 
     }
 
     binaryIntervals.clear();
+}
+
+bool DatabaseManager::checkTables() {
+    static const char* tableNames[] = {
+        "activity",
+        "activity_info",
+    };
+
+    QSqlQuery query(m_database);
+    query.prepare("SELECT 1 FROM sqlite_master WHERE type = ? AND name = ?");
+    query.bindValue(0, "table");
+
+    const int numTables = sizeof(tableNames) / sizeof(tableNames[0]);
+    for (int i = 0; i < numTables; ++i) {
+        query.bindValue(1, tableNames[i]);
+
+        if (!query.exec()) {
+            qDebug() << "unable to exec check for" << tableNames[i];
+            continue;
+        }
+
+        if (query.next() == false) {
+            return false;
+        }
+        query.finish();
+    }
+
+    return true;
+}
+
+bool DatabaseManager::createTables(QString* error) {
+    Q_ASSERT(error);
+
+    // Only one statement per query :(
+    static const char* queries[] = {
+        "CREATE TABLE activity_info(\n"
+        "  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n"
+        "  name TEXT NOT NULL,\n"
+        "  color INTEGER,\n"
+        "  field_names TEXT,\n"
+        "  field_types TEXT,\n"
+        "  display_format TEXT,\n"
+        "  display_rules TEXT\n"
+        ");\n",
+
+        "CREATE TABLE activity(\n"
+        "  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n"
+        "  activity_info_id INTEGER NOT NULL,\n"
+        "  field_values TEXT NOT NULL,\n"
+        "  start_time INTEGER NOT NULL,\n"
+        "  end_time INTEGER NOT NULL,\n"
+        "  intervals BLOB,\n"
+        "  FOREIGN KEY(activity_info_id) REFERENCES activity_info(id)\n"
+        ");\n",
+    };
+
+    int numQueries = sizeof(queries) / sizeof(queries[0]);
+    QSqlQuery query(m_database);
+    for (int i = 0; i < numQueries; ++i) {
+        if (!query.exec(queries[i])) {
+            *error = query.lastError().text();
+            return false;
+        }
+        query.finish();
+    }
+
+    return true;
 }
