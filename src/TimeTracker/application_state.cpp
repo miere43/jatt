@@ -53,7 +53,7 @@ bool ApplicationState::initialize(QString* error)
         offsetFromUtc = dateTime.offsetFromUtc();
         settings.setValue("offsetFromUtc", offsetFromUtc);
     }
-    m_offsetFromUtc = offsetFromUtc;
+    m_offsetFromUtc = offsetFromUtc * 1000; // It is stored as seconds in the file.
 
     settings.endGroup();
 

@@ -213,7 +213,6 @@ void MainWindow::setViewTimePeriod(qint64 startTime, qint64 endTime)
 
     m_activityVisualizer->setTimePeriod(startTime, endTime, &m_currentViewTimePeriodActivities);
     ui->timePeriodTotalTimeLabel->setText(createDurationStringFromMsecs(activitiesDuration(m_currentViewTimePeriodActivities)));
-
 }
 
 void MainWindow::setViewDay(qint64 day)
