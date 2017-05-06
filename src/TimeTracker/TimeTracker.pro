@@ -73,6 +73,3 @@ FORMS    += mainwindow.ui \
     add_field_dialog.ui \
     add_activity_info_dialog.ui \
     edit_activity_field_dialog.ui
-
-DISTFILES += \
-    js_app_module.inc
