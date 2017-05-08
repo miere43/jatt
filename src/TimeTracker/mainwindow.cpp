@@ -592,7 +592,9 @@ void MainWindow::on_evalScriptAction_triggered()
 
     QFile file(fileName);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QMessageBox::critical(this, "Error", "Unable to open script" + fileName);
+
+        QMessageBox::critical(this, "Script Loading Error", QString("Unable to open script \"%1\": \"%2\"")
+                              .arg(fileName).arg(file.errorString()));
         return;
     }
 
@@ -600,13 +602,22 @@ void MainWindow::on_evalScriptAction_triggered()
     file.close();
 \
     if (text.isEmpty()) {
-        QMessageBox::critical(this, "Error", "Script file is empty");
+        QMessageBox::critical(this, "Script Loading Error", "Script file is empty or invalid.");
         return;
     }
 
     QString error;
-    if (!g_app.m_pluginManager.tryEval(text.constData(), &error)) {
-        QMessageBox::critical(this, "Script Evaluation Error", QString("Unable to evaluate script \"%1\":\n%2").arg(fileName).arg(error));
+    QByteArray fileNameUtf8 = fileName.toUtf8();
+
+    PluginManager::EvaluationState state = g_app.m_pluginManager.evaluate(text.constData(), fileNameUtf8.constData(), &error);
+    if (state != PluginManager::SuccessfulEvaluation) {
+        QString title = state == PluginManager::CompilationError ?
+                    QStringLiteral("Script Compilation Error") :
+                    QStringLiteral("Script Execution Error");
+        QString message = state == PluginManager::CompilationError ?
+                    QStringLiteral("Unable to compile script \"%1\":\n%2") :
+                    QStringLiteral("Unable to execute script \"%1\":\n%2");
+        QMessageBox::critical(this, title, message.arg(fileName).arg(error));
         return;
     }
 }
@@ -635,7 +646,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
         m_activityRecorder.stop();
     }
 
-    // @TODO: should care about version of saveGeometry?
+    // @TODO: should care about 'version' of saveState?
     QSettings s;
     s.beginGroup(QStringLiteral("mainWindow"));
     s.setValue(QStringLiteral("geometry"), this->saveGeometry());

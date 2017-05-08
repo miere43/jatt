@@ -16,7 +16,10 @@ void PluginManager_fatalHandler(void* userdata, const char* msg) {
     Q_UNUSED(manager);
 
     qDebug() << msg;
-    QMessageBox::critical(nullptr, "Plugin Fatal Error", msg);
+    QMessageBox::critical(nullptr, "Plugin Fatal Error", "Plugin Fatal Error: " + QString::fromUtf8(msg));
+
+    // @TODO: can I even do such weird stuff, I cannot return from this function
+    // because I will stuck inside empty forever loop.
     QCoreApplication::exit(-2);
     exit(-2);
 }
@@ -143,7 +146,7 @@ duk_ret_t app_forEachActivity(duk_context* ctx) {
         duk_pop(ctx); // ignore return value
     }
 
-    duk_remove(ctx, idx);
+    // duk_remove(ctx, idx);
 
     return 0;
 }
@@ -220,19 +223,28 @@ bool PluginManager::initialize() {
     return true;
 }
 
-bool PluginManager::tryEval(const char* text, QString* error) {
-    Q_ASSERT(text);
+PluginManager::EvaluationState PluginManager::evaluate(const char* scriptSource, const char* fileName, QString* error) {
+    Q_ASSERT(scriptSource);
 
-    duk_push_string(ctx, text);
-    bool evalStatus = duk_peval(ctx) == 0;
-    if (!evalStatus && error != nullptr) {
+    if (fileName == nullptr) {
+        fileName = "eval";
+    }
+
+    duk_push_string(ctx, fileName);
+    EvaluationState status = (duk_pcompile_string(ctx, 0, scriptSource) == DUK_EXEC_SUCCESS) ? SuccessfulEvaluation : CompilationError;
+    if (status == SuccessfulEvaluation) {
+        status = (duk_pcall(ctx, 0) == DUK_EXEC_SUCCESS) ? SuccessfulEvaluation : ExecutionError;
+    }
+
+    if (status != SuccessfulEvaluation && error != nullptr) {
         duk_size_t errorMessageLength;
         const char* errorMessage =  duk_safe_to_lstring(ctx, -1, &errorMessageLength);
         *error = QString::fromUtf8(errorMessage, (int)errorMessageLength);
     }
-    duk_pop(ctx);
 
-    return evalStatus;
+    duk_pop(ctx); // ignore return value / error
+
+    return status;
 }
 
 bool PluginManager::shutdown() {

@@ -35,6 +35,12 @@ private:
     QDir m_pluginsDir;
     bool m_initialized = false;
 public:
+    enum EvaluationState {
+        SuccessfulEvaluation = 0,
+        CompilationError,
+        ExecutionError,
+    };
+
     PluginManager();
 
     bool initialize();
@@ -42,8 +48,9 @@ public:
 
     /**
      * @brief Tries to evaluate script source code.
+     * @param scriptSource UTF-8 encoded Ecmascript source code.
      */
-    bool tryEval(const char* scriptSource, QString* error = nullptr);
+    PluginManager::EvaluationState evaluate(const char* scriptSource, const char* fileName = nullptr, QString* error = nullptr);
 
     bool loadPlugins();
 };
