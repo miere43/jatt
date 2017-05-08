@@ -66,7 +66,8 @@ HEADERS  += mainwindow.h \
     duk/duktape.h \
     edit_activity_field_dialog.h \
     sequence.h \
-    consts.h
+    consts.h \
+    duktape_prepare_eval.h
 
 FORMS    += mainwindow.ui \
     add_activity_dialog.ui \

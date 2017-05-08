@@ -20,11 +20,6 @@ namespace Ui {
     class MainWindow;
 }
 
-//struct ActivityListMenuData {
-//    QMenu* menu;
-//    QVector<QAction*> actions;
-//};
-
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -35,7 +30,6 @@ public:
 
     const QVector<Activity*>& currentActivities() const;
     bool canModifyActivityIntervals(Activity* activity) const;
-    void onAppAboutToQuit();
 private slots:
     void on_addActivityAction_triggered();
     void addActivityDialogFinished(int result);
@@ -55,7 +49,11 @@ private slots:
 
     void editActivityFieldDialogFinished(int result);
     void activityMenuItemActionTriggered(bool checked);
+    void on_evalScriptAction_triggered();
 private:
+    void closeEvent(QCloseEvent *event) override;
+    void readAndApplySettings();
+
     void setViewTimePeriod(qint64 startTime, qint64 endTime);
     void setViewDay(qint64 day);
     void showAddActivityDialog();
@@ -64,6 +62,7 @@ private:
 
     void addQuickActivityButtons();
     void startQuickActivity(ActivityInfo* info);
+
 
 //    void setCurrentActivity(Activity* activity);
 //    Activity* currentActivity();

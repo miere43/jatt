@@ -10,6 +10,8 @@
 #include <QDebug>
 #include <QMessageBox>
 #include <QBoxLayout>
+#include <QFileDialog>
+#include <QSettings>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -57,11 +59,31 @@ MainWindow::MainWindow(QWidget *parent)
     }
 
     addQuickActivityButtons();
+    readAndApplySettings();
 }
 
-inline qint64 activitiesDuration(const QVector<Activity*>& activities) {
+inline qint64 clamp(qint64 value, qint64 min, qint64 max) {
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
+}
+
+qint64 visibleActivitiesDuration(const QVector<Activity*>& activities, qint64 lowBound, qint64 highBound) {
+    Q_ASSERT(lowBound < highBound);
+
     qint64 sum = 0;
-    for (const Activity* a : activities) { sum += a->duration(); }
+    for (const Activity* activity : activities) {
+        for (const Interval& interval : activity->intervals) {
+            qint64 ist = clamp(interval.startTime, lowBound, highBound);
+            qint64 iet = clamp(interval.endTime,   lowBound, highBound);
+            if (ist > iet) {
+                qWarning() << "invalid time";
+                continue;
+            }
+            sum += iet - ist;
+        }
+    }
+
     return sum;
 }
 
@@ -212,14 +234,16 @@ void MainWindow::setViewTimePeriod(qint64 startTime, qint64 endTime)
     m_activityListModel->addActivities(&m_currentViewTimePeriodActivities);
 
     m_activityVisualizer->setTimePeriod(startTime, endTime, &m_currentViewTimePeriodActivities);
-    ui->timePeriodTotalTimeLabel->setText(createDurationStringFromMsecs(activitiesDuration(m_currentViewTimePeriodActivities)));
+    ui->timePeriodTotalTimeLabel->setText(createDurationStringFromMsecs(visibleActivitiesDuration(m_currentViewTimePeriodActivities,
+                                                                                                  m_currentViewTimePeriodStartTime,
+                                                                                                  m_currentViewTimePeriodEndTime)));
 }
 
 void MainWindow::setViewDay(qint64 day)
 {
     if (day < 0) day = 0;
 
-    qint64 startTime = (day * 86400000LL) - g_app.offsetFromUtc();
+    qint64 startTime = (day * 86400000LL) - g_app.localOffsetFromUtc();
     qint64 endTime = startTime + 86400000LL;
     setViewTimePeriod(startTime, endTime);
 
@@ -331,7 +355,9 @@ void MainWindow::activityRecorderRecordEvent(ActivityRecorderEvent event)
     }
 
     if (currentActivity->belongsToTimePeriod(m_currentViewTimePeriodStartTime, m_currentViewTimePeriodEndTime)) {
-        ui->timePeriodTotalTimeLabel->setText(createDurationStringFromMsecs(activitiesDuration(m_currentViewTimePeriodActivities)));
+        ui->timePeriodTotalTimeLabel->setText(createDurationStringFromMsecs(visibleActivitiesDuration(m_currentViewTimePeriodActivities,
+                                                                                                      m_currentViewTimePeriodStartTime,
+                                                                                                      m_currentViewTimePeriodEndTime)));
     }
 
     m_activityVisualizer->update();
@@ -479,11 +505,6 @@ void MainWindow::startQuickActivity(ActivityInfo* info) {
     m_activityRecorder.record(activity);
 }
 
-void MainWindow::onAppAboutToQuit() {
-    if (m_activityRecorder.isRecording())
-        m_activityRecorder.stop();
-}
-
 void MainWindow::on_joinNextActivityAction_triggered()
 {
     QModelIndexList selection = ui->activitiesListView->selectionModel()->selection().indexes();
@@ -551,8 +572,7 @@ bool MainWindow::canModifyActivityIntervals(Activity *activity) const
 }
 
 qint64 MainWindow::getCurrentDayIndex() const {
-    // @TODO: doesn't work if program was launched at 23:59, but now is 00:00, will still return previous day.
-    return g_app.currentDaySinceEpochUtc();
+    return g_app.currentDaySinceEpochLocal();
 }
 
 //void MainWindow::dumpCurrent() {
@@ -562,3 +582,65 @@ qint64 MainWindow::getCurrentDayIndex() const {
 //    }
 //    qDebug().nospace() << ']';
 //}
+
+void MainWindow::on_evalScriptAction_triggered()
+{
+    QString fileName = QFileDialog::getOpenFileName(this, "Choose script file", QString(), "Script Files (*.js)");
+    if (fileName.isEmpty()) {
+        return;
+    }
+
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QMessageBox::critical(this, "Error", "Unable to open script" + fileName);
+        return;
+    }
+
+    QByteArray text = file.readAll();
+    file.close();
+\
+    if (text.isEmpty()) {
+        QMessageBox::critical(this, "Error", "Script file is empty");
+        return;
+    }
+
+    QString error;
+    if (!g_app.m_pluginManager.tryEval(text.constData(), &error)) {
+        QMessageBox::critical(this, "Script Evaluation Error", QString("Unable to evaluate script \"%1\":\n%2").arg(fileName).arg(error));
+        return;
+    }
+}
+
+void MainWindow::readAndApplySettings() {
+    QSettings s;
+    s.beginGroup(QStringLiteral("mainWindow"));
+    {
+        QByteArray geometry = s.value(QStringLiteral("geometry")).toByteArray();
+        if (!geometry.isEmpty()) {
+            this->restoreGeometry(geometry);
+        }
+    }
+    {
+        QByteArray state = s.value(QStringLiteral("state")).toByteArray();
+        if (!state.isEmpty()) {
+            this->restoreState(state);
+        }
+    }
+    s.endGroup();
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    if (m_activityRecorder.isRecording()) {
+        m_activityRecorder.stop();
+    }
+
+    // @TODO: should care about version of saveGeometry?
+    QSettings s;
+    s.beginGroup(QStringLiteral("mainWindow"));
+    s.setValue(QStringLiteral("geometry"), this->saveGeometry());
+    s.setValue(QStringLiteral("state"),    this->saveState());
+    s.endGroup();
+
+    event->accept();
+}

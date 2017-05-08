@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
 
     QSettings::setDefaultFormat(QSettings::IniFormat);
     QCoreApplication::setOrganizationName("miere");
-    QCoreApplication::setOrganizationDomain("github.com/miere43/timetracker");
+    QCoreApplication::setOrganizationDomain("miere.ru");
     QCoreApplication::setApplicationName(
 #ifdef QT_DEBUG
     "Time Tracker debug"

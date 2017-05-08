@@ -34,21 +34,20 @@ private:
     duk_context* ctx;
     QDir m_pluginsDir;
     bool m_initialized = false;
-
-
-    // void script_addHook(QJSValue value);
 public:
     PluginManager();
 
     bool initialize();
     bool shutdown();
 
-    bool loadPlugins();
+    /**
+     * @brief Tries to evaluate script source code.
+     */
+    bool tryEval(const char* scriptSource, QString* error = nullptr);
 
-    // inline QJSEngine* engine() const { return &m_engine; }
+    bool loadPlugins();
 };
 
 void PluginManager_fatalHandler(void* userdata, const char* msg);
-
 
 #endif // PLUGIN_MANAGER_H

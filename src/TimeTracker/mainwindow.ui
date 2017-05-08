@@ -133,6 +133,7 @@
    </attribute>
    <addaction name="addActivityAction"/>
    <addaction name="editActivityAction"/>
+   <addaction name="evalScriptAction"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="newSessionAction">
@@ -192,6 +193,11 @@
   <action name="joinNextActivityAction">
    <property name="text">
     <string>joinNextActivity</string>
+   </property>
+  </action>
+  <action name="evalScriptAction">
+   <property name="text">
+    <string>Evaluate Script</string>
    </property>
   </action>
  </widget>

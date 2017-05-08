@@ -4,9 +4,10 @@
 #include <QObject>
 #include <QtSql/QSqlDatabase>
 #include <QString>
-#include <QLinkedList>
 #include <QVector>
 #include <QTimeZone>
+#include <QDebug>
+
 #include "core_types.h"
 #include "block_allocator.h"
 #include "database_manager.h"
@@ -22,16 +23,16 @@ private:
     DatabaseManager m_databaseManager;
     MainWindow* m_mainWindow = nullptr;
 
-    int m_offsetFromUtc;
-    int m_currentDaySinceEpochUtc;
+    int m_localOffsetFromUtc;
 
     bool m_initialized = false;
 public:
     PluginManager m_pluginManager;
     QString appTitle;
 
-    inline int offsetFromUtc() { return m_offsetFromUtc; }
-    inline int currentDaySinceEpochUtc() { return m_currentDaySinceEpochUtc; }
+    inline int localOffsetFromUtc() { return m_localOffsetFromUtc; }
+    inline int currentDaySinceEpochUtc() { return getCompleteDaysSinceEpoch(getCurrentDateTimeUtc()); }
+    inline int currentDaySinceEpochLocal() { return getCompleteDaysSinceEpoch(getCurrentDateTimeUtc() + localOffsetFromUtc()); }
 
     explicit ApplicationState(QObject *parent = 0);
     bool initialize(QString* errorMessage);
@@ -44,7 +45,7 @@ public:
     BlockAllocator<ActivityInfo> m_activityInfoAllocator;
     BlockAllocator<Activity> m_activityAllocator;
 private slots:
-    void appAboutToQuit();
+//    void appAboutToQuit();
 private:
 
 };

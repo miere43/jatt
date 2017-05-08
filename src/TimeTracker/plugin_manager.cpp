@@ -1,9 +1,13 @@
 #include "plugin_manager.h"
+
+#include <QCoreApplication>
 #include <QMessageBox>
 #include <QDebug>
+
 #include "application_state.h"
 #include "mainwindow.h"
 #include "core_types.h"
+
 //QHash<int, JSMenu> m_jsMenus;
 
 void PluginManager_fatalHandler(void* userdata, const char* msg) {
@@ -12,7 +16,9 @@ void PluginManager_fatalHandler(void* userdata, const char* msg) {
     Q_UNUSED(manager);
 
     qDebug() << msg;
-    QMessageBox::critical(nullptr, "Plugin Error", msg);
+    QMessageBox::critical(nullptr, "Plugin Fatal Error", msg);
+    QCoreApplication::exit(-2);
+    exit(-2);
 }
 
 //duk_ret_t testFunc(duk_context* ctx) {
@@ -125,7 +131,6 @@ duk_ret_t app_forEachActivity(duk_context* ctx) {
     const QVector<Activity*>& activities = g_app.mainWindow()->currentActivities();
     for (int i = 0; i < activities.count(); ++i) {
         Activity* a = activities.at(i);
-//        forEachActivity_current = a;
 
         duk_push_null(ctx);
         duk_put_prop_string(ctx, idx, ACTIVITY_ID_SYMBOL);
@@ -138,6 +143,8 @@ duk_ret_t app_forEachActivity(duk_context* ctx) {
         duk_pop(ctx); // ignore return value
     }
 
+    duk_remove(ctx, idx);
+
     return 0;
 }
 
@@ -149,9 +156,27 @@ duk_ret_t app_forEachActivity(duk_context* ctx) {
 //    return 0;
 //}
 
+duk_ret_t app_showMessageBox(duk_context* ctx) {
+    duk_require_string(ctx, 0);
+    const char* str = duk_get_string(ctx, 0);
+    int choice = QMessageBox::information(nullptr, "Script Message", str);
+    duk_push_int(ctx, choice);
+    return 1;
+}
+
+//duk_ret_t app_getter_Activity_id(duk_context* ctx) {
+//    duk_push_this(ctx);
+
+//}
+
+//duk_ret_t app_Activity_prototypeDef(duk_context* ctx) {
+////    duk_eval()
+//}
+
 const duk_function_list_entry appModuleFuncs[] = {
     { "debugLog", app_debugLog, 1 },
     { "forEachActivity", app_forEachActivity, 1 },
+    { "showMessageBox", app_showMessageBox, 1 },
 //    { "createMenu", app_createMenu, 1 },
     { 0, 0, 0 }
 };
@@ -172,7 +197,11 @@ bool PluginManager::initialize() {
     duk_push_global_object(ctx);
 
     // Add 'app' module to global object.
-    duk_push_object(ctx);
+    duk_idx_t ao = duk_push_object(ctx);
+    duk_push_string(ctx, "debugLogProtected");
+    duk_push_c_function(ctx, app_debugLog, 1);
+    duk_def_prop(ctx, ao, DUK_DEFPROP_SET_ENUMERABLE | DUK_DEFPROP_HAVE_VALUE);
+
     duk_put_function_list(ctx, -1, appModuleFuncs);
     duk_put_prop_string(ctx, -2, "app");
 
@@ -185,10 +214,25 @@ bool PluginManager::initialize() {
 //    duk_put_prop_string(ctx, -1, "_menuCallbacks");
 //    duk_pop(ctx);
 
-    duk_eval_string_noresult(ctx, "app.forEachActivity(function(activity) { app.debugLog(activity.displayString()); });");
+    // duk_eval_string_noresult(ctx, "app.debugLog(app.showMessageBox('null'));");
 
     m_initialized = true;
     return true;
+}
+
+bool PluginManager::tryEval(const char* text, QString* error) {
+    Q_ASSERT(text);
+
+    duk_push_string(ctx, text);
+    bool evalStatus = duk_peval(ctx) == 0;
+    if (!evalStatus && error != nullptr) {
+        duk_size_t errorMessageLength;
+        const char* errorMessage =  duk_safe_to_lstring(ctx, -1, &errorMessageLength);
+        *error = QString::fromUtf8(errorMessage, (int)errorMessageLength);
+    }
+    duk_pop(ctx);
+
+    return evalStatus;
 }
 
 bool PluginManager::shutdown() {

@@ -27,7 +27,7 @@ bool ApplicationState::initialize(QString* error)
     Q_ASSERT(error);
 
     QSettings settings;
-    settings.beginGroup("main");
+    settings.beginGroup(QStringLiteral("main"));
 
     QString databasePath = settings.value("databasePath").value<QString>();
     if (databasePath.isEmpty() || !QFile::exists(databasePath)) {
@@ -46,27 +46,24 @@ bool ApplicationState::initialize(QString* error)
         return false;
     }
 
-    // @TODO: ask if offsetFromUtc has changed since last time.
-    int offsetFromUtc = settings.value("offsetFromUtc", INT_MIN).value<int>();
-    if (offsetFromUtc == INT_MIN) {
+    // @TODO: ask if localOffsetFromUtc has changed since last time.
+    int localOffsetFromUtc = settings.value("localOffsetFromUtc", INT_MIN).value<int>();
+    if (localOffsetFromUtc == INT_MIN) {
         QDateTime dateTime = QDateTime::currentDateTime();
-        offsetFromUtc = dateTime.offsetFromUtc();
-        settings.setValue("offsetFromUtc", offsetFromUtc);
+        localOffsetFromUtc = dateTime.offsetFromUtc();
+        settings.setValue("localOffsetFromUtc", localOffsetFromUtc);
     }
-    m_offsetFromUtc = offsetFromUtc * 1000; // It is stored as seconds in the file.
+    m_localOffsetFromUtc = localOffsetFromUtc * 1000; // It is stored as seconds in the file.
 
     settings.endGroup();
 
-    m_currentDaySinceEpochUtc = getCompleteDaysSinceEpoch(getCurrentDateTimeUtc());
-
-    connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
-            this, &ApplicationState::appAboutToQuit);
+//    connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
+//            this, &ApplicationState::appAboutToQuit);
 
     return true;
 }
 
-DatabaseManager* ApplicationState::database()
-{
+DatabaseManager* ApplicationState::database() {
     return &m_databaseManager;
 }
 
@@ -78,9 +75,8 @@ void ApplicationState::setMainWindow(MainWindow* mainWindow) {
     m_mainWindow = mainWindow;
 }
 
-void ApplicationState::appAboutToQuit()
-{
-    mainWindow()->onAppAboutToQuit();
-}
+//void ApplicationState::appAboutToQuit()
+//{
+//}
 
 ApplicationState g_app;
