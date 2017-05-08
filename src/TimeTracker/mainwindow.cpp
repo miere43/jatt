@@ -585,7 +585,7 @@ qint64 MainWindow::getCurrentDayIndex() const {
 
 void MainWindow::on_evalScriptAction_triggered()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, "Choose script file", QString(), "Script Files (*.js)");
+    QString fileName = QFileDialog::getOpenFileName(this, "Choose script file", QString(), "Script Files (*.js);;All files (*.*)");
     if (fileName.isEmpty()) {
         return;
     }
