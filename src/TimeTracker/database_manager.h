@@ -26,6 +26,8 @@ public:
     bool checkTables();
     bool createTables(QString* error);
 
+    Activity* loadActivity(qint64 id);
+
     bool loadActivityInfos();
     QList<ActivityInfo*> activityInfos() const;
 

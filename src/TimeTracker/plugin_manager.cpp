@@ -110,7 +110,6 @@ duk_ret_t app_forEachActivity_activityId(duk_context* ctx) {
     return 1;
 }
 
-
 duk_ret_t app_forEachActivity_activityDisplayString(duk_context* ctx) {
     Activity* activity = dukForEachActivityProlog(ctx);
     if (!activity) return 0; // undefined
@@ -120,44 +119,85 @@ duk_ret_t app_forEachActivity_activityDisplayString(duk_context* ctx) {
     return 1;
 }
 
+duk_ret_t app_activityActivityInfoId(duk_context* ctx) {
+    duk_int_t id = duk_require_int(ctx, 0);
+    // if (id < 1)
+    Activity* activity = g_app.database()->loadActivity(id);
+    if (activity == nullptr) {
+        duk_push_int(ctx, -1);
+    } else {
+        Q_ASSERT(activity->info->id <= INT_MAX);
+        duk_push_int(ctx, (duk_int_t)activity->info->id);
+    }
+    return 1;
+}
+
+duk_ret_t app_activityIntervals(duk_context* ctx) {
+    duk_int_t id = duk_require_int(ctx, 0);
+    duk_idx_t array = duk_push_array(ctx);
+
+    Activity* activity = g_app.database()->loadActivity(id);
+    if (activity != nullptr) {
+        duk_uarridx_t arrayIndex = 0;
+        for (const Interval& interval : activity->intervals) {
+            duk_push_number(ctx, (double)interval.startTime);
+            duk_put_prop_index(ctx, array, arrayIndex++);
+            duk_push_number(ctx, (double)interval.endTime);
+            duk_put_prop_index(ctx, array, arrayIndex++);
+        }
+    }
+
+    return 1;
+}
+
+duk_ret_t app_activityInfoName(duk_context* ctx) {
+    duk_int_t id = duk_require_int(ctx, 0);
+
+    ActivityInfo* info = g_app.database()->m_activityInfos.value(id);
+    if (info == nullptr) {
+        return 0;
+    }
+    duk_push_string(ctx, info->name.toUtf8().data());
+    return 1;
+}
+
+duk_ret_t app_activityField(duk_context* ctx) {
+    duk_int_t id = duk_require_int(ctx, 0);
+    // @TODO: allow string
+    duk_int_t fieldId = duk_require_int(ctx, 1);
+
+    Activity* activity = g_app.database()->loadActivity(id);
+    if (activity == nullptr) {
+        return 0; // return undefined
+    }
+
+    QString fieldValue = activity->field(fieldId);
+    if (fieldValue.isNull()) {
+        return 0;
+    }
+    if (fieldValue.isEmpty()) {
+        duk_push_string(ctx, "");
+        return 1;
+    }
+    QByteArray fieldValueUtf8 = fieldValue.toUtf8();
+    duk_push_string(ctx, fieldValueUtf8.data());
+    return 1;
+}
+
 duk_ret_t app_forEachActivity(duk_context* ctx) {
-    duk_require_function(ctx, 0); // -1
-    duk_idx_t idx = duk_push_object(ctx); // -2
-//    duk_put_function_list(ctx, idx, forEachActivityFunctionList);
-////    duk_put_
-//    duk_push_string(ctx, "hello");
-    duk_push_c_function(ctx, app_forEachActivity_activityId, 0);
-    duk_put_prop_string(ctx, idx, "id");
-    duk_push_c_function(ctx, app_forEachActivity_activityDisplayString, 0);
-    duk_put_prop_string(ctx, idx, "displayString");
+    duk_require_function(ctx, 0);
 
     const QVector<Activity*>& activities = g_app.mainWindow()->currentActivities();
     for (int i = 0; i < activities.count(); ++i) {
         Activity* a = activities.at(i);
-
-        duk_push_null(ctx);
-        duk_put_prop_string(ctx, idx, ACTIVITY_ID_SYMBOL);
-        duk_push_pointer(ctx, a);
-        duk_put_prop_string(ctx, idx, ACTIVITY_ID_SYMBOL);
-
-        duk_dup(ctx, 0); // function
-        duk_dup(ctx, idx); // argument
+        duk_dup(ctx, 0);
+        duk_push_number(ctx, a->id);
         duk_call(ctx, 1);
-        duk_pop(ctx); // ignore return value
+        duk_pop(ctx);
     }
-
-    // duk_remove(ctx, idx);
 
     return 0;
 }
-
-//duk_ret_t app_createMenu(duk_context* ctx) {
-//    duk_require_string(ctx, -1);
-//    const char* menuName = duk_get_string(ctx, -1);
-//    QMenu* menu = new QMenu();
-
-//    return 0;
-//}
 
 duk_ret_t app_showMessageBox(duk_context* ctx) {
     duk_require_string(ctx, 0);
@@ -180,7 +220,10 @@ const duk_function_list_entry appModuleFuncs[] = {
     { "debugLog", app_debugLog, 1 },
     { "forEachActivity", app_forEachActivity, 1 },
     { "showMessageBox", app_showMessageBox, 1 },
-//    { "createMenu", app_createMenu, 1 },
+    { "activityActivityInfoId", app_activityActivityInfoId, 1 },
+    { "activityIntervals", app_activityIntervals, 1 },
+    { "activityField", app_activityField, 2 },
+    { "activityInfoName", app_activityInfoName, 1 },
     { 0, 0, 0 }
 };
 
@@ -237,9 +280,25 @@ PluginManager::EvaluationState PluginManager::evaluate(const char* scriptSource,
     }
 
     if (status != SuccessfulEvaluation && error != nullptr) {
-        duk_size_t errorMessageLength;
-        const char* errorMessage =  duk_safe_to_lstring(ctx, -1, &errorMessageLength);
-        *error = QString::fromUtf8(errorMessage, (int)errorMessageLength);
+        if (!(duk_is_error(ctx, -1))) {
+            duk_size_t errorMessageLength;
+            const char* errorMessage =  duk_safe_to_lstring(ctx, -1, &errorMessageLength);
+            *error = QString::fromUtf8(errorMessage, (int)errorMessageLength);
+        } else {
+//            const char* lineNumber = nullptr;
+//            if (duk_get_prop_string(ctx, -1, "lineNumber")) {
+//                lineNumber = duk_get_string(ctx, -1);
+//                duk_pop(ctx);
+//            }
+            const char* stackTrace = nullptr;
+            if (duk_get_prop_string(ctx, -1, "stack")) {
+                stackTrace = duk_get_string(ctx, -1);
+                *error = QString::fromUtf8(stackTrace);
+                duk_pop(ctx);
+            } else {
+                *error = QString("No stack trace available");
+            }
+        }
     }
 
     duk_pop(ctx); // ignore return value / error

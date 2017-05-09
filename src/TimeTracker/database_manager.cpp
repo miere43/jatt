@@ -106,8 +106,44 @@ bool DatabaseManager::loadActivityInfos()
 
 QList<ActivityInfo*> DatabaseManager::activityInfos() const
 {
-    Q_ASSERT(m_activityInfosLoaded);
+    if (!m_activityInfosLoaded) {
+        Q_ASSERT(false);
+    }
     return m_activityInfos.values();
+}
+
+Activity* DatabaseManager::loadActivity(qint64 id) {
+    Q_ASSERT(id > 0);
+
+    Activity* activity = m_activities.value(id);
+    if (activity != nullptr)
+        return activity;
+
+    QSqlQuery query = QSqlQuery(m_database);
+    query.prepare("SELECT 1 FROM activity WHERE id = :id");
+    query.bindValue(":id", id);
+
+    if (!query.exec()) {
+        APP_ERRSTREAM << "Query failed." << query.lastError().text();
+        return nullptr;
+    }
+
+    if (query.next()) {
+        activity = g_app.m_activityAllocator.allocate();
+        Q_ASSERT(activity);
+        copyActivityValuesFromQuery(activity, &query);
+
+        if (!m_activityInfosLoaded) {
+            loadActivityInfos();
+        }
+
+        qint64 infoId = query.value("activity_info_id").value<qint64>();
+        activity->info = m_activityInfos.value(infoId);
+
+        m_activities.insert(id, activity);
+    }
+
+    return activity;
 }
 
 bool DatabaseManager::loadActivitiesAssociatedWithActivityInfo(ActivityInfo* info, QVector<Activity*>* associatedActivities)
