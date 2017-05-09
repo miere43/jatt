@@ -257,6 +257,22 @@ void MainWindow::updateVisibleActivitiesDurationLabel() {
                                       m_currentViewTimePeriodEndTime)));
 }
 
+void MainWindow::updateActivityDurationLabel() {
+    // @TODO: this is weird stuff
+    Activity* currentActivity;
+    if (m_activityRecorder.isRecording()) {
+        currentActivity = m_activityRecorder.activity();
+    } else {
+        currentActivity = selectedActivity();
+    }
+
+    if (currentActivity == nullptr) {
+        ui->activityDurationLabel->setText(QStringLiteral("00:00:00"));
+    } else {
+        ui->activityDurationLabel->setText(createDurationStringFromMsecs(currentActivity->duration()));
+    }
+}
+
 void MainWindow::setViewDay(qint64 day)
 {
     if (day < 0) day = 0;
@@ -359,7 +375,7 @@ void MainWindow::activityRecorderRecordEvent(ActivityRecorderEvent event)
     if (event == ActivityRecorderEvent::RecordingStarted || event == ActivityRecorderEvent::UpdateUITimer)
     {
         Q_ASSERT(currentActivity);
-        ui->activityDurationLabel->setText(createDurationStringFromMsecs(currentActivity->duration()));
+        updateActivityDurationLabel();
     }
 
     if (currentActivity->belongsToTimePeriod(m_currentViewTimePeriodStartTime, m_currentViewTimePeriodEndTime)) {
@@ -382,6 +398,7 @@ void MainWindow::selectedActivityChanged(const QItemSelection &selected, const Q
             activity = static_cast<Activity*>(index.data(Qt::UserRole).value<void*>());
     }
 
+    // @TODO: should move to from here to open menu function
     {
         bool enableSplitActivityAction;
         if (activity == nullptr) {
@@ -398,7 +415,6 @@ void MainWindow::selectedActivityChanged(const QItemSelection &selected, const Q
     {
         ui->activityDurationLabel->setText(QStringLiteral("00:00:00"));
         m_activityVisualizer->selectActivity(nullptr);
-        qDebug() << "select null";
     }
     else
     {
@@ -571,6 +587,7 @@ void MainWindow::on_joinNextActivityAction_triggered()
         m_activityListModel->removeActivity(next);
         m_activityVisualizer->update();
         updateVisibleActivitiesDurationLabel();
+        updateActivityDurationLabel();
     }
 
     g_app.database()->saveActivity(sel);
@@ -618,7 +635,6 @@ void MainWindow::splitActivity(Activity *activity) {
         return;
     }
 
-    qDebug() << "split activity ss" << activity->startTime << "es" << activity->endTime;
     for (int i = 0; i < activity->intervals.count(); ++i) {
         Interval interval = activity->intervals[i];
         Activity* newActivity = g_app.m_activityAllocator.allocate();
@@ -628,8 +644,6 @@ void MainWindow::splitActivity(Activity *activity) {
         newActivity->info        = activity->info;
         newActivity->fieldValues = activity->fieldValues;
         newActivity->intervals.append(interval);
-
-        qDebug() << "new activity" << i << "ss" << interval.startTime << "es" << interval.endTime;
 
         if (!g_app.database()->saveActivity(newActivity)) {
             goto dberror;
@@ -649,7 +663,6 @@ void MainWindow::splitActivity(Activity *activity) {
     if (index != -1) {
         m_currentViewTimePeriodActivities.remove(index);
         m_activityListModel->removeActivity(activity);
-        updateVisibleActivitiesDurationLabel();
     }
 
     for (Activity* a : newActivities) {
@@ -659,6 +672,7 @@ void MainWindow::splitActivity(Activity *activity) {
     }
     m_activityListModel->addActivities(newActivities);
     m_activityVisualizer->update();
+    updateVisibleActivitiesDurationLabel();
 
     // @TODO: sort currentViewTime... and list model
 

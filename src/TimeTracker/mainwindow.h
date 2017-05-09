@@ -64,6 +64,7 @@ private:
 
     bool isTimePeriodInView(qint64 startTime, qint64 endTime) const;
     void updateVisibleActivitiesDurationLabel();
+    void updateActivityDurationLabel();
 
     void addQuickActivityButtons();
     void startQuickActivity(ActivityInfo* info);
