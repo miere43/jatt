@@ -13,7 +13,7 @@ public:
     explicit ActivityListModel(QObject *parent = 0);
 
     QModelIndex addActivity(Activity* activity);
-    void addActivities(QVector<Activity*>* activities);
+    void addActivities(const QVector<Activity*>& activities);
 
     void setTimePeriod(qint64 startTime, qint64 endTime);
 
@@ -27,6 +27,8 @@ public:
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 private:
+    void sort();
+
     qint64 m_startTime = -1;
     qint64 m_endTime = -1;
     QVector<Activity*> m_activities;

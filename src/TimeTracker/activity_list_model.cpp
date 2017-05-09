@@ -20,14 +20,12 @@ QModelIndex ActivityListModel::addActivity(Activity *activity)
     return this->index(m_activities.count() - 1);
 }
 
-void ActivityListModel::addActivities(QVector<Activity *> *activities)
+void ActivityListModel::addActivities(const QVector<Activity *>& activities)
 {
-    Q_ASSERT(activities);
-
-    if (activities->count() > 0) {
-        beginInsertRows(QModelIndex(), m_activities.count(), m_activities.count() + activities->count());
-        for (Activity* a : *activities) {
-            m_activities.append(a);
+    if (activities.count() > 0) {
+        beginInsertRows(QModelIndex(), m_activities.count(), m_activities.count() + activities.count());
+        for (int i = 0; i < activities.count(); ++i) {
+            m_activities.append(activities.data()[i]);
         }
         endInsertRows();
     }

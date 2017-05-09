@@ -200,6 +200,11 @@
     <string>Evaluate Script</string>
    </property>
   </action>
+  <action name="splitActivityAction">
+   <property name="text">
+    <string>SplitActivity</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>

@@ -19,6 +19,10 @@ public:
     bool establishDatabaseConnection(QString databasePath, QString* error);
     bool closeDatabaseConnection();
 
+    inline bool transaction() { return m_database.transaction(); }
+    inline bool rollback() { return m_database.rollback(); }
+    inline bool commit() { return m_database.commit(); }
+
     bool checkTables();
     bool createTables(QString* error);
 

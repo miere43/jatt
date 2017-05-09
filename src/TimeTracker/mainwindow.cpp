@@ -93,6 +93,7 @@ QMenu* MainWindow::createActivityInfoMenu(ActivityInfo *info) {
     m->addAction(ui->deleteActivityAction);
     m->addSeparator();
     m->addAction(ui->joinNextActivityAction);
+    m->addAction(ui->splitActivityAction);
     m->addSeparator();
     for (const QString& fieldName : info->fieldNames) {
         QAction* action = m->addAction(QString("Edit \"") + fieldName + "\"");
@@ -207,6 +208,15 @@ void MainWindow::addActivityDialogFinished(int result)
     }
 }
 
+#include <QtAlgorithms>
+bool activityLessThan(const Activity* a, const Activity* b) {
+    return a->startTime < b->startTime;
+}
+
+void activitySort(QVector<Activity*>* vec) {
+    qSort(vec->begin(), vec->end(), activityLessThan);
+}
+
 void MainWindow::setViewTimePeriod(qint64 startTime, qint64 endTime)
 {
     m_currentViewTimePeriodStartTime = startTime;
@@ -229,14 +239,22 @@ void MainWindow::setViewTimePeriod(qint64 startTime, qint64 endTime)
         }
     }
 
+    activitySort(&m_currentViewTimePeriodActivities);
+
     m_activityListModel->clear();
     m_activityListModel->setTimePeriod(startTime, endTime);
-    m_activityListModel->addActivities(&m_currentViewTimePeriodActivities);
+    m_activityListModel->addActivities(m_currentViewTimePeriodActivities);
 
     m_activityVisualizer->setTimePeriod(startTime, endTime, &m_currentViewTimePeriodActivities);
-    ui->timePeriodTotalTimeLabel->setText(createDurationStringFromMsecs(visibleActivitiesDuration(m_currentViewTimePeriodActivities,
-                                                                                                  m_currentViewTimePeriodStartTime,
-                                                                                                  m_currentViewTimePeriodEndTime)));
+    updateVisibleActivitiesDurationLabel();
+}
+
+void MainWindow::updateVisibleActivitiesDurationLabel() {
+    ui->timePeriodTotalTimeLabel->setText(
+        createDurationStringFromMsecs(
+            visibleActivitiesDuration(m_currentViewTimePeriodActivities,
+                                      m_currentViewTimePeriodStartTime,
+                                      m_currentViewTimePeriodEndTime)));
 }
 
 void MainWindow::setViewDay(qint64 day)
@@ -290,16 +308,6 @@ void MainWindow::on_startActivityButton_clicked()
         // !! Don't do anything here, activityRecorderRecordEvent signal will be fired right now.
     }
 }
-
-//ActivityListItem* MainWindow::selectedActivityListItem() const
-//{
-//    QModelIndexList selection = ui->activitiesListView->selectionModel()->selection().indexes();
-//    if (selection.count() == 0)
-//    {
-//        return nullptr;
-//    }
-//    return ((ActivityListItem*)selection.at(0).data(Qt::UserRole).value<void*>());
-//}
 
 Activity* MainWindow::selectedActivity() const
 {
@@ -355,9 +363,7 @@ void MainWindow::activityRecorderRecordEvent(ActivityRecorderEvent event)
     }
 
     if (currentActivity->belongsToTimePeriod(m_currentViewTimePeriodStartTime, m_currentViewTimePeriodEndTime)) {
-        ui->timePeriodTotalTimeLabel->setText(createDurationStringFromMsecs(visibleActivitiesDuration(m_currentViewTimePeriodActivities,
-                                                                                                      m_currentViewTimePeriodStartTime,
-                                                                                                      m_currentViewTimePeriodEndTime)));
+        updateVisibleActivitiesDurationLabel();
     }
 
     m_activityVisualizer->update();
@@ -376,7 +382,15 @@ void MainWindow::selectedActivityChanged(const QItemSelection &selected, const Q
             activity = static_cast<Activity*>(index.data(Qt::UserRole).value<void*>());
     }
 
-    // ui->deleteActivityAction->setEnabled(activity != nullptr);
+    {
+        bool enableSplitActivityAction;
+        if (activity == nullptr) {
+            enableSplitActivityAction = false;
+        } else {
+            enableSplitActivityAction = activity->intervals.count() > 1;
+        }
+        ui->splitActivityAction->setEnabled(enableSplitActivityAction);
+    }
 
     if (m_activityRecorder.isRecording()) return;
 
@@ -416,6 +430,7 @@ void MainWindow::deleteSelectedActivityTriggered(bool checked)
         m_currentViewTimePeriodActivities.remove(index);
         m_activityListModel->removeActivity(activity);
         m_activityVisualizer->update();
+        updateVisibleActivitiesDurationLabel();
     }
 
     if (activity->id >= 0) {
@@ -505,6 +520,7 @@ void MainWindow::startQuickActivity(ActivityInfo* info) {
     m_activityRecorder.record(activity);
 }
 
+// @TODO: make transaction-based
 void MainWindow::on_joinNextActivityAction_triggered()
 {
     QModelIndexList selection = ui->activitiesListView->selectionModel()->selection().indexes();
@@ -552,8 +568,9 @@ void MainWindow::on_joinNextActivityAction_triggered()
     int index = m_currentViewTimePeriodActivities.indexOf(next);
     if (index != -1) {
         m_currentViewTimePeriodActivities.remove(index);
-        m_activityVisualizer->update();
         m_activityListModel->removeActivity(next);
+        m_activityVisualizer->update();
+        updateVisibleActivitiesDurationLabel();
     }
 
     g_app.database()->saveActivity(sel);
@@ -569,6 +586,90 @@ bool MainWindow::canModifyActivityIntervals(Activity *activity) const
     // interval, if activity->intervals.append is called, memory
     // may be moved to another location.
     return activity != m_activityRecorder.activity();
+}
+
+
+void MainWindow::on_splitActivityAction_triggered()
+{
+    Activity* a = selectedActivity();
+    if (a == nullptr)
+        return;
+    splitActivity(a);
+}
+
+void MainWindow::splitActivity(Activity *activity) {
+    Q_ASSERT(activity);
+
+    if (!canModifyActivityIntervals(activity) || (m_activityRecorder.isRecording() && m_activityRecorder.activity() == activity)) {
+        QMessageBox::critical(this, "Error", "Unable to split this activity right now.");
+        return;
+    }
+
+    if (activity->intervals.count() < 2) {
+        QMessageBox::information(this, "Error", "Activity is represented by a single interval, nothing to split.");
+        return;
+    }
+
+    QVector<Activity*> newActivities = QVector<Activity*>(activity->intervals.count());
+    Q_ASSERT(newActivities.length() == activity->intervals.count()); // @TODO: remove this
+
+    if (!g_app.database()->transaction()) {
+        QMessageBox::critical(this, "Error", "Unable to start transaction");
+        return;
+    }
+
+    qDebug() << "split activity ss" << activity->startTime << "es" << activity->endTime;
+    for (int i = 0; i < activity->intervals.count(); ++i) {
+        Interval interval = activity->intervals[i];
+        Activity* newActivity = g_app.m_activityAllocator.allocate();
+        newActivity->id          = -1;
+        newActivity->startTime   = interval.startTime;
+        newActivity->endTime     = interval.endTime;
+        newActivity->info        = activity->info;
+        newActivity->fieldValues = activity->fieldValues;
+        newActivity->intervals.append(interval);
+
+        qDebug() << "new activity" << i << "ss" << interval.startTime << "es" << interval.endTime;
+
+        if (!g_app.database()->saveActivity(newActivity)) {
+            goto dberror;
+        }
+        newActivities[i] = newActivity;
+    }
+
+    if (!g_app.database()->deleteActivity(activity->id)) {
+        goto dberror;
+    }
+
+    if (!g_app.database()->commit()) {
+        goto dberror;
+    }
+
+    int index = m_currentViewTimePeriodActivities.indexOf(activity);
+    if (index != -1) {
+        m_currentViewTimePeriodActivities.remove(index);
+        m_activityListModel->removeActivity(activity);
+        updateVisibleActivitiesDurationLabel();
+    }
+
+    for (Activity* a : newActivities) {
+        Q_ASSERT(a);
+        Q_ASSERT(a->id > 0);
+        m_currentViewTimePeriodActivities.append(a);
+    }
+    m_activityListModel->addActivities(newActivities);
+    m_activityVisualizer->update();
+
+    // @TODO: sort currentViewTime... and list model
+
+    return;
+
+    dberror:
+    g_app.database()->rollback();
+    QMessageBox::critical(this, "Error", "Unable to save changes in the database.");
+    for (Activity* a : newActivities) {
+        if (a) g_app.m_activityAllocator.deallocate(a);
+    }
 }
 
 qint64 MainWindow::getCurrentDayIndex() const {

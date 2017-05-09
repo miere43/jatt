@@ -50,15 +50,20 @@ private slots:
     void editActivityFieldDialogFinished(int result);
     void activityMenuItemActionTriggered(bool checked);
     void on_evalScriptAction_triggered();
+    void on_splitActivityAction_triggered();
+
 private:
     void closeEvent(QCloseEvent *event) override;
     void readAndApplySettings();
+
+    void splitActivity(Activity* activity);
 
     void setViewTimePeriod(qint64 startTime, qint64 endTime);
     void setViewDay(qint64 day);
     void showAddActivityDialog();
 
     bool isTimePeriodInView(qint64 startTime, qint64 endTime) const;
+    void updateVisibleActivitiesDurationLabel();
 
     void addQuickActivityButtons();
     void startQuickActivity(ActivityInfo* info);
