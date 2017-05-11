@@ -8,7 +8,7 @@
 #include <QHash>
 #include <QMenu>
 #include <QContextMenuEvent>
-#include <QHash>
+#include <QShortcut>
 
 #include "application_state.h"
 #include "activity_visualizer.h"
@@ -52,6 +52,8 @@ private slots:
     void on_evalScriptAction_triggered();
     void on_splitActivityAction_triggered();
 
+    void changePageLeftShortcutActivated();
+    void changePageRightShortcutActivated();
 private:
     void closeEvent(QCloseEvent *event) override;
     void readAndApplySettings();
@@ -68,7 +70,6 @@ private:
 
     void addQuickActivityButtons();
     void startQuickActivity(ActivityInfo* info);
-
 
 //    void setCurrentActivity(Activity* activity);
 //    Activity* currentActivity();
@@ -97,6 +98,9 @@ private:
 
     QMenu m_activityItemMenu;
     QMenu m_activityMenu;
+
+    QShortcut* m_changePageLeftShortcut;
+    QShortcut* m_changePageRightShortcut;
 
     QHash<ActivityInfo*, QMenu*> m_listMenus;
 

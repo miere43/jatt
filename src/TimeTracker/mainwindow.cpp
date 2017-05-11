@@ -42,6 +42,13 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->activitiesListView, &QListView::customContextMenuRequested,
             this, &MainWindow::activitiesListViewMenuRequested);
 
+    m_changePageLeftShortcut = new QShortcut(QKeySequence(Qt::Key_Left), this);
+    m_changePageRightShortcut = new QShortcut(QKeySequence(Qt::Key_Right), this);
+    connect(m_changePageLeftShortcut, &QShortcut::activated,
+            this, &MainWindow::changePageLeftShortcutActivated);
+    connect(m_changePageRightShortcut, &QShortcut::activated,
+            this, &MainWindow::changePageRightShortcutActivated);
+
     m_activityVisualizer->setTimelineRenderMode(ActivityVisualizer::Full);
 
     m_activityMenu.addAction(ui->addActivityAction);
@@ -85,6 +92,15 @@ qint64 visibleActivitiesDuration(const QVector<Activity*>& activities, qint64 lo
     }
 
     return sum;
+}
+
+void MainWindow::changePageLeftShortcutActivated() {
+    if (m_viewDay > 0)
+        setViewDay(m_viewDay - 1);
+}
+
+void MainWindow::changePageRightShortcutActivated() {
+    setViewDay(m_viewDay + 1);
 }
 
 QMenu* MainWindow::createActivityInfoMenu(ActivityInfo *info) {
@@ -301,7 +317,8 @@ void MainWindow::on_nextDayButton_clicked()
 
 void MainWindow::on_prevDayButton_clicked()
 {
-    setViewDay(m_viewDay - 1);
+    if (m_viewDay > 0)
+        setViewDay(m_viewDay - 1);
 }
 
 void MainWindow::on_startActivityButton_clicked()
