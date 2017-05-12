@@ -168,10 +168,7 @@ void MainWindow::editActivityFieldDialogFinished(int result) {
 
     if (result == QDialog::Accepted) {
         Activity* activity = dialog->activity();
-        int i = activity->info->fieldNames.indexOf(dialog->fieldIndex());
-        Q_ASSERT(i != -1);
-        Q_ASSERT(activity->info->fieldNames.count() == activity->fieldValues.count());
-        activity->fieldValues[i] = dialog->newValue().toString();
+        activity->fieldValues[dialog->fieldIndex()] = dialog->newValue().toString();
         m_activityListModel->dataChangedHint(activity);
 
         g_app.database()->saveActivity(activity);

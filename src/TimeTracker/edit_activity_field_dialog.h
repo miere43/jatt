@@ -19,7 +19,7 @@ public:
 
     QVariant newValue() const;
     inline Activity* activity() const { return m_activity; }
-    inline QString fieldIndex() const { return m_fieldIndex; }
+    inline int fieldIndex() const { return m_fieldIndex; }
 private:
     Ui::EditActivityFieldDialog *ui;
 
