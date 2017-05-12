@@ -90,6 +90,7 @@ void Hotkey::unregister() {
             qWarning() << "Unable to unregister hotkey with ID" << m_id;
         }
         HotkeyEventFilter::unregisterHotkey(this);
+        m_isActive = false;
     }
 }
 
