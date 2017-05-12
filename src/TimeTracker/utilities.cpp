@@ -1,6 +1,14 @@
 #include "utilities.h"
 #include "application_state.h"
 
+#include <QDateTime>
+
+qint64 getCurrentDateTimeUtc()
+{
+    QDateTime time = QDateTime::currentDateTimeUtc();
+    return time.currentMSecsSinceEpoch();
+}
+
 QString dbStringListToString(const QStringList& list)
 {
     return list.join('\x1f');

@@ -31,7 +31,6 @@ SOURCES += main.cpp\
     core_types.cpp \
     block_allocator.cpp \
     database_manager.cpp \
-    date_time.cpp \
     utilities.cpp \
     add_activity_dialog.cpp \
     add_field_dialog.cpp \
@@ -51,7 +50,6 @@ HEADERS  += mainwindow.h \
     core_types.h \
     block_allocator.h \
     database_manager.h \
-    date_time.h \
     utilities.h \
     add_activity_dialog.h \
     add_field_dialog.h \

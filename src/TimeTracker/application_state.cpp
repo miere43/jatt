@@ -7,7 +7,7 @@
 #include <QCoreApplication>
 #include <QSettings>
 
-#include "date_time.h"
+#include "utilities.h"
 #include "mainwindow.h"
 
 ApplicationState::ApplicationState(QObject *parent)

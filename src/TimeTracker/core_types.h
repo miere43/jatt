@@ -4,7 +4,8 @@
 #include <QSqlQuery>
 #include <QVector>
 #include <QHash>
-#include "date_time.h"
+
+#include "utilities.h"
 #include "display_format.h"
 
 struct Activity;
