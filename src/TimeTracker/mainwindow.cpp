@@ -636,6 +636,7 @@ void MainWindow::on_joinNextActivityAction_triggered()
     }
 
     removeActivityFromView(next);
+    this->updateActivityDurationLabel();
 
     g_app.database()->saveActivity(sel);
     g_app.database()->deleteActivity(next->id);
