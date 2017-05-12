@@ -42,6 +42,8 @@ MainWindow::MainWindow(QWidget *parent)
             this, &MainWindow::selectedActivityChanged);
     connect(ui->activitiesListView, &QListView::customContextMenuRequested,
             this, &MainWindow::activitiesListViewMenuRequested);
+    connect(ui->activitiesListView, &QListView::doubleClicked,
+            this, &MainWindow::activitiesListViewDoubleClicked);
 
     m_changePageLeftShortcut = new QShortcut(QKeySequence(Qt::Key_Left), this);
     m_changePageRightShortcut = new QShortcut(QKeySequence(Qt::Key_Right), this);
@@ -72,7 +74,11 @@ MainWindow::MainWindow(QWidget *parent)
     // @TODO: load key combination from settings
     m_recorderHotkey = new Hotkey((HWND)this->winId(), 1, Qt::ControlModifier, Qt::Key_Space, hotkeyCallback, (void*)this);
     if (!m_recorderHotkey->isActive()) {
+#ifdef QT_DEBUG
+        qDebug() << "Unable to register hotkey: " + m_recorderHotkey->errorMessage();
+#else
         QMessageBox::critical(this, "Error", "Unable to register hotkey: " + m_recorderHotkey->errorMessage());
+#endif
     }
 }
 
@@ -135,12 +141,15 @@ QMenu* MainWindow::createActivityInfoMenu(ActivityInfo *info) {
     m->addAction(ui->joinNextActivityAction);
     m->addAction(ui->splitActivityAction);
     m->addSeparator();
+
+    int i = 0;
     for (const QString& fieldName : info->fieldNames) {
         QAction* action = m->addAction(QString("Edit \"") + fieldName + "\"");
         // @TODO: this is so eh, maybe there is a better solution?
-        action->setProperty("fieldName", QVariant(fieldName));
+        action->setProperty("fieldIndex", QVariant::fromValue<int>(i));
         connect(action, &QAction::triggered,
                 this, &MainWindow::activityMenuItemActionTriggered);
+        ++i;
     }
     return m;
 }
@@ -159,7 +168,7 @@ void MainWindow::editActivityFieldDialogFinished(int result) {
 
     if (result == QDialog::Accepted) {
         Activity* activity = dialog->activity();
-        int i = activity->info->fieldNames.indexOf(dialog->fieldName());
+        int i = activity->info->fieldNames.indexOf(dialog->fieldIndex());
         Q_ASSERT(i != -1);
         Q_ASSERT(activity->info->fieldNames.count() == activity->fieldValues.count());
         activity->fieldValues[i] = dialog->newValue().toString();
@@ -171,6 +180,13 @@ void MainWindow::editActivityFieldDialogFinished(int result) {
     dialog->deleteLater();
 }
 
+void MainWindow::showEditActivityFieldDialog(Activity* activity, int fieldIndex) {
+    EditActivityFieldDialog* dialog = new EditActivityFieldDialog(activity, fieldIndex, this);
+    connect(dialog, &EditActivityFieldDialog::finished,
+            this, &MainWindow::editActivityFieldDialogFinished);
+    dialog->show();
+}
+
 void MainWindow::activityMenuItemActionTriggered(bool checked) {
     Q_UNUSED(checked);
 
@@ -180,12 +196,9 @@ void MainWindow::activityMenuItemActionTriggered(bool checked) {
 
     Activity* activity = selectedActivity();
     Q_ASSERT(activity);
-    QString fieldName = action->property("fieldName").value<QString>();
+    int fieldIndex = action->property("fieldIndex").value<int>();
 
-    EditActivityFieldDialog* dialog = new EditActivityFieldDialog(activity, fieldName, this);
-    connect(dialog, &EditActivityFieldDialog::finished,
-            this, &MainWindow::editActivityFieldDialogFinished);
-    dialog->showNormal();
+    showEditActivityFieldDialog(activity, fieldIndex);
 }
 
 void MainWindow::activitiesListViewMenuRequested(const QPoint &pos)
@@ -205,6 +218,17 @@ void MainWindow::activitiesListViewMenuRequested(const QPoint &pos)
         }
 
         menu->exec(ui->activitiesListView->mapToGlobal(pos));
+    }
+}
+
+void MainWindow::activitiesListViewDoubleClicked(const QModelIndex &index) {
+    if (index.isValid()) {
+        Activity* activity = (Activity*)index.data(Qt::UserRole).value<void*>();
+        Q_ASSERT(activity);
+
+        if (activity->info->fieldNames.count() > 0) {
+            showEditActivityFieldDialog(activity, 0);
+        }
     }
 }
 

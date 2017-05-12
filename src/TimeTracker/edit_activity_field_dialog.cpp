@@ -1,14 +1,14 @@
 #include "edit_activity_field_dialog.h"
 #include "ui_edit_activity_field_dialog.h"
 
-EditActivityFieldDialog::EditActivityFieldDialog(Activity* activity, QString fieldName, QWidget *parent) :
+EditActivityFieldDialog::EditActivityFieldDialog(Activity* activity, int fieldIndex, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::EditActivityFieldDialog)
 {
     ui->setupUi(this);
 
     m_activity = activity;
-    m_fieldName = fieldName;
+    m_fieldIndex = fieldIndex;
 
     Q_ASSERT(m_activity);
 //    Q_ASSERT(m_activity->id > 0);
@@ -25,13 +25,13 @@ QVariant EditActivityFieldDialog::newValue() const {
 
 void EditActivityFieldDialog::setupUi()
 {
-    ui->fieldNameLabel->setText(QStringLiteral("Edit <b>") + m_fieldName +
+    QString fieldName = m_activity->info->fieldNames[m_fieldIndex];
+
+    ui->fieldNameLabel->setText(QStringLiteral("Edit <b>") + fieldName +
                                 QStringLiteral("</b> field of \"") + m_activity->displayString() + QStringLiteral("\"."));
-    int i = m_activity->info->fieldNames.indexOf(m_fieldName);
-    Q_ASSERT(i != -1);
     Q_ASSERT(m_activity->info->fieldNames.count() == m_activity->fieldValues.count());
 
-    ui->propertyLineEdit->setText(m_activity->fieldValues[i]);
+    ui->propertyLineEdit->setText(m_activity->field(m_fieldIndex));
     ui->propertyLineEdit->selectAll();
 }
 

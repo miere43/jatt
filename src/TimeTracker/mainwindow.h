@@ -39,6 +39,7 @@ private slots:
 
     void selectedActivityChanged(const QItemSelection &selected, const QItemSelection &deselected);
     void activitiesListViewMenuRequested(const QPoint &pos);
+    void activitiesListViewDoubleClicked(const QModelIndex& index);
 
     void on_nextDayButton_clicked();
     void on_prevDayButton_clicked();
@@ -62,6 +63,7 @@ private:
     void readAndApplySettings();
 
     void splitActivity(Activity* activity);
+    void showEditActivityFieldDialog(Activity* activity, int fieldIndex);
 
     void setViewTimePeriod(qint64 startTime, qint64 endTime);
     void setViewDay(qint64 day);

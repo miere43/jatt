@@ -14,19 +14,19 @@ class EditActivityFieldDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit EditActivityFieldDialog(Activity* activity, QString fieldName, QWidget *parent = 0);
+    explicit EditActivityFieldDialog(Activity* activity, int fieldIndex, QWidget *parent = 0);
     ~EditActivityFieldDialog();
 
     QVariant newValue() const;
     inline Activity* activity() const { return m_activity; }
-    inline QString fieldName() const { return m_fieldName; }
+    inline QString fieldIndex() const { return m_fieldIndex; }
 private:
     Ui::EditActivityFieldDialog *ui;
 
     void setupUi();
 
     Activity* m_activity;
-    QString m_fieldName;
+    int m_fieldIndex;
 };
 
 #endif // EDIT_ACTIVITY_FIELD_DIALOG_H
