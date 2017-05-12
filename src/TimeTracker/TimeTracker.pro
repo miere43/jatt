@@ -23,6 +23,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
+msvc: LIBS += -luser32
 
 SOURCES += main.cpp\
         mainwindow.cpp \
@@ -42,7 +43,8 @@ SOURCES += main.cpp\
     activity_item_delegate.cpp \
     plugin_manager.cpp \
     duk/duktape.c \
-    edit_activity_field_dialog.cpp
+    edit_activity_field_dialog.cpp \
+    hotkey.cpp
 
 HEADERS  += mainwindow.h \
     application_state.h \
@@ -63,7 +65,8 @@ HEADERS  += mainwindow.h \
     duk/duk_config.h \
     duk/duktape.h \
     edit_activity_field_dialog.h \
-    duktape_prepare_eval.h
+    duktape_prepare_eval.h \
+    hotkey.h
 
 FORMS    += mainwindow.ui \
     add_activity_dialog.ui \

@@ -12,6 +12,8 @@
 #include <QFileDialog>
 #include <QSettings>
 
+void hotkeyCallback(Hotkey* hotkey, void* userdata);
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -66,6 +68,29 @@ MainWindow::MainWindow(QWidget *parent)
 
     addQuickActivityButtons();
     readAndApplySettings();
+
+    // @TODO: load key combination from settings
+    m_recorderHotkey = new Hotkey((HWND)this->winId(), 1, Qt::ControlModifier, Qt::Key_Space, hotkeyCallback, (void*)this);
+    if (!m_recorderHotkey->isActive()) {
+        QMessageBox::critical(this, "Error", "Unable to register hotkey: " + m_recorderHotkey->errorMessage());
+    }
+}
+
+void hotkeyCallback(Hotkey* hotkey, void* userdata) {
+    MainWindow* window = (MainWindow*)userdata;
+    window->handleHotkey(hotkey);
+}
+
+void MainWindow::handleHotkey(Hotkey *hotkey) {
+    if (hotkey == m_recorderHotkey) {
+        if (m_activityRecorder.isRecording()) {
+            m_activityRecorder.stop();
+        } else {
+            if (m_lastActiveActivity != nullptr) {
+                m_activityRecorder.record(m_lastActiveActivity);
+            }
+        }
+    }
 }
 
 inline qint64 clamp(qint64 value, qint64 min, qint64 max) {
@@ -376,6 +401,7 @@ void MainWindow::activityRecorderRecordEvent(ActivityRecorderEvent event)
             m_activityItemDelegate->setCurrentActivity(currentActivity);
         }
 
+        m_lastActiveActivity = currentActivity;
         this->setWindowTitle("(" + currentActivity->info->name + ") " + g_app.appTitle);
     }
     else if (event == ActivityRecorderEvent::RecordingStopped)
@@ -457,6 +483,24 @@ void MainWindow::deleteSelectedActivityTriggered(bool checked)
         return;
     }
 
+    removeActivityFromView(activity);
+
+    if (activity->id >= 0) {
+        g_app.database()->deleteActivity(activity->id);
+    }
+
+    g_app.m_activityAllocator.deallocate(activity);
+}
+
+void MainWindow::removeActivityFromView(Activity *activity) {
+    if (m_activityRecorder.isRecording()) {
+        Q_ASSERT(m_activityRecorder.activity() != activity);
+    }
+
+    if (m_lastActiveActivity == activity) {
+        m_lastActiveActivity = nullptr;
+    }
+
     int index = m_currentViewTimePeriodActivities.indexOf(activity);
     if (index != -1) {
         m_currentViewTimePeriodActivities.remove(index);
@@ -464,12 +508,6 @@ void MainWindow::deleteSelectedActivityTriggered(bool checked)
         m_activityVisualizer->update();
         updateVisibleActivitiesDurationLabel();
     }
-
-    if (activity->id >= 0) {
-        g_app.database()->deleteActivity(activity->id);
-    }
-
-    g_app.m_activityAllocator.deallocate(activity);
 }
 
 const QVector<Activity*>& MainWindow::currentActivities() const {
@@ -597,14 +635,7 @@ void MainWindow::on_joinNextActivityAction_triggered()
         sel->intervals.append(interval);
     }
 
-    int index = m_currentViewTimePeriodActivities.indexOf(next);
-    if (index != -1) {
-        m_currentViewTimePeriodActivities.remove(index);
-        m_activityListModel->removeActivity(next);
-        m_activityVisualizer->update();
-        updateVisibleActivitiesDurationLabel();
-        updateActivityDurationLabel();
-    }
+    removeActivityFromView(next);
 
     g_app.database()->saveActivity(sel);
     g_app.database()->deleteActivity(next->id);
@@ -675,11 +706,7 @@ void MainWindow::splitActivity(Activity *activity) {
         goto dberror;
     }
 
-    int index = m_currentViewTimePeriodActivities.indexOf(activity);
-    if (index != -1) {
-        m_currentViewTimePeriodActivities.remove(index);
-        m_activityListModel->removeActivity(activity);
-    }
+    removeActivityFromView(activity);
 
     for (Activity* a : newActivities) {
         Q_ASSERT(a);

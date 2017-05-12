@@ -15,6 +15,7 @@
 #include "activity_list_model.h"
 #include "activity_recorder.h"
 #include "activity_item_delegate.h"
+#include "hotkey.h"
 
 namespace Ui {
     class MainWindow;
@@ -30,6 +31,8 @@ public:
 
     const QVector<Activity*>& currentActivities() const;
     bool canModifyActivityIntervals(Activity* activity) const;
+
+    void handleHotkey(Hotkey* hotkey);
 private slots:
     void on_addActivityAction_triggered();
     void addActivityDialogFinished(int result);
@@ -71,11 +74,14 @@ private:
     void addQuickActivityButtons();
     void startQuickActivity(ActivityInfo* info);
 
+
 //    void setCurrentActivity(Activity* activity);
 //    Activity* currentActivity();
 //    QModelIndex currentActivityIndex();
 
     // void dumpCurrent();
+
+    void removeActivityFromView(Activity* activity);
 
     qint64 getCurrentDayIndex() const;
 
@@ -95,6 +101,8 @@ private:
     qint64 m_currentViewTimePeriodEndTime = -1;
 
     ActivityRecorder m_activityRecorder;
+    Hotkey* m_recorderHotkey;
+    Activity* m_lastActiveActivity = nullptr;
 
     QMenu m_activityItemMenu;
     QMenu m_activityMenu;
