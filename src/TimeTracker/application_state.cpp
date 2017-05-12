@@ -7,8 +7,6 @@
 #include <QCoreApplication>
 #include <QSettings>
 
-#include "consts.h"
-#include "common.h"
 #include "date_time.h"
 #include "mainwindow.h"
 

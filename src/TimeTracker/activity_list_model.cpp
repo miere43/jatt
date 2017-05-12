@@ -1,5 +1,4 @@
 #include "activity_list_model.h"
-#include "common.h"
 #include <QtAlgorithms>
 
 ActivityListModel::ActivityListModel(QObject *parent)
@@ -78,7 +77,6 @@ QVariant ActivityListModel::data(const QModelIndex &index, int role) const
 bool ActivityListModel::removeRows(int row, int count, const QModelIndex &parent)
 {
     if (row < 0 || row + count > m_activities.count()) {
-        APP_ERRSTREAM << "invalid params";
         return false;
     }
 

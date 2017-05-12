@@ -1,14 +1,11 @@
 #ifndef DATABASE_MANAGER_H
 #define DATABASE_MANAGER_H
 
-// Debug variable, doesn't commit changes to database when set to 1.
-// e.g. uploadSession(...) will not write anything to database, but method will return true.
-#define APP_DBMANAGER_NO_COMMIT 0
-
 #include <QObject>
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlQuery>
 #include <QHash>
+
 #include "core_types.h"
 #include "block_allocator.h"
 

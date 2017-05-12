@@ -1,7 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "application_state.h"
-#include "common.h"
 
 #include "add_activity_dialog.h"
 #include "edit_activity_field_dialog.h"

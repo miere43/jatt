@@ -42,15 +42,13 @@ SOURCES += main.cpp\
     activity_item_delegate.cpp \
     plugin_manager.cpp \
     duk/duktape.c \
-    edit_activity_field_dialog.cpp \
-    sequence.cpp
+    edit_activity_field_dialog.cpp
 
 HEADERS  += mainwindow.h \
     application_state.h \
     core_types.h \
     block_allocator.h \
     database_manager.h \
-    common.h \
     date_time.h \
     utilities.h \
     add_activity_dialog.h \
@@ -65,8 +63,6 @@ HEADERS  += mainwindow.h \
     duk/duk_config.h \
     duk/duktape.h \
     edit_activity_field_dialog.h \
-    sequence.h \
-    consts.h \
     duktape_prepare_eval.h
 
 FORMS    += mainwindow.ui \

@@ -5,7 +5,6 @@
 #include <QByteArray>
 
 #include "utilities.h"
-#include "common.h"
 #include "application_state.h"
 
 DatabaseManager::DatabaseManager(QObject *parent)
@@ -29,8 +28,6 @@ bool DatabaseManager::establishDatabaseConnection(QString databasePath, QString*
         *error = "Unable to add SQLite database, error: " + m_database.lastError().text();
         return false;
     }
-
-    qDebug() << "using database" << databasePath;
 
     m_database.setDatabaseName(databasePath);
     if (!m_database.open() || !m_database.isOpen()) // @TODO: this is always true because it will create database if one doesn't exist.
@@ -76,11 +73,8 @@ bool DatabaseManager::loadActivityInfos()
 
     if (!query.exec())
     {
-        APP_ERRSTREAM << "Query failed." << query.lastError().text();
         return false;
     }
-
-    qDebug() << "loaded " << query.size() << "act infos";
 
     while (query.next())
     {
@@ -124,7 +118,6 @@ Activity* DatabaseManager::loadActivity(qint64 id) {
     query.bindValue(":id", id);
 
     if (!query.exec()) {
-        APP_ERRSTREAM << "Query failed." << query.lastError().text();
         return nullptr;
     }
 
@@ -158,7 +151,6 @@ bool DatabaseManager::loadActivitiesAssociatedWithActivityInfo(ActivityInfo* inf
 
     if (!query.exec())
     {
-        APP_ERRSTREAM << "Query failed." << query.lastError().text();
         return false;
     }
 
@@ -212,7 +204,6 @@ bool DatabaseManager::saveActivity(Activity* activity)
 
     if (!query.exec())
     {
-        APP_ERRSTREAM << "Query failed." << query.lastError().text();
         return false;
     }
 
@@ -234,7 +225,6 @@ bool DatabaseManager::deleteActivity(qint64 activityId) {
     query.bindValue(":id", activityId);
 
     if (!query.exec()) {
-        APP_ERRSTREAM << "unable to delete:" << query.lastError().text();
         return false;
     }
 
@@ -270,7 +260,6 @@ bool DatabaseManager::saveActivityInfo(ActivityInfo* info)
 
     if (!query.exec())
     {
-        APP_ERRSTREAM << "Query failed." << query.lastError().text();
         return false;
     }
 
@@ -299,11 +288,8 @@ bool DatabaseManager::loadActivitiesBetweenStartAndEndTime(QVector<Activity*>* a
 
     if (!query.exec())
     {
-        APP_ERRSTREAM << "Query failed." << query.lastError().text();
         return false;
     }
-
-    qDebug() << "Activities between" << startTime / (double)86400000 << "-" << endTime / (double)86400000 << "are:";
 
     while (query.next())
     {
@@ -331,8 +317,6 @@ bool DatabaseManager::loadActivitiesBetweenStartAndEndTime(QVector<Activity*>* a
             copyActivityValuesFromQuery(activity, &query);
             m_activities.insert(activityId, activity);
         }
-
-        // qDebug() << "-" << activity->id << activity->displayString() << "|" << activity->startTime / (double)86400000 << activity->endTime / (double)86400000;
 
         if (!checkIntervals || (checkIntervals && activity->belongsToTimePeriod(startTime, endTime))) {
            activities->append(activity);
@@ -384,7 +368,6 @@ bool DatabaseManager::checkTables() {
         query.bindValue(1, tableNames[i]);
 
         if (!query.exec()) {
-            qDebug() << "unable to exec check for" << tableNames[i];
             continue;
         }
 
