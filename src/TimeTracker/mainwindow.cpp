@@ -149,6 +149,7 @@ MainWindow::~MainWindow()
 {
     delete ui;
     delete m_activityListModel;
+    delete m_recorderHotkey;
 }
 
 void MainWindow::editActivityFieldDialogFinished(int result) {
@@ -636,7 +637,7 @@ void MainWindow::on_joinNextActivityAction_triggered()
     }
 
     removeActivityFromView(next);
-    this->updateActivityDurationLabel();
+    updateActivityDurationLabel();
 
     g_app.database()->saveActivity(sel);
     g_app.database()->deleteActivity(next->id);
