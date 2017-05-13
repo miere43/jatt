@@ -1,12 +1,11 @@
 #include "core_types.h"
+#include "error_macros.h"
 
 #include <QVariant>
 #include <QDebug>
 
 //bool IntervalTag::createFromDatabaseQuery(IntervalTag* target, QSqlQuery* query)
 //{
-//    Q_ASSERT(target);
-//    Q_ASSERT(query);
 //    bool ok = false;
 //    target->id = query->value("id").toInt(&ok);
 //    if (!ok) return false;
@@ -63,9 +62,9 @@ QString createDurationStringFromMsecs(qint64 msecs)
 
 QString ActivityInfo::formatActivity(Activity *activity)
 {
-    Q_ASSERT(activity);
-    Q_ASSERT(activity->id > 0);
-    Q_ASSERT(activity->info == this);
+    ERR_VERIFY_V(activity, QString::null);
+    ERR_VERIFY_V(activity->id > 0, QString::null);
+    ERR_VERIFY_V(activity->info == this, QString::null);
 
     return m_formatter.format(activity->fieldValues);
 }
@@ -77,8 +76,8 @@ void ActivityInfo::updateFormatter()
 
 QString Activity::displayString()
 {
-    Q_ASSERT(id > 0);
-    Q_ASSERT(info != nullptr);
+    ERR_VERIFY_V(id > 0, QString::null);
+    ERR_VERIFY_V(info != nullptr, QString::null);
 
     return info->formatActivity(this);
 }

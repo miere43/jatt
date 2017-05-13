@@ -6,7 +6,6 @@
 #include <QStringList>
 #include <QVector>
 
-
 enum DisplayFormatRunType
 {
     ConstantString,

@@ -39,6 +39,7 @@ public:
         SuccessfulEvaluation = 0,
         CompilationError,
         ExecutionError,
+        InvalidArguments
     };
 
     PluginManager();

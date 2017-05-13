@@ -2,6 +2,7 @@
 #include "ui_add_activity_info_dialog.h"
 
 #include "application_state.h"
+#include "error_macros.h"
 
 #include <QMessageBox>
 #include <QColorDialog>
@@ -20,13 +21,11 @@ AddActivityInfoDialog::~AddActivityInfoDialog()
 
 ActivityInfo* AddActivityInfoDialog::constructActivityInfo()
 {
-    Q_ASSERT(!m_activityInfoConstructed);
-    Q_ASSERT(m_dialogAccepted);
-    if (m_activityInfoConstructed || !m_dialogAccepted)
-        return nullptr;
+    ERR_VERIFY_V(!m_activityInfoConstructed, nullptr);
+    ERR_VERIFY_V(m_dialogAccepted, nullptr);
 
     ActivityInfo* info = g_app.m_activityInfoAllocator.allocate();
-    Q_ASSERT(info);
+    ERR_VERIFY_V(info, nullptr);
 
     info->id = -1;
     info->name = ui->nameLineEdit->text();
@@ -43,7 +42,7 @@ ActivityInfo* AddActivityInfoDialog::constructActivityInfo()
 
 bool AddActivityInfoDialog::validate(QString* errorMessage)
 {
-    Q_ASSERT(errorMessage);
+    ERR_VERIFY_V(errorMessage, false);
 
     QString name = ui->nameLineEdit->text();
     if (name.isNull() || name.isEmpty())

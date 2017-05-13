@@ -1,9 +1,10 @@
 #include "add_activity_dialog.h"
 #include "ui_add_activity_dialog.h"
 
+#include "add_activity_info_dialog.h"
 #include "add_field_dialog.h"
 #include "application_state.h"
-#include "add_activity_info_dialog.h"
+#include "error_macros.h"
 
 #include <QMessageBox>
 #include <QLineEdit>
@@ -43,7 +44,7 @@ AddActivityDialog::~AddActivityDialog()
 
 void AddActivityDialog::setActivityInfo(ActivityInfo* info)
 {
-    Q_ASSERT(info);
+    ERR_VERIFY(info);
 
     if (m_currentActivityInfo)
     {
@@ -88,8 +89,7 @@ void AddActivityDialog::addFieldDialogFieldAdded()
 {
     QObject* sender = QObject::sender();
     AddFieldDialog* dialog = qobject_cast<AddFieldDialog*>(sender);
-    Q_ASSERT(dialog);
-    Q_UNUSED(dialog);
+    ERR_VERIFY(dialog);
 
     setActivityInfo(m_currentActivityInfo);
 }
@@ -100,7 +100,7 @@ void AddActivityDialog::addFieldDialogFinished(int result)
 
     QObject* sender = QObject::sender();
     AddFieldDialog* dialog = qobject_cast<AddFieldDialog*>(sender);
-    Q_ASSERT(dialog);
+    ERR_VERIFY(dialog);
 
     dialog->deleteLater();
 }
@@ -108,39 +108,41 @@ void AddActivityDialog::addFieldDialogFinished(int result)
 void AddActivityDialog::on_activityInfoComboBox_currentIndexChanged(int index)
 {
     ActivityInfo* activityInfo = (ActivityInfo*)ui->activityInfoComboBox->itemData(index, Qt::UserRole).value<void*>();
-    Q_ASSERT(activityInfo);
+    ERR_VERIFY(activityInfo);
 
     setActivityInfo(activityInfo);
 }
 
 Activity* AddActivityDialog::constructActivity()
 {
-    Q_ASSERT(!m_activityWasConstructed); // call this thing only once
+    ERR_VERIFY_V(!m_activityWasConstructed, nullptr); // call this thing only once
+
     if (!m_currentActivityInfo)
         return nullptr;
     if (m_activityWasConstructed)
         return nullptr;
 
     Activity* activity = g_app.m_activityAllocator.allocate();
-    Q_ASSERT(activity);
+    ERR_VERIFY_V(activity, nullptr);
 
     activity->id = -1;
     activity->info = m_currentActivityInfo;
     activity->startTime = getCurrentDateTimeUtc();
     activity->endTime = activity->startTime;
-    qDebug() << "Constructed, start time:" << activity->startTime << "end time:" << activity->endTime << "diff:" << activity->endTime - activity->startTime;
+
     activity->fieldValues.reserve(m_activityInfoFieldWidgets.size());
 
     for (const QWidget* fieldWidget : m_activityInfoFieldWidgets)
     {
         const QLineEdit* lineEdit = qobject_cast<const QLineEdit*>(fieldWidget);
-        Q_ASSERT(lineEdit);
+        ERR_VERIFY_V(lineEdit, nullptr);
 
         activity->fieldValues.append(lineEdit->text());
     }
 
     g_app.database()->saveActivity(activity);
     m_activityWasConstructed = true;
+
     return activity;
 }
 
@@ -174,10 +176,10 @@ void AddActivityDialog::addActivityInfoDialogInfoAdded()
 {
     QObject* sender = QObject::sender();
     AddActivityInfoDialog* dialog = qobject_cast<AddActivityInfoDialog*>(sender);
-    Q_ASSERT(dialog);
+    ERR_VERIFY(dialog);
 
     ActivityInfo* info = dialog->constructActivityInfo();
-    Q_ASSERT(info);
+    ERR_VERIFY(info);
 
     ui->activityInfoComboBox->addItem(info->name, QVariant::fromValue((void*)info));
     ui->activityInfoComboBox->setCurrentIndex(ui->activityInfoComboBox->children().count() - 1);
@@ -186,9 +188,10 @@ void AddActivityDialog::addActivityInfoDialogInfoAdded()
 void AddActivityDialog::addActivityInfoDialogFinished(int result)
 {
     Q_UNUSED(result);
+
     QObject* sender = QObject::sender();
     AddActivityInfoDialog* dialog = qobject_cast<AddActivityInfoDialog*>(sender);
-    Q_ASSERT(dialog);
+    ERR_VERIFY(dialog);
 
     dialog->deleteLater();
 }

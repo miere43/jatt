@@ -1,4 +1,7 @@
 #include "application_state.h"
+#include "error_macros.h"
+#include "mainwindow.h"
+#include "utilities.h"
 
 #include <QDebug>
 #include <QtSql/QSqlError>
@@ -6,9 +9,6 @@
 #include <QVariant>
 #include <QCoreApplication>
 #include <QSettings>
-
-#include "utilities.h"
-#include "mainwindow.h"
 
 ApplicationState::ApplicationState(QObject *parent)
     : QObject(parent)
@@ -22,7 +22,7 @@ ApplicationState::ApplicationState(QObject *parent)
 
 bool ApplicationState::initialize(QString* error)
 {
-    Q_ASSERT(error);
+    ERR_VERIFY_V(error, false);
 
     QSettings settings;
     settings.beginGroup(QStringLiteral("main"));

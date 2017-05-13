@@ -4,6 +4,7 @@
 
 #include "add_activity_dialog.h"
 #include "edit_activity_field_dialog.h"
+#include "error_macros.h"
 
 #include <QtAlgorithms>
 #include <QDebug>
@@ -13,6 +14,10 @@
 #include <QSettings>
 
 void hotkeyCallback(Hotkey* hotkey, void* userdata);
+void a(const char* function, const char* file, int line, const char* message, void* u) {
+    Q_UNUSED(u);
+    qDebug().nospace() << "Error at \"" << file << ":" << line << "\" in " << function << ": \"" << message << "\"";
+}
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -45,8 +50,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->activitiesListView, &QListView::doubleClicked,
             this, &MainWindow::activitiesListViewDoubleClicked);
 
+    m_editSelectedActivityShortcut = new QShortcut(QKeySequence(Qt::Key_Enter), this);
     m_changePageLeftShortcut = new QShortcut(QKeySequence(Qt::Key_Left), this);
     m_changePageRightShortcut = new QShortcut(QKeySequence(Qt::Key_Right), this);
+    connect(m_editSelectedActivityShortcut, &QShortcut::activatedAmbiguously,
+            this, &MainWindow::editSelectedActivityShortcutActivated);
     connect(m_changePageLeftShortcut, &QShortcut::activated,
             this, &MainWindow::changePageLeftShortcutActivated);
     connect(m_changePageRightShortcut, &QShortcut::activated,
@@ -70,6 +78,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     addQuickActivityButtons();
     readAndApplySettings();
+
+    addErrorListener(a, nullptr);
 
     // @TODO: load key combination from settings
     m_recorderHotkey = new Hotkey((HWND)this->winId(), 1, Qt::ControlModifier, Qt::Key_Space, hotkeyCallback, (void*)this);
@@ -106,7 +116,7 @@ inline qint64 clamp(qint64 value, qint64 min, qint64 max) {
 }
 
 qint64 visibleActivitiesDuration(const QVector<Activity*>& activities, qint64 lowBound, qint64 highBound) {
-    Q_ASSERT(lowBound < highBound);
+    ERR_VERIFY_V(lowBound < highBound, 0);
 
     qint64 sum = 0;
     for (const Activity* activity : activities) {
@@ -122,6 +132,15 @@ qint64 visibleActivitiesDuration(const QVector<Activity*>& activities, qint64 lo
     }
 
     return sum;
+}
+
+void MainWindow::editSelectedActivityShortcutActivated() {
+    Activity* activity = selectedActivity();
+    if (!activity) return;
+
+    if (activity->info->fieldNames.count() > 0) {
+        showEditActivityFieldDialog(activity, 0);
+    }
 }
 
 void MainWindow::changePageLeftShortcutActivated() {
@@ -164,7 +183,7 @@ MainWindow::~MainWindow()
 void MainWindow::editActivityFieldDialogFinished(int result) {
     QObject* sender = QObject::sender();
     EditActivityFieldDialog* dialog = qobject_cast<EditActivityFieldDialog*>(sender);
-    Q_ASSERT(dialog);
+    ERR_VERIFY(dialog);
 
     if (result == QDialog::Accepted) {
         Activity* activity = dialog->activity();
@@ -189,12 +208,12 @@ void MainWindow::activityMenuItemActionTriggered(bool checked) {
 
     QObject* sender = QObject::sender();
     QAction* action = qobject_cast<QAction*>(sender);
-    Q_ASSERT(action);
+    ERR_VERIFY(action);
 
     Activity* activity = selectedActivity();
-    Q_ASSERT(activity);
-    int fieldIndex = action->property("fieldIndex").value<int>();
+    ERR_VERIFY(activity);
 
+    int fieldIndex = action->property("fieldIndex").value<int>();
     showEditActivityFieldDialog(activity, fieldIndex);
 }
 
@@ -205,13 +224,13 @@ void MainWindow::activitiesListViewMenuRequested(const QPoint &pos)
         m_activityMenu.exec(ui->activitiesListView->mapToGlobal(pos));
     } else {
         Activity* activity = (Activity*)item.data(Qt::UserRole).value<void*>();
-        Q_ASSERT(activity);
-        Q_ASSERT(activity->info);
+        ERR_VERIFY(activity);
+        ERR_VERIFY(activity->info);
 
         // @TODO: can move QMenu* from hashtable to ActivityInfo struct (because all AI's have a menu)
         QMenu* menu = m_listMenus.value(activity->info, nullptr);
         if (menu == nullptr) {
-            Q_ASSERT(false); // All Activity Info instances should have a menu associated with them.
+            ERR_VERIFY(false); // All Activity Info instances should have a menu associated with them.
         }
 
         menu->exec(ui->activitiesListView->mapToGlobal(pos));
@@ -221,7 +240,7 @@ void MainWindow::activitiesListViewMenuRequested(const QPoint &pos)
 void MainWindow::activitiesListViewDoubleClicked(const QModelIndex &index) {
     if (index.isValid()) {
         Activity* activity = (Activity*)index.data(Qt::UserRole).value<void*>();
-        Q_ASSERT(activity);
+        ERR_VERIFY(activity);
 
         if (activity->info->fieldNames.count() > 0) {
             showEditActivityFieldDialog(activity, 0);
@@ -246,7 +265,7 @@ void MainWindow::addActivityDialogFinished(int result)
 {
     QObject* sender = QObject::sender();
     AddActivityDialog* dialog = qobject_cast<AddActivityDialog*>(sender);
-    Q_ASSERT(dialog);
+    ERR_VERIFY(dialog);
 
     dialog->deleteLater();
 
@@ -291,7 +310,7 @@ void MainWindow::setViewTimePeriod(qint64 startTime, qint64 endTime)
     if (m_activityRecorder.isRecording())
     {
         Activity* currentActivity = m_activityRecorder.activity();
-        Q_ASSERT(currentActivity);
+        ERR_VERIFY(currentActivity);
 
         if (currentActivity->belongsToTimePeriod(startTime, endTime)) {
             if (!m_currentViewTimePeriodActivities.contains(currentActivity)) {
@@ -438,7 +457,6 @@ void MainWindow::activityRecorderRecordEvent(ActivityRecorderEvent event)
 
     if (event == ActivityRecorderEvent::RecordingStarted || event == ActivityRecorderEvent::UpdateUITimer)
     {
-        Q_ASSERT(currentActivity);
         updateActivityDurationLabel();
     }
 
@@ -498,7 +516,7 @@ void MainWindow::deleteSelectedActivityTriggered(bool checked)
     }
 
     Activity* activity = ((Activity*)selection.at(0).data(Qt::UserRole).value<void*>());
-    Q_ASSERT(activity);
+    ERR_VERIFY(activity);
 
     if (m_activityRecorder.isRecording() && m_activityRecorder.activity() == activity) {
         QMessageBox::critical(this, "Error", "Cannot delete currently recording activity");
@@ -516,7 +534,7 @@ void MainWindow::deleteSelectedActivityTriggered(bool checked)
 
 void MainWindow::removeActivityFromView(Activity *activity) {
     if (m_activityRecorder.isRecording()) {
-        Q_ASSERT(m_activityRecorder.activity() != activity);
+        ERR_VERIFY(m_activityRecorder.activity() != activity);
     }
 
     if (m_lastActiveActivity == activity) {
@@ -540,10 +558,10 @@ void MainWindow::startQuickActivityButtonClicked()
 {
     QObject* sender = QObject::sender();
     QPushButton* button = qobject_cast<QPushButton*>(sender);
-    Q_ASSERT(button);
+    ERR_VERIFY(button);
 
     ActivityInfo* info = (ActivityInfo*)button->property("activityInfo").value<void*>();
-    Q_ASSERT(info);
+    ERR_VERIFY(info);
 
     startQuickActivity(info);
 }
@@ -577,7 +595,9 @@ void MainWindow::addQuickActivityButtons()
 }
 
 void MainWindow::startQuickActivity(ActivityInfo* info) {
-    Q_ASSERT(info);
+
+    ERR_VERIFY(info);
+
     if (m_activityRecorder.isRecording()) {
         QMessageBox::critical(this, "Error", "Unable to create quick activity because already recording.");
         return;
@@ -623,7 +643,7 @@ void MainWindow::on_joinNextActivityAction_triggered()
     }
 
     Activity* sel = ((Activity*)selection.at(0).data(Qt::UserRole).value<void*>());
-    Q_ASSERT(sel);
+    ERR_VERIFY(sel);
 
     int row = selection.at(0).row();
     QModelIndex idx = m_activityListModel->index(row + 1);
@@ -667,7 +687,7 @@ void MainWindow::on_joinNextActivityAction_triggered()
 
 bool MainWindow::canModifyActivityIntervals(Activity *activity) const
 {
-    Q_ASSERT(activity);
+    ERR_VERIFY_V(activity, false);
     if (!m_activityRecorder.isRecording()) return true;
     // m_activityRecorder stores a pointer to currently recording
     // interval, if activity->intervals.append is called, memory
@@ -685,7 +705,7 @@ void MainWindow::on_splitActivityAction_triggered()
 }
 
 void MainWindow::splitActivity(Activity *activity) {
-    Q_ASSERT(activity);
+    ERR_VERIFY(activity);
 
     if (!canModifyActivityIntervals(activity) || (m_activityRecorder.isRecording() && m_activityRecorder.activity() == activity)) {
         QMessageBox::critical(this, "Error", "Unable to split this activity right now.");
@@ -698,7 +718,6 @@ void MainWindow::splitActivity(Activity *activity) {
     }
 
     QVector<Activity*> newActivities = QVector<Activity*>(activity->intervals.count());
-    Q_ASSERT(newActivities.length() == activity->intervals.count()); // @TODO: remove this
 
     if (!g_app.database()->transaction()) {
         QMessageBox::critical(this, "Error", "Unable to start transaction");
@@ -732,8 +751,8 @@ void MainWindow::splitActivity(Activity *activity) {
     removeActivityFromView(activity);
 
     for (Activity* a : newActivities) {
-        Q_ASSERT(a);
-        Q_ASSERT(a->id > 0);
+        ERR_VERIFY(a);
+        ERR_VERIFY(a->id > 0);
         m_currentViewTimePeriodActivities.append(a);
     }
     m_activityListModel->addActivities(newActivities);
@@ -791,6 +810,8 @@ void MainWindow::on_evalScriptAction_triggered()
     QByteArray fileNameUtf8 = fileName.toUtf8();
 
     PluginManager::EvaluationState state = g_app.m_pluginManager.evaluate(text.constData(), fileNameUtf8.constData(), &error);
+    ERR_VERIFY(state != PluginManager::InvalidArguments);
+
     if (state != PluginManager::SuccessfulEvaluation) {
         QString title = state == PluginManager::CompilationError ?
                     QStringLiteral("Script Compilation Error") :

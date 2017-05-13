@@ -1,6 +1,8 @@
 #include "activity_visualizer.h"
-#include <QPainter>
 #include "application_state.h"
+#include "error_macros.h"
+
+#include <QPainter>
 #include <QDebug>
 
 ActivityVisualizer::ActivityVisualizer(QWidget *parent) : QWidget(parent)
@@ -38,10 +40,12 @@ void ActivityVisualizer::setTimelineRenderMode(TimelineRenderMode mode)
 
 void ActivityVisualizer::setTimePeriod(qint64 startTime, qint64 endTime, QVector<Activity *> *activities)
 {
-    Q_ASSERT(activities);
+    ERR_VERIFY(activities);
+
     m_startTime = startTime;
     m_endTime = endTime;
     m_activities = activities;
+
     this->update();
 }
 
@@ -89,7 +93,7 @@ void ActivityVisualizer::paintEvent(QPaintEvent *event)
         }
         if (minTime == INT64_MAX && maxTime == INT64_MIN)
             return; // Nothing to render.
-        Q_ASSERT(minTime <= maxTime);
+        ERR_VERIFY(minTime <= maxTime);
         width = maxTime - minTime;
         if (width == 0) return; // Avoid division by zero.
         unit = (double)this->width() / width;
@@ -97,15 +101,13 @@ void ActivityVisualizer::paintEvent(QPaintEvent *event)
     }
     else
     {
-        Q_ASSERT(false);
+        ERR_VERIFY(false);
     }
 
     QBrush currentBrush;
-    int i = 0;
-    Q_UNUSED(i);
     for (const Activity* activity : *m_activities)
     {
-        Q_ASSERT(activity);
+        ERR_VERIFY(activity);
         if (activity->intervals.count() == 0)
             continue;
         currentBrush = activity == m_selectedActivity ? QBrush(QColor(127, 201, 255, 255)) : QBrush(QColor((QRgb)activity->info->color));

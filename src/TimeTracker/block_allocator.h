@@ -1,6 +1,8 @@
 #ifndef BLOCK_ALLOCATOR_H
 #define BLOCK_ALLOCATOR_H
 
+#include "error_macros.h"
+
 #include <QtGlobal>
 #include <stdlib.h>
 
@@ -22,8 +24,8 @@ public:
 
         T* set(int slot)
         {
-            Q_ASSERT(slot >= 0 && slot < BLOCK_MAX_ITEMS);
-            Q_ASSERT(false == (usedSlots & (1 << slot)));
+            ERR_VERIFY_V(slot >= 0 && slot < BLOCK_MAX_ITEMS, nullptr);
+            ERR_VERIFY_V(false == (usedSlots & (1 << slot)), nullptr);
             usedSlots = usedSlots | (1 << slot);
             return &items[slot];
         }

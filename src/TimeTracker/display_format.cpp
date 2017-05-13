@@ -1,4 +1,5 @@
 #include "display_format.h"
+#include "error_macros.h"
 
 DisplayFormat::DisplayFormat()
 {
@@ -120,7 +121,7 @@ void DisplayFormat::setFormat(QString format, QStringList names)
 
 QString DisplayFormat::format(const QStringList &values)
 {
-    Q_ASSERT(values.count() == m_names.count());
+    ERR_VERIFY_V(values.count() == m_names.count(), QString::null);
 
     QString result;
     for (const DisplayFormatRun& run : m_parsedFormat)
@@ -135,7 +136,8 @@ QString DisplayFormat::format(const QStringList &values)
         }
         else
         {
-            Q_ASSERT(false);
+            // unhandled case
+            ERR_VERIFY_V(false, QString::null);
         }
     }
 

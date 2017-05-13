@@ -1,18 +1,16 @@
 #include "plugin_manager.h"
+#include "application_state.h"
+#include "mainwindow.h"
+#include "core_types.h"
+#include "error_macros.h"
 
 #include <QCoreApplication>
 #include <QMessageBox>
 #include <QDebug>
 
-#include "application_state.h"
-#include "mainwindow.h"
-#include "core_types.h"
-
-//QHash<int, JSMenu> m_jsMenus;
-
 void PluginManager_fatalHandler(void* userdata, const char* msg) {
     PluginManager* manager = (PluginManager*)userdata;
-    Q_ASSERT(manager);
+    ERR_VERIFY(manager);
     Q_UNUSED(manager);
 
     qDebug() << msg;
@@ -126,7 +124,7 @@ duk_ret_t app_activityActivityInfoId(duk_context* ctx) {
     if (activity == nullptr) {
         duk_push_int(ctx, -1);
     } else {
-        Q_ASSERT(activity->info->id <= INT_MAX);
+        ERR_VERIFY_V(activity->info->id <= INT_MAX, 0);
         duk_push_int(ctx, (duk_int_t)activity->info->id);
     }
     return 1;
@@ -267,7 +265,8 @@ bool PluginManager::initialize() {
 }
 
 PluginManager::EvaluationState PluginManager::evaluate(const char* scriptSource, const char* fileName, QString* error) {
-    Q_ASSERT(scriptSource);
+    ERR_VERIFY_V(scriptSource, EvaluationState::InvalidArguments);
+    ERR_VERIFY_V(error, EvaluationState::InvalidArguments);
 
     if (fileName == nullptr) {
         fileName = "eval";

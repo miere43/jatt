@@ -2,6 +2,7 @@
 #include "activity_list_model.h"
 
 #include "core_types.h"
+#include "error_macros.h"
 
 ActivityItemDelegate::ActivityItemDelegate()
 {
@@ -21,7 +22,7 @@ Activity* ActivityItemDelegate::currentActivity() const
 void ActivityItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     Activity* activity = (Activity*)index.data(Qt::UserRole).value<void*>();
-    Q_ASSERT(activity);
+    ERR_VERIFY(activity);
 
     if (m_currentActivity == activity) {
         painter->setBrush(m_currentActivityBrush);

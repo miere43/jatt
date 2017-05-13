@@ -1,4 +1,6 @@
 #include "activity_list_model.h"
+#include "error_macros.h"
+
 #include <QtAlgorithms>
 
 ActivityListModel::ActivityListModel(QObject *parent)
@@ -8,9 +10,10 @@ ActivityListModel::ActivityListModel(QObject *parent)
 
 QModelIndex ActivityListModel::addActivity(Activity *activity)
 {
-    Q_ASSERT(activity);
-    Q_ASSERT(activity->id != -1);
-    Q_ASSERT(activity->info != nullptr);
+    QModelIndex invalidIndex = QModelIndex();
+    ERR_VERIFY_V(activity, invalidIndex);
+    ERR_VERIFY_V(activity->id != -1, invalidIndex);
+    ERR_VERIFY_V(activity->info != nullptr, invalidIndex);
 
     beginInsertRows(QModelIndex(), m_activities.count(), m_activities.count());
     m_activities.append(activity);
@@ -88,7 +91,7 @@ bool ActivityListModel::removeRows(int row, int count, const QModelIndex &parent
 }
 
 bool ActivityListModel::removeActivity(Activity *activity) {
-    Q_ASSERT(activity);
+    ERR_VERIFY_V(activity, false);
 
     int index = m_activities.indexOf(activity);
     if (index != -1) {
@@ -102,8 +105,8 @@ bool ActivityListModel::removeActivity(Activity *activity) {
 }
 
 void ActivityListModel::dataChangedHint(Activity *activity) {
-    Q_ASSERT(activity);
+    ERR_VERIFY(activity);
     int index = m_activities.indexOf(activity);
-    Q_ASSERT(index != -1);
+    ERR_VERIFY(index != -1);
     emit dataChanged(this->index(index), this->index(index));
 }

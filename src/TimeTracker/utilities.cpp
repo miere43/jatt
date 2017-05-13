@@ -1,5 +1,6 @@
 #include "utilities.h"
 #include "application_state.h"
+#include "error_macros.h"
 
 #include <QDateTime>
 
@@ -23,8 +24,8 @@ QStringList dbStringToStringList(const QString &list)
 
 void addFieldToActivityInfo(ActivityInfo* info, QString fieldName, ActivityInfoFieldType type)
 {
-    Q_ASSERT(info);
-    Q_ASSERT(!fieldName.isNull() && !fieldName.isEmpty());
+    ERR_VERIFY(info);
+    ERR_VERIFY(!fieldName.isNull() && !fieldName.isEmpty());
 
     info->fieldNames.append(fieldName);
     info->fieldTypes.append(type);

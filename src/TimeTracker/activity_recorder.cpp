@@ -1,4 +1,5 @@
 #include "activity_recorder.h"
+#include "error_macros.h"
 
 #include <QDebug>
 
@@ -15,7 +16,7 @@ ActivityRecorder::ActivityRecorder(QObject* parent)
 
 void ActivityRecorder::timerTimeout()
 {
-    Q_ASSERT(isRecording());
+    ERR_VERIFY(isRecording());
 
     syncActivityState();
     emit recordEvent(ActivityRecorderEvent::UpdateUITimer);
@@ -23,20 +24,22 @@ void ActivityRecorder::timerTimeout()
 
 void ActivityRecorder::setTimerType(Qt::TimerType type)
 {
-    Q_ASSERT(!isRecording());
+    ERR_VERIFY(!isRecording());
+
     m_timer.setTimerType(type);
 }
 
 void ActivityRecorder::setTimerInterval(int msecs)
 {
-    Q_ASSERT(!isRecording());
+    ERR_VERIFY(!isRecording());
+
     m_timer.setInterval(msecs);
 }
 
 void ActivityRecorder::record(Activity *activity)
 {
-    Q_ASSERT(activity);
-    Q_ASSERT(!isRecording());
+    ERR_VERIFY(activity);
+    ERR_VERIFY(!isRecording());
 
     m_isRecording = true;
     m_startTime = getCurrentDateTimeUtc();
@@ -65,7 +68,7 @@ void ActivityRecorder::record(Activity *activity)
 
 void ActivityRecorder::stop()
 {
-    Q_ASSERT(isRecording());
+    ERR_VERIFY(isRecording());
 
     m_timer.stop();
     syncActivityState();
@@ -76,7 +79,8 @@ void ActivityRecorder::stop()
 
 void ActivityRecorder::syncActivityState()
 {
-    Q_ASSERT(isRecording());
+    ERR_VERIFY(isRecording());
+
     m_activity->endTime = getCurrentDateTimeUtc();
     m_activityInterval->endTime = m_activity->endTime;
 }

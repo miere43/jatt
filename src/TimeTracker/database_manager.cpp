@@ -1,11 +1,11 @@
 #include "database_manager.h"
+#include "application_state.h"
+#include "error_macros.h"
+#include "utilities.h"
 
 #include <QtSql/QSqlError>
-#include <QVariant>
 #include <QByteArray>
-
-#include "utilities.h"
-#include "application_state.h"
+#include <QVariant>
 
 DatabaseManager::DatabaseManager(QObject *parent)
     : QObject(parent)
@@ -15,7 +15,7 @@ DatabaseManager::DatabaseManager(QObject *parent)
 
 bool DatabaseManager::establishDatabaseConnection(QString databasePath, QString* error)
 {
-    Q_ASSERT(error);
+    ERR_VERIFY_V(error, false);
 
     if (!QSqlDatabase::isDriverAvailable("QSQLITE")) {
         *error = "SQLite driver is not available.";
@@ -79,7 +79,7 @@ bool DatabaseManager::loadActivityInfos()
     while (query.next())
     {
         ActivityInfo* info = g_app.m_activityInfoAllocator.allocate();
-        Q_ASSERT(info);
+        ERR_VERIFY_CONTINUE(info);
 
         info->id = query.value("id").value<qint64>();
         info->name = query.value("name").value<QString>();
@@ -100,14 +100,12 @@ bool DatabaseManager::loadActivityInfos()
 
 QList<ActivityInfo*> DatabaseManager::activityInfos() const
 {
-    if (!m_activityInfosLoaded) {
-        Q_ASSERT(false);
-    }
+    ERR_VERIFY_V(m_activityInfosLoaded, QList<ActivityInfo*>());
     return m_activityInfos.values();
 }
 
 Activity* DatabaseManager::loadActivity(qint64 id) {
-    Q_ASSERT(id > 0);
+    ERR_VERIFY_V(id > 0, nullptr);
 
     Activity* activity = m_activities.value(id);
     if (activity != nullptr)
@@ -123,7 +121,8 @@ Activity* DatabaseManager::loadActivity(qint64 id) {
 
     if (query.next()) {
         activity = g_app.m_activityAllocator.allocate();
-        Q_ASSERT(activity);
+        ERR_VERIFY_V(activity, nullptr);
+
         copyActivityValuesFromQuery(activity, &query);
 
         if (!m_activityInfosLoaded) {
@@ -141,9 +140,9 @@ Activity* DatabaseManager::loadActivity(qint64 id) {
 
 bool DatabaseManager::loadActivitiesAssociatedWithActivityInfo(ActivityInfo* info, QVector<Activity*>* associatedActivities)
 {
-    Q_ASSERT(info);
-    Q_ASSERT(info->id > 0);
-    Q_ASSERT(associatedActivities);
+    ERR_VERIFY_V(info, false);
+    ERR_VERIFY_V(info->id > 0, false);
+    ERR_VERIFY_V(associatedActivities, false);
 
     QSqlQuery query = QSqlQuery(m_database);
     query.prepare("SELECT * FROM activity WHERE activity_info_id = :activity_info_id");
@@ -161,8 +160,7 @@ bool DatabaseManager::loadActivitiesAssociatedWithActivityInfo(ActivityInfo* inf
         if (!activity)
         {
             activity = g_app.m_activityAllocator.allocate();
-            if (!activity)
-                return false;
+            ERR_VERIFY_V(activity, false);
 
             activity->info = info;
             copyActivityValuesFromQuery(activity, &query);
@@ -177,9 +175,9 @@ bool DatabaseManager::loadActivitiesAssociatedWithActivityInfo(ActivityInfo* inf
 
 bool DatabaseManager::saveActivity(Activity* activity)
 {
-    Q_ASSERT(activity);
-    Q_ASSERT(activity->info);
-    Q_ASSERT(activity->startTime <= activity->endTime);
+    ERR_VERIFY_V(activity, false);
+    ERR_VERIFY_V(activity->info, false);
+    ERR_VERIFY_V(activity->startTime <= activity->endTime, false);
 
     QSqlQuery query = QSqlQuery(m_database);
 
@@ -210,7 +208,8 @@ bool DatabaseManager::saveActivity(Activity* activity)
     if (isInsertAction)
     {
         activity->id = query.lastInsertId().value<qint64>();
-        Q_ASSERT(activity->id > 0);
+        ERR_VERIFY_V(activity->id > 0, false);
+
         m_activities.insert(activity->id, activity);
     }
 
@@ -218,7 +217,7 @@ bool DatabaseManager::saveActivity(Activity* activity)
 }
 
 bool DatabaseManager::deleteActivity(qint64 activityId) {
-    Q_ASSERT(activityId > 0);
+    ERR_VERIFY_V(activityId > 0, false);
 
     QSqlQuery query = QSqlQuery(m_database);
     query.prepare("DELETE FROM activity WHERE id = :id");
@@ -233,7 +232,7 @@ bool DatabaseManager::deleteActivity(qint64 activityId) {
 
 bool DatabaseManager::saveActivityInfo(ActivityInfo* info)
 {
-    Q_ASSERT(info);
+    ERR_VERIFY_V(info, false);
 
     QSqlQuery query = QSqlQuery(m_database);
 
@@ -266,7 +265,8 @@ bool DatabaseManager::saveActivityInfo(ActivityInfo* info)
     if (isInsertAction)
     {
         info->id = query.lastInsertId().value<qint64>();
-        Q_ASSERT(info->id > 0);
+        ERR_VERIFY_V(info->id > 0, false);
+
         m_activityInfos.insert(info->id, info);
     }
 
@@ -275,10 +275,10 @@ bool DatabaseManager::saveActivityInfo(ActivityInfo* info)
 
 bool DatabaseManager::loadActivitiesBetweenStartAndEndTime(QVector<Activity*>* activities, qint64 startTime, qint64 endTime, bool checkIntervals)
 {
-    Q_ASSERT(activities);
-    Q_ASSERT(startTime >= 0);
-    Q_ASSERT(endTime >= 0);
-    Q_ASSERT(startTime < endTime);
+    ERR_VERIFY_V(activities, false);
+    ERR_VERIFY_V(startTime >= 0, false);
+    ERR_VERIFY_V(endTime >= 0, false);
+    ERR_VERIFY_V(startTime < endTime, false);
 
     QSqlQuery query = QSqlQuery(m_database);
     // oh god forgive me for this query, this is the best I can do.
@@ -298,7 +298,8 @@ bool DatabaseManager::loadActivitiesBetweenStartAndEndTime(QVector<Activity*>* a
         if (!activity)
         {
             activity = g_app.m_activityAllocator.allocate();
-            Q_ASSERT(activity);
+            ERR_VERIFY_CONTINUE(activity);
+
             qint64 activityInfoId = query.value("activity_info_id").value<qint64>();
             ActivityInfo* info = m_activityInfos.value(activityInfoId);
             if (!info)
@@ -328,8 +329,8 @@ bool DatabaseManager::loadActivitiesBetweenStartAndEndTime(QVector<Activity*>* a
 
 void DatabaseManager::copyActivityValuesFromQuery(Activity *activity, QSqlQuery *query)
 {
-    Q_ASSERT(activity);
-    Q_ASSERT(query);
+    ERR_VERIFY(activity);
+    ERR_VERIFY(query);
 
     activity->id = query->value("id").value<qint64>();
     activity->fieldValues = dbStringToStringList(query->value("field_values").value<QString>());
@@ -337,7 +338,7 @@ void DatabaseManager::copyActivityValuesFromQuery(Activity *activity, QSqlQuery 
     activity->endTime = query->value("end_time").value<qint64>();
 
     QByteArray binaryIntervals = query->value("intervals").toByteArray();
-    Q_ASSERT(binaryIntervals.count() % sizeof(Interval) == 0);
+    ERR_VERIFY(binaryIntervals.count() % sizeof(Interval) == 0);
 
     int numIntervals = binaryIntervals.count() / sizeof(Interval);
     qint64* data = (qint64*)binaryIntervals.data();
@@ -381,7 +382,7 @@ bool DatabaseManager::checkTables() {
 }
 
 bool DatabaseManager::createTables(QString* error) {
-    Q_ASSERT(error);
+    ERR_VERIFY_V(error, false);
 
     // Only one statement per query :(
     static const char* queries[] = {

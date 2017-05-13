@@ -1,4 +1,5 @@
 #include "hotkey.h"
+#include "error_macros.h"
 
 #include <QCoreApplication>
 #include <QDebug>
@@ -48,9 +49,11 @@ QString formatErrorMessage(DWORD msg) {
 
 Hotkey::Hotkey(HWND window, int id, Qt::KeyboardModifiers modifiers, Qt::Key key, HotkeyCallback callback, void* userdata)
 {
-    Q_ASSERT(id >= 0x0000 && id <= 0xBFFF);
-    Q_ASSERT(window);
-    Q_ASSERT(callback);
+    m_isActive = false;
+
+    ERR_VERIFY(id >= 0x0000 && id <= 0xBFFF);
+    ERR_VERIFY(window != 0);
+    ERR_VERIFY(callback);
 
     m_errorMessage = QString::null;
     m_callback = callback;
@@ -63,7 +66,6 @@ Hotkey::Hotkey(HWND window, int id, Qt::KeyboardModifiers modifiers, Qt::Key key
 
     if (!convertQtKeycodes(modifiers, key, &winModifiers, &winKey)) {
         m_errorMessage = QStringLiteral("Unsupported keyboard modifier or key.");
-        m_isActive = false;
         return;
     }
 
@@ -76,8 +78,9 @@ Hotkey::Hotkey(HWND window, int id, Qt::KeyboardModifiers modifiers, Qt::Key key
         HotkeyEventFilter::registerHotkey(this);
     } else {
         m_errorMessage = formatErrorMessage(GetLastError());
-        m_isActive = false;
     }
+
+    m_isActive = true;
 }
 
 Hotkey::~Hotkey() {
@@ -108,16 +111,16 @@ void HotkeyEventFilter::installEventFilter() {
 }
 
 void HotkeyEventFilter::registerHotkey(Hotkey *hotkey) {
-    Q_ASSERT(hotkey);
-    Q_ASSERT(hotkey->isActive());
-    Q_ASSERT(hotkey->m_callback);
-    Q_ASSERT(HotkeyEventFilter::isInstalled());
+    ERR_VERIFY(hotkey);
+    ERR_VERIFY(hotkey->isActive());
+    ERR_VERIFY(hotkey->m_callback);
+    ERR_VERIFY(HotkeyEventFilter::isInstalled());
     HotkeyEventFilter::m_eventFilter->m_hotkeys.append(hotkey);
 }
 
 void HotkeyEventFilter::unregisterHotkey(Hotkey *hotkey) {
-    Q_ASSERT(hotkey);
-    Q_ASSERT(HotkeyEventFilter::isInstalled());
+    ERR_VERIFY(hotkey);
+    ERR_VERIFY(HotkeyEventFilter::isInstalled());
     HotkeyEventFilter::m_eventFilter->m_hotkeys.removeOne(hotkey);
 }
 
@@ -132,6 +135,7 @@ bool HotkeyEventFilter::nativeEventFilter(const QByteArray &eventType, void *mes
     if (msg->message == WM_HOTKEY) {
         for (Hotkey* hotkey : m_hotkeys) {
             if (hotkey->m_id == msg->wParam) {
+                ERR_VERIFY_CONTINUE(hotkey->m_callback);
                 hotkey->m_callback(hotkey, hotkey->m_userdata);
                 return true;
             }

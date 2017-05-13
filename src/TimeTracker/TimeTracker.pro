@@ -43,7 +43,8 @@ SOURCES += main.cpp\
     plugin_manager.cpp \
     duk/duktape.c \
     edit_activity_field_dialog.cpp \
-    hotkey.cpp
+    hotkey.cpp \
+    error_macros.cpp
 
 HEADERS  += mainwindow.h \
     application_state.h \
@@ -64,7 +65,8 @@ HEADERS  += mainwindow.h \
     duk/duktape.h \
     edit_activity_field_dialog.h \
     duktape_prepare_eval.h \
-    hotkey.h
+    hotkey.h \
+    error_macros.h
 
 FORMS    += mainwindow.ui \
     add_activity_dialog.ui \

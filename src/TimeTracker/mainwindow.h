@@ -56,6 +56,7 @@ private slots:
     void on_evalScriptAction_triggered();
     void on_splitActivityAction_triggered();
 
+    void editSelectedActivityShortcutActivated();
     void changePageLeftShortcutActivated();
     void changePageRightShortcutActivated();
 private:
@@ -111,6 +112,7 @@ private:
 
     QShortcut* m_changePageLeftShortcut;
     QShortcut* m_changePageRightShortcut;
+    QShortcut* m_editSelectedActivityShortcut;
 
     QHash<ActivityInfo*, QMenu*> m_listMenus;
 

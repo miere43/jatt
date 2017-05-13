@@ -1,5 +1,6 @@
 #include "edit_activity_field_dialog.h"
 #include "ui_edit_activity_field_dialog.h"
+#include "error_macros.h"
 
 EditActivityFieldDialog::EditActivityFieldDialog(Activity* activity, int fieldIndex, QWidget *parent) :
     QDialog(parent),
@@ -10,9 +11,8 @@ EditActivityFieldDialog::EditActivityFieldDialog(Activity* activity, int fieldIn
     m_activity = activity;
     m_fieldIndex = fieldIndex;
 
-    Q_ASSERT(m_activity);
-//    Q_ASSERT(m_activity->id > 0);
-    Q_ASSERT(m_activity->info);
+    ERR_VERIFY(m_activity);
+    ERR_VERIFY(m_activity->info);
 
     // @TODO: make sure field really exists.
 
@@ -29,10 +29,11 @@ void EditActivityFieldDialog::setupUi()
 
     ui->fieldNameLabel->setText(QStringLiteral("Edit <b>") + fieldName +
                                 QStringLiteral("</b> field of \"") + m_activity->displayString() + QStringLiteral("\"."));
-    Q_ASSERT(m_activity->info->fieldNames.count() == m_activity->fieldValues.count());
 
     ui->propertyLineEdit->setText(m_activity->field(m_fieldIndex));
     ui->propertyLineEdit->selectAll();
+
+    ERR_VERIFY(m_activity->info->fieldNames.count() == m_activity->fieldValues.count());
 }
 
 EditActivityFieldDialog::~EditActivityFieldDialog()
