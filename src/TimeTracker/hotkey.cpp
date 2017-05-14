@@ -79,8 +79,6 @@ Hotkey::Hotkey(HWND window, int id, Qt::KeyboardModifiers modifiers, Qt::Key key
     } else {
         m_errorMessage = formatErrorMessage(GetLastError());
     }
-
-    m_isActive = true;
 }
 
 Hotkey::~Hotkey() {
