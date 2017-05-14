@@ -42,6 +42,7 @@ public:
     QSqlDatabase m_database;
     QHash<qint64, ActivityInfo*> m_activityInfos;
     QHash<qint64, Activity*> m_activities;
+    QList<ActivityInfo*> m_activityInfoList;
 };
 
 #endif // DATABASE_MANAGER_H

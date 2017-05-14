@@ -66,3 +66,10 @@ QVector<ActivityInfoFieldType> dbStringToActivityInfoFieldTypeVector(const QStri
     }
     return result;
 }
+
+bool activityInfoLessThanByName(const ActivityInfo* a, const ActivityInfo* b) {
+    ERR_VERIFY_V(a, false);
+    ERR_VERIFY_V(b, false);
+
+    return a->name < b->name;
+}

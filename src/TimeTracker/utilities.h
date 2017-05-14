@@ -16,4 +16,6 @@ QString dbActivityInfoFieldTypeVectorToString(const QVector<ActivityInfoFieldTyp
 QVector<ActivityInfoFieldType> dbStringToActivityInfoFieldTypeVector(const QString& list);
 void addFieldToActivityInfo(ActivityInfo* info, QString fieldName, ActivityInfoFieldType type);
 
+bool activityInfoLessThanByName(const ActivityInfo* a, const ActivityInfo* b);
+
 #endif // UTILITIES_H

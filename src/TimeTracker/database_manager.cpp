@@ -92,8 +92,10 @@ bool DatabaseManager::loadActivityInfos()
         info->updateFormatter();
 
         m_activityInfos.insert(info->id, info);
+        m_activityInfoList.append(info);
     }
 
+    qSort(m_activityInfoList.begin(), m_activityInfoList.end(), activityInfoLessThanByName);
     m_activityInfosLoaded = true;
     return true;
 }
@@ -101,7 +103,7 @@ bool DatabaseManager::loadActivityInfos()
 QList<ActivityInfo*> DatabaseManager::activityInfos() const
 {
     ERR_VERIFY_V(m_activityInfosLoaded, QList<ActivityInfo*>());
-    return m_activityInfos.values();
+    return m_activityInfoList;
 }
 
 Activity* DatabaseManager::loadActivity(qint64 id) {
