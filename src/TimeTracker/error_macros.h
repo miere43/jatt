@@ -16,6 +16,7 @@ struct ErrorListenerListItem {
 extern ErrorListenerListItem* errorListenerList;
 
 void addErrorListener(ErrorListener func, void* userdata);
+void shutdownErrorListeners();
 void _callErrorListeners(const char* function, const char* file, int line, const char* message);
 
 #if defined(QT_DEBUG) && defined(APP_BREAK_ON_ERROR)

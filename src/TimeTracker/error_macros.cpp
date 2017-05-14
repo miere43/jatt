@@ -24,6 +24,15 @@ void addErrorListener(ErrorListener func, void *userdata) {
     }
 }
 
+void shutdownErrorListeners() {
+    ErrorListenerListItem* curr = errorListenerList;
+    while (curr) {
+        ErrorListenerListItem* next = curr->next;
+        delete curr;
+        curr = next;
+    }
+}
+
 void _callErrorListeners(const char *function, const char *file, int line, const char *message) {
     ErrorListenerListItem* curr = errorListenerList;
     while (curr != nullptr) {

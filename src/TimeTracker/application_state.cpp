@@ -3,12 +3,13 @@
 #include "mainwindow.h"
 #include "utilities.h"
 
-#include <QDebug>
+#include <QCoreApplication>
 #include <QtSql/QSqlError>
 #include <QtSql/QSqlQuery>
-#include <QVariant>
-#include <QCoreApplication>
+#include <QMessageBox>
 #include <QSettings>
+#include <QVariant>
+#include <QDebug>
 
 ApplicationState::ApplicationState(QObject *parent)
     : QObject(parent)
@@ -20,8 +21,29 @@ ApplicationState::ApplicationState(QObject *parent)
 #endif
 }
 
+void errorListener(const char* function, const char* file, int line, const char* message, void* userdata) {
+    Q_UNUSED(userdata);
+
+    QString errorMessage = QString(QStringLiteral("Error at \"%1:%2\" in %3: \"%4\""))
+            .arg(file).arg(line).arg(function).arg(message);
+
+#ifdef QT_DEBUG
+    qDebug().noquote() << errorMessage;
+#else
+    if (g_app.mainWindow()) {
+        QMessageBox::critical(g_app.mainWindow(), "Error", "Application has recorded an error:\n" + errorMessage + "\n\nPlease forward this message to the developers.");
+    } else {
+        qDebug().noquote() << errorMessage;
+    }
+#endif
+}
+
 bool ApplicationState::initialize(QString* error)
 {
+    if (m_initialized)
+        return true;
+
+    addErrorListener(errorListener, (void*)this);
     ERR_VERIFY_NULL_V(error, false);
 
     QSettings settings;

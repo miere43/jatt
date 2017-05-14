@@ -14,10 +14,7 @@
 #include <QSettings>
 
 void hotkeyCallback(Hotkey* hotkey, void* userdata);
-void a(const char* function, const char* file, int line, const char* message, void* u) {
-    Q_UNUSED(u);
-    qDebug().nospace() << "Error at \"" << file << ":" << line << "\" in " << function << ": \"" << message << "\"";
-}
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -78,8 +75,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     addQuickActivityButtons();
     readAndApplySettings();
-
-    addErrorListener(a, nullptr);
 
     // @TODO: load key combination from settings
     m_recorderHotkey = new Hotkey((HWND)this->winId(), 1, Qt::ControlModifier, Qt::Key_Space, hotkeyCallback, (void*)this);
