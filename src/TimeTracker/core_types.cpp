@@ -62,7 +62,7 @@ QString createDurationStringFromMsecs(qint64 msecs)
 
 QString ActivityInfo::formatActivity(Activity *activity)
 {
-    ERR_VERIFY_V(activity, QString::null);
+    ERR_VERIFY_NULL_V(activity, QString::null);
     ERR_VERIFY_V(activity->id > 0, QString::null);
     ERR_VERIFY_V(activity->info == this, QString::null);
 

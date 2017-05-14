@@ -22,7 +22,7 @@ ApplicationState::ApplicationState(QObject *parent)
 
 bool ApplicationState::initialize(QString* error)
 {
-    ERR_VERIFY_V(error, false);
+    ERR_VERIFY_NULL_V(error, false);
 
     QSettings settings;
     settings.beginGroup(QStringLiteral("main"));

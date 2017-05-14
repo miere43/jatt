@@ -38,7 +38,7 @@ void ActivityRecorder::setTimerInterval(int msecs)
 
 void ActivityRecorder::record(Activity *activity)
 {
-    ERR_VERIFY(activity);
+    ERR_VERIFY_NULL(activity);
     ERR_VERIFY(!isRecording());
 
     m_isRecording = true;

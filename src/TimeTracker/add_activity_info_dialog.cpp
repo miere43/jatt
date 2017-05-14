@@ -25,7 +25,7 @@ ActivityInfo* AddActivityInfoDialog::constructActivityInfo()
     ERR_VERIFY_V(m_dialogAccepted, nullptr);
 
     ActivityInfo* info = g_app.m_activityInfoAllocator.allocate();
-    ERR_VERIFY_V(info, nullptr);
+    ERR_VERIFY_NULL_V(info, nullptr);
 
     info->id = -1;
     info->name = ui->nameLineEdit->text();
@@ -42,7 +42,7 @@ ActivityInfo* AddActivityInfoDialog::constructActivityInfo()
 
 bool AddActivityInfoDialog::validate(QString* errorMessage)
 {
-    ERR_VERIFY_V(errorMessage, false);
+    ERR_VERIFY_NULL_V(errorMessage, false);
 
     QString name = ui->nameLineEdit->text();
     if (name.isNull() || name.isEmpty())

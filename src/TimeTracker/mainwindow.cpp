@@ -183,7 +183,7 @@ MainWindow::~MainWindow()
 void MainWindow::editActivityFieldDialogFinished(int result) {
     QObject* sender = QObject::sender();
     EditActivityFieldDialog* dialog = qobject_cast<EditActivityFieldDialog*>(sender);
-    ERR_VERIFY(dialog);
+    ERR_VERIFY_NULL(dialog);
 
     if (result == QDialog::Accepted) {
         Activity* activity = dialog->activity();
@@ -208,10 +208,10 @@ void MainWindow::activityMenuItemActionTriggered(bool checked) {
 
     QObject* sender = QObject::sender();
     QAction* action = qobject_cast<QAction*>(sender);
-    ERR_VERIFY(action);
+    ERR_VERIFY_NULL(action);
 
     Activity* activity = selectedActivity();
-    ERR_VERIFY(activity);
+    ERR_VERIFY_NULL(activity);
 
     int fieldIndex = action->property("fieldIndex").value<int>();
     showEditActivityFieldDialog(activity, fieldIndex);
@@ -224,8 +224,8 @@ void MainWindow::activitiesListViewMenuRequested(const QPoint &pos)
         m_activityMenu.exec(ui->activitiesListView->mapToGlobal(pos));
     } else {
         Activity* activity = (Activity*)item.data(Qt::UserRole).value<void*>();
-        ERR_VERIFY(activity);
-        ERR_VERIFY(activity->info);
+        ERR_VERIFY_NULL(activity);
+        ERR_VERIFY_NULL(activity->info);
 
         // @TODO: can move QMenu* from hashtable to ActivityInfo struct (because all AI's have a menu)
         QMenu* menu = m_listMenus.value(activity->info, nullptr);
@@ -240,7 +240,7 @@ void MainWindow::activitiesListViewMenuRequested(const QPoint &pos)
 void MainWindow::activitiesListViewDoubleClicked(const QModelIndex &index) {
     if (index.isValid()) {
         Activity* activity = (Activity*)index.data(Qt::UserRole).value<void*>();
-        ERR_VERIFY(activity);
+        ERR_VERIFY_NULL(activity);
 
         if (activity->info->fieldNames.count() > 0) {
             showEditActivityFieldDialog(activity, 0);
@@ -265,7 +265,7 @@ void MainWindow::addActivityDialogFinished(int result)
 {
     QObject* sender = QObject::sender();
     AddActivityDialog* dialog = qobject_cast<AddActivityDialog*>(sender);
-    ERR_VERIFY(dialog);
+    ERR_VERIFY_NULL(dialog);
 
     dialog->deleteLater();
 
@@ -310,7 +310,7 @@ void MainWindow::setViewTimePeriod(qint64 startTime, qint64 endTime)
     if (m_activityRecorder.isRecording())
     {
         Activity* currentActivity = m_activityRecorder.activity();
-        ERR_VERIFY(currentActivity);
+        ERR_VERIFY_NULL(currentActivity);
 
         if (currentActivity->belongsToTimePeriod(startTime, endTime)) {
             if (!m_currentViewTimePeriodActivities.contains(currentActivity)) {
@@ -516,7 +516,7 @@ void MainWindow::deleteSelectedActivityTriggered(bool checked)
     }
 
     Activity* activity = ((Activity*)selection.at(0).data(Qt::UserRole).value<void*>());
-    ERR_VERIFY(activity);
+    ERR_VERIFY_NULL(activity);
 
     if (m_activityRecorder.isRecording() && m_activityRecorder.activity() == activity) {
         QMessageBox::critical(this, "Error", "Cannot delete currently recording activity");
@@ -558,10 +558,10 @@ void MainWindow::startQuickActivityButtonClicked()
 {
     QObject* sender = QObject::sender();
     QPushButton* button = qobject_cast<QPushButton*>(sender);
-    ERR_VERIFY(button);
+    ERR_VERIFY_NULL(button);
 
     ActivityInfo* info = (ActivityInfo*)button->property("activityInfo").value<void*>();
-    ERR_VERIFY(info);
+    ERR_VERIFY_NULL(info);
 
     startQuickActivity(info);
 }
@@ -596,7 +596,7 @@ void MainWindow::addQuickActivityButtons()
 
 void MainWindow::startQuickActivity(ActivityInfo* info) {
 
-    ERR_VERIFY(info);
+    ERR_VERIFY_NULL(info);
 
     if (m_activityRecorder.isRecording()) {
         QMessageBox::critical(this, "Error", "Unable to create quick activity because already recording.");
@@ -643,7 +643,7 @@ void MainWindow::on_joinNextActivityAction_triggered()
     }
 
     Activity* sel = ((Activity*)selection.at(0).data(Qt::UserRole).value<void*>());
-    ERR_VERIFY(sel);
+    ERR_VERIFY_NULL(sel);
 
     int row = selection.at(0).row();
     QModelIndex idx = m_activityListModel->index(row + 1);
@@ -687,7 +687,7 @@ void MainWindow::on_joinNextActivityAction_triggered()
 
 bool MainWindow::canModifyActivityIntervals(Activity *activity) const
 {
-    ERR_VERIFY_V(activity, false);
+    ERR_VERIFY_NULL_V(activity, false);
     if (!m_activityRecorder.isRecording()) return true;
     // m_activityRecorder stores a pointer to currently recording
     // interval, if activity->intervals.append is called, memory
@@ -705,7 +705,7 @@ void MainWindow::on_splitActivityAction_triggered()
 }
 
 void MainWindow::splitActivity(Activity *activity) {
-    ERR_VERIFY(activity);
+    ERR_VERIFY_NULL(activity);
 
     if (!canModifyActivityIntervals(activity) || (m_activityRecorder.isRecording() && m_activityRecorder.activity() == activity)) {
         QMessageBox::critical(this, "Error", "Unable to split this activity right now.");
@@ -751,7 +751,7 @@ void MainWindow::splitActivity(Activity *activity) {
     removeActivityFromView(activity);
 
     for (Activity* a : newActivities) {
-        ERR_VERIFY(a);
+        ERR_VERIFY_NULL(a);
         ERR_VERIFY(a->id > 0);
         m_currentViewTimePeriodActivities.append(a);
     }

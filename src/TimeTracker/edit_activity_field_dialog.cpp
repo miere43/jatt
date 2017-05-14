@@ -11,8 +11,8 @@ EditActivityFieldDialog::EditActivityFieldDialog(Activity* activity, int fieldIn
     m_activity = activity;
     m_fieldIndex = fieldIndex;
 
-    ERR_VERIFY(m_activity);
-    ERR_VERIFY(m_activity->info);
+    ERR_VERIFY_NULL(m_activity);
+    ERR_VERIFY_NULL(m_activity->info);
 
     // @TODO: make sure field really exists.
 

@@ -53,7 +53,7 @@ Hotkey::Hotkey(HWND window, int id, Qt::KeyboardModifiers modifiers, Qt::Key key
 
     ERR_VERIFY(id >= 0x0000 && id <= 0xBFFF);
     ERR_VERIFY(window != 0);
-    ERR_VERIFY(callback);
+    ERR_VERIFY_NULL(callback);
 
     m_errorMessage = QString::null;
     m_callback = callback;
@@ -109,15 +109,16 @@ void HotkeyEventFilter::installEventFilter() {
 }
 
 void HotkeyEventFilter::registerHotkey(Hotkey *hotkey) {
-    ERR_VERIFY(hotkey);
+    ERR_VERIFY_NULL(hotkey);
     ERR_VERIFY(hotkey->isActive());
-    ERR_VERIFY(hotkey->m_callback);
+    ERR_VERIFY_NULL(hotkey->m_callback);
     ERR_VERIFY(HotkeyEventFilter::isInstalled());
     HotkeyEventFilter::m_eventFilter->m_hotkeys.append(hotkey);
 }
 
 void HotkeyEventFilter::unregisterHotkey(Hotkey *hotkey) {
-    ERR_VERIFY(hotkey);
+    ERR_VERIFY_NULL(hotkey);
+    ERR_VERIFY(hotkey->isActive());
     ERR_VERIFY(HotkeyEventFilter::isInstalled());
     HotkeyEventFilter::m_eventFilter->m_hotkeys.removeOne(hotkey);
 }

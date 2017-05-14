@@ -10,7 +10,7 @@
 
 void PluginManager_fatalHandler(void* userdata, const char* msg) {
     PluginManager* manager = (PluginManager*)userdata;
-    ERR_VERIFY(manager);
+    ERR_VERIFY_NULL(manager);
     Q_UNUSED(manager);
 
     qDebug() << msg;
@@ -265,8 +265,8 @@ bool PluginManager::initialize() {
 }
 
 PluginManager::EvaluationState PluginManager::evaluate(const char* scriptSource, const char* fileName, QString* error) {
-    ERR_VERIFY_V(scriptSource, EvaluationState::InvalidArguments);
-    ERR_VERIFY_V(error, EvaluationState::InvalidArguments);
+    ERR_VERIFY_NULL_V(scriptSource, EvaluationState::InvalidArguments);
+    ERR_VERIFY_NULL_V(error, EvaluationState::InvalidArguments);
 
     if (fileName == nullptr) {
         fileName = "eval";

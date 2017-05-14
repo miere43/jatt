@@ -24,7 +24,7 @@ QStringList dbStringToStringList(const QString &list)
 
 void addFieldToActivityInfo(ActivityInfo* info, QString fieldName, ActivityInfoFieldType type)
 {
-    ERR_VERIFY(info);
+    ERR_VERIFY_NULL(info);
     ERR_VERIFY(!fieldName.isNull() && !fieldName.isEmpty());
 
     info->fieldNames.append(fieldName);
@@ -68,8 +68,8 @@ QVector<ActivityInfoFieldType> dbStringToActivityInfoFieldTypeVector(const QStri
 }
 
 bool activityInfoLessThanByName(const ActivityInfo* a, const ActivityInfo* b) {
-    ERR_VERIFY_V(a, false);
-    ERR_VERIFY_V(b, false);
+    ERR_VERIFY_NULL_V(a, false);
+    ERR_VERIFY_NULL_V(b, false);
 
     return a->name < b->name;
 }

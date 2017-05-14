@@ -40,7 +40,7 @@ void ActivityVisualizer::setTimelineRenderMode(TimelineRenderMode mode)
 
 void ActivityVisualizer::setTimePeriod(qint64 startTime, qint64 endTime, QVector<Activity *> *activities)
 {
-    ERR_VERIFY(activities);
+    ERR_VERIFY_NULL(activities);
 
     m_startTime = startTime;
     m_endTime = endTime;
@@ -107,7 +107,6 @@ void ActivityVisualizer::paintEvent(QPaintEvent *event)
     QBrush currentBrush;
     for (const Activity* activity : *m_activities)
     {
-        ERR_VERIFY(activity);
         if (activity->intervals.count() == 0)
             continue;
         currentBrush = activity == m_selectedActivity ? QBrush(QColor(127, 201, 255, 255)) : QBrush(QColor((QRgb)activity->info->color));

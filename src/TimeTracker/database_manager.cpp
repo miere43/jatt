@@ -15,7 +15,7 @@ DatabaseManager::DatabaseManager(QObject *parent)
 
 bool DatabaseManager::establishDatabaseConnection(QString databasePath, QString* error)
 {
-    ERR_VERIFY_V(error, false);
+    ERR_VERIFY_NULL_V(error, false);
 
     if (!QSqlDatabase::isDriverAvailable("QSQLITE")) {
         *error = "SQLite driver is not available.";
@@ -142,9 +142,9 @@ Activity* DatabaseManager::loadActivity(qint64 id) {
 
 bool DatabaseManager::loadActivitiesAssociatedWithActivityInfo(ActivityInfo* info, QVector<Activity*>* associatedActivities)
 {
-    ERR_VERIFY_V(info, false);
+    ERR_VERIFY_NULL_V(info, false);
     ERR_VERIFY_V(info->id > 0, false);
-    ERR_VERIFY_V(associatedActivities, false);
+    ERR_VERIFY_NULL_V(associatedActivities, false);
 
     QSqlQuery query = QSqlQuery(m_database);
     query.prepare("SELECT * FROM activity WHERE activity_info_id = :activity_info_id");
@@ -162,7 +162,7 @@ bool DatabaseManager::loadActivitiesAssociatedWithActivityInfo(ActivityInfo* inf
         if (!activity)
         {
             activity = g_app.m_activityAllocator.allocate();
-            ERR_VERIFY_V(activity, false);
+            ERR_VERIFY_NULL_V(activity, false);
 
             activity->info = info;
             copyActivityValuesFromQuery(activity, &query);
@@ -177,8 +177,8 @@ bool DatabaseManager::loadActivitiesAssociatedWithActivityInfo(ActivityInfo* inf
 
 bool DatabaseManager::saveActivity(Activity* activity)
 {
-    ERR_VERIFY_V(activity, false);
-    ERR_VERIFY_V(activity->info, false);
+    ERR_VERIFY_NULL_V(activity, false);
+    ERR_VERIFY_NULL_V(activity->info, false);
     ERR_VERIFY_V(activity->startTime <= activity->endTime, false);
 
     QSqlQuery query = QSqlQuery(m_database);
@@ -234,7 +234,7 @@ bool DatabaseManager::deleteActivity(qint64 activityId) {
 
 bool DatabaseManager::saveActivityInfo(ActivityInfo* info)
 {
-    ERR_VERIFY_V(info, false);
+    ERR_VERIFY_NULL_V(info, false);
 
     QSqlQuery query = QSqlQuery(m_database);
 
@@ -277,7 +277,7 @@ bool DatabaseManager::saveActivityInfo(ActivityInfo* info)
 
 bool DatabaseManager::loadActivitiesBetweenStartAndEndTime(QVector<Activity*>* activities, qint64 startTime, qint64 endTime, bool checkIntervals)
 {
-    ERR_VERIFY_V(activities, false);
+    ERR_VERIFY_NULL_V(activities, false);
     ERR_VERIFY_V(startTime >= 0, false);
     ERR_VERIFY_V(endTime >= 0, false);
     ERR_VERIFY_V(startTime < endTime, false);
@@ -331,8 +331,8 @@ bool DatabaseManager::loadActivitiesBetweenStartAndEndTime(QVector<Activity*>* a
 
 void DatabaseManager::copyActivityValuesFromQuery(Activity *activity, QSqlQuery *query)
 {
-    ERR_VERIFY(activity);
-    ERR_VERIFY(query);
+    ERR_VERIFY_NULL(activity);
+    ERR_VERIFY_NULL(query);
 
     activity->id = query->value("id").value<qint64>();
     activity->fieldValues = dbStringToStringList(query->value("field_values").value<QString>());
@@ -384,7 +384,7 @@ bool DatabaseManager::checkTables() {
 }
 
 bool DatabaseManager::createTables(QString* error) {
-    ERR_VERIFY_V(error, false);
+    ERR_VERIFY_NULL_V(error, false);
 
     // Only one statement per query :(
     static const char* queries[] = {

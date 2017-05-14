@@ -11,9 +11,9 @@ ActivityListModel::ActivityListModel(QObject *parent)
 QModelIndex ActivityListModel::addActivity(Activity *activity)
 {
     QModelIndex invalidIndex = QModelIndex();
-    ERR_VERIFY_V(activity, invalidIndex);
-    ERR_VERIFY_V(activity->id != -1, invalidIndex);
-    ERR_VERIFY_V(activity->info != nullptr, invalidIndex);
+    ERR_VERIFY_NULL_V(activity, invalidIndex);
+    ERR_VERIFY_NULL_V(activity->info, invalidIndex);
+    ERR_VERIFY_V(activity->id > 0, invalidIndex);
 
     beginInsertRows(QModelIndex(), m_activities.count(), m_activities.count());
     m_activities.append(activity);
@@ -91,7 +91,7 @@ bool ActivityListModel::removeRows(int row, int count, const QModelIndex &parent
 }
 
 bool ActivityListModel::removeActivity(Activity *activity) {
-    ERR_VERIFY_V(activity, false);
+    ERR_VERIFY_NULL_V(activity, false);
 
     int index = m_activities.indexOf(activity);
     if (index != -1) {
@@ -105,7 +105,7 @@ bool ActivityListModel::removeActivity(Activity *activity) {
 }
 
 void ActivityListModel::dataChangedHint(Activity *activity) {
-    ERR_VERIFY(activity);
+    ERR_VERIFY_NULL(activity);
     int index = m_activities.indexOf(activity);
     ERR_VERIFY(index != -1);
     emit dataChanged(this->index(index), this->index(index));

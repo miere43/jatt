@@ -22,7 +22,7 @@ Activity* ActivityItemDelegate::currentActivity() const
 void ActivityItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     Activity* activity = (Activity*)index.data(Qt::UserRole).value<void*>();
-    ERR_VERIFY(activity);
+    ERR_VERIFY_NULL(activity);
 
     if (m_currentActivity == activity) {
         painter->setBrush(m_currentActivityBrush);

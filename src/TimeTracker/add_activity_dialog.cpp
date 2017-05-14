@@ -44,7 +44,7 @@ AddActivityDialog::~AddActivityDialog()
 
 void AddActivityDialog::setActivityInfo(ActivityInfo* info)
 {
-    ERR_VERIFY(info);
+    ERR_VERIFY_NULL(info);
 
     if (m_currentActivityInfo)
     {
@@ -89,7 +89,7 @@ void AddActivityDialog::addFieldDialogFieldAdded()
 {
     QObject* sender = QObject::sender();
     AddFieldDialog* dialog = qobject_cast<AddFieldDialog*>(sender);
-    ERR_VERIFY(dialog);
+    ERR_VERIFY_NULL(dialog);
 
     setActivityInfo(m_currentActivityInfo);
 }
@@ -100,7 +100,7 @@ void AddActivityDialog::addFieldDialogFinished(int result)
 
     QObject* sender = QObject::sender();
     AddFieldDialog* dialog = qobject_cast<AddFieldDialog*>(sender);
-    ERR_VERIFY(dialog);
+    ERR_VERIFY_NULL(dialog);
 
     dialog->deleteLater();
 }
@@ -108,7 +108,7 @@ void AddActivityDialog::addFieldDialogFinished(int result)
 void AddActivityDialog::on_activityInfoComboBox_currentIndexChanged(int index)
 {
     ActivityInfo* activityInfo = (ActivityInfo*)ui->activityInfoComboBox->itemData(index, Qt::UserRole).value<void*>();
-    ERR_VERIFY(activityInfo);
+    ERR_VERIFY_NULL(activityInfo);
 
     setActivityInfo(activityInfo);
 }
@@ -123,7 +123,7 @@ Activity* AddActivityDialog::constructActivity()
         return nullptr;
 
     Activity* activity = g_app.m_activityAllocator.allocate();
-    ERR_VERIFY_V(activity, nullptr);
+    ERR_VERIFY_NULL_V(activity, nullptr);
 
     activity->id = -1;
     activity->info = m_currentActivityInfo;
@@ -135,7 +135,10 @@ Activity* AddActivityDialog::constructActivity()
     for (const QWidget* fieldWidget : m_activityInfoFieldWidgets)
     {
         const QLineEdit* lineEdit = qobject_cast<const QLineEdit*>(fieldWidget);
-        ERR_VERIFY_V(lineEdit, nullptr);
+        if (!lineEdit) {
+            g_app.m_activityAllocator.deallocate(activity);
+            ERR_VERIFY_NULL_V(lineEdit, nullptr);
+        }
 
         activity->fieldValues.append(lineEdit->text());
     }
