@@ -24,6 +24,7 @@ public:
 
     bool removeActivity(Activity* activity);
     void dataChangedHint(Activity* activity);
+    inline QVector<Activity*>& activities() { return m_activities; }
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 private:

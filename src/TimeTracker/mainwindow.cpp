@@ -183,7 +183,10 @@ void MainWindow::editActivityFieldDialogFinished(int result) {
     if (result == QDialog::Accepted) {
         Activity* activity = dialog->activity();
         activity->fieldValues[dialog->fieldIndex()] = dialog->newValue().toString();
-        m_activityListModel->dataChangedHint(activity);
+
+        if (m_activityListModel->activities().contains(activity)) {
+            m_activityListModel->dataChangedHint(activity);
+        }
 
         g_app.database()->saveActivity(activity);
     }
