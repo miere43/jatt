@@ -53,7 +53,6 @@ private slots:
 
     void editActivityFieldDialogFinished(int result);
     void activityMenuItemActionTriggered(bool checked);
-    void on_evalScriptAction_triggered();
     void on_splitActivityAction_triggered();
 
     void editSelectedActivityShortcutActivated();

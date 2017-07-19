@@ -11,7 +11,6 @@
 #include "core_types.h"
 #include "block_allocator.h"
 #include "database_manager.h"
-#include "plugin_manager.h"
 
 class MainWindow;
 
@@ -27,7 +26,6 @@ private:
 
     bool m_initialized = false;
 public:
-    PluginManager m_pluginManager;
     QString appTitle;
 
     inline int localOffsetFromUtc() { return m_localOffsetFromUtc; }

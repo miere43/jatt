@@ -64,8 +64,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->deleteActivityAction, &QAction::triggered,
             this, &MainWindow::deleteSelectedActivityTriggered);
 
-    g_app.m_pluginManager.initialize();
-
     g_app.database()->loadActivityInfos();
     QList<ActivityInfo*> list = g_app.database()->activityInfos();
     m_listMenus.reserve(list.count());
@@ -780,47 +778,6 @@ qint64 MainWindow::getCurrentDayIndex() const {
 //    }
 //    qDebug().nospace() << ']';
 //}
-
-void MainWindow::on_evalScriptAction_triggered()
-{
-    QString fileName = QFileDialog::getOpenFileName(this, "Choose script file", QString(), "Script Files (*.js);;All files (*.*)");
-    if (fileName.isEmpty()) {
-        return;
-    }
-
-    QFile file(fileName);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-
-        QMessageBox::critical(this, "Script Loading Error", QString("Unable to open script \"%1\": \"%2\"")
-                              .arg(fileName).arg(file.errorString()));
-        return;
-    }
-
-    QByteArray text = file.readAll();
-    file.close();
-\
-    if (text.isEmpty()) {
-        QMessageBox::critical(this, "Script Loading Error", "Script file is empty or invalid.");
-        return;
-    }
-
-    QString error;
-    QByteArray fileNameUtf8 = fileName.toUtf8();
-
-    PluginManager::EvaluationState state = g_app.m_pluginManager.evaluate(text.constData(), fileNameUtf8.constData(), &error);
-    ERR_VERIFY(state != PluginManager::InvalidArguments);
-
-    if (state != PluginManager::SuccessfulEvaluation) {
-        QString title = state == PluginManager::CompilationError ?
-                    QStringLiteral("Script Compilation Error") :
-                    QStringLiteral("Script Execution Error");
-        QString message = state == PluginManager::CompilationError ?
-                    QStringLiteral("Unable to compile script \"%1\":\n%2") :
-                    QStringLiteral("Unable to execute script \"%1\":\n%2");
-        QMessageBox::critical(this, title, message.arg(fileName).arg(error));
-        return;
-    }
-}
 
 void MainWindow::readAndApplySettings() {
     QSettings s;

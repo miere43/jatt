@@ -40,7 +40,6 @@ SOURCES += main.cpp\
     activity_visualizer.cpp \
     add_activity_info_dialog.cpp \
     activity_item_delegate.cpp \
-    plugin_manager.cpp \
     duk/duktape.c \
     edit_activity_field_dialog.cpp \
     hotkey.cpp \
@@ -60,7 +59,6 @@ HEADERS  += mainwindow.h \
     activity_visualizer.h \
     add_activity_info_dialog.h \
     activity_item_delegate.h \
-    plugin_manager.h \
     duk/duk_config.h \
     duk/duktape.h \
     edit_activity_field_dialog.h \

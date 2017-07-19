@@ -10,6 +10,7 @@
 #include <QSettings>
 #include <QVariant>
 #include <QDebug>
+#include <QDir>
 
 ApplicationState::ApplicationState(QObject *parent)
     : QObject(parent)
