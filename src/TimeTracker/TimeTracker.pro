@@ -40,7 +40,6 @@ SOURCES += main.cpp\
     activity_visualizer.cpp \
     add_activity_info_dialog.cpp \
     activity_item_delegate.cpp \
-    duk/duktape.c \
     edit_activity_field_dialog.cpp \
     hotkey.cpp \
     error_macros.cpp
@@ -59,10 +58,7 @@ HEADERS  += mainwindow.h \
     activity_visualizer.h \
     add_activity_info_dialog.h \
     activity_item_delegate.h \
-    duk/duk_config.h \
-    duk/duktape.h \
     edit_activity_field_dialog.h \
-    duktape_prepare_eval.h \
     hotkey.h \
     error_macros.h
 

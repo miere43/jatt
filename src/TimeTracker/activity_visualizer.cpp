@@ -10,6 +10,7 @@ ActivityVisualizer::ActivityVisualizer(QWidget *parent) : QWidget(parent)
     connect(this, &ActivityVisualizer::customContextMenuRequested,
             this, &ActivityVisualizer::contextMenuRequested);
     this->setContextMenuPolicy(Qt::CustomContextMenu);
+    this->setMinimumHeight(50);
 
     m_menu = new QMenu(this);
     m_mode = m_menu->addAction("Switch render mode");

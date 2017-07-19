@@ -60,6 +60,7 @@ bool ApplicationState::initialize(QString* error)
         settings.setValue("databasePath", databasePath);
     }
 
+    qDebug() << "Using database" << databasePath;
     if (!m_databaseManager.establishDatabaseConnection(databasePath, error)) {
         return false;
     }

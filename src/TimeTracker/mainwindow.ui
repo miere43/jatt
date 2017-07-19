@@ -36,7 +36,7 @@
          <string>#timePeriodTotalTimeLabel { font-size: 18pt; }</string>
         </property>
         <property name="text">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;day&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>day</string>
         </property>
         <property name="textFormat">
          <enum>Qt::RichText</enum>
@@ -125,6 +125,12 @@
    </layout>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
+   <property name="movable">
+    <bool>false</bool>
+   </property>
+   <property name="floatable">
+    <bool>false</bool>
+   </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
    </attribute>
@@ -133,8 +139,9 @@
    </attribute>
    <addaction name="addActivityAction"/>
    <addaction name="editActivityAction"/>
+   <addaction name="openSettingsAction"/>
+   <addaction name="statisticsAction"/>
   </widget>
-  <widget class="QStatusBar" name="statusBar"/>
   <action name="newSessionAction">
    <property name="text">
     <string>New Session</string>
@@ -197,6 +204,22 @@
   <action name="splitActivityAction">
    <property name="text">
     <string>Split</string>
+   </property>
+  </action>
+  <action name="statisticsAction">
+   <property name="text">
+    <string>Statistics</string>
+   </property>
+   <property name="toolTip">
+    <string>Show statistics</string>
+   </property>
+  </action>
+  <action name="openSettingsAction">
+   <property name="text">
+    <string>Settings</string>
+   </property>
+   <property name="toolTip">
+    <string>Open settings file</string>
    </property>
   </action>
  </widget>
