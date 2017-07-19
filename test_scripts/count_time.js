@@ -1,5 +1,15 @@
 'use strict';
 
+
+function formatMs(ms) {
+    var secs = ms / 1000;
+    var mins = secs / 60;
+    var hours = mins / 60;
+    var days = hours / 24;
+
+    return [Math.floor(days), Math.floor(hours), Math.floor(mins), (secs)].join(':');
+}
+
 var durations = {};
 
 app.forEachActivity(function(activityId) {
@@ -27,7 +37,7 @@ for (var infoId in durations) {
 	var infoName = app.activityInfoName(Number(infoId));
 
 	total += duration;
-	out = out + "\n" + infoName + ": " + duration + " seconds";
+	out = out + "\n" + infoName + ":" + formatMs(duration);
 }
-out = out + "\n" + "total: " + total + " seconds";
+out = out + "\n" + "total: " + formatMs(total);
 app.showMessageBox(out);

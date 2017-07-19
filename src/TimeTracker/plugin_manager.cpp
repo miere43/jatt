@@ -182,12 +182,28 @@ duk_ret_t app_activityField(duk_context* ctx) {
     return 1;
 }
 
-duk_ret_t app_forEachActivity(duk_context* ctx) {
+duk_ret_t app_forEachActivityInView(duk_context* ctx) {
     duk_require_function(ctx, 0);
 
     const QVector<Activity*>& activities = g_app.mainWindow()->currentActivities();
     for (int i = 0; i < activities.count(); ++i) {
         Activity* a = activities.at(i);
+        duk_dup(ctx, 0);
+        duk_push_number(ctx, a->id);
+        duk_call(ctx, 1);
+        duk_pop(ctx);
+    }
+
+    return 0;
+}
+
+duk_ret_t app_forEachActivity(duk_context* ctx) {
+    duk_require_function(ctx, 0);
+
+    QVector<Activity*> acts; // @TODO: this is super slow
+    g_app.database()->loadActivitiesBetweenStartAndEndTime(&acts, 0, INT64_MAX, false);
+    for (int i = 0; i < acts.count(); ++i) {
+        Activity* a = acts.at(i);
         duk_dup(ctx, 0);
         duk_push_number(ctx, a->id);
         duk_call(ctx, 1);
@@ -216,6 +232,7 @@ duk_ret_t app_showMessageBox(duk_context* ctx) {
 
 const duk_function_list_entry appModuleFuncs[] = {
     { "debugLog", app_debugLog, 1 },
+    { "forEachActivityInView", app_forEachActivityInView, 1 },
     { "forEachActivity", app_forEachActivity, 1 },
     { "showMessageBox", app_showMessageBox, 1 },
     { "activityActivityInfoId", app_activityActivityInfoId, 1 },

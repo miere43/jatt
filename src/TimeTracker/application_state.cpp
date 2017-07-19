@@ -30,11 +30,8 @@ void errorListener(const char* function, const char* file, int line, const char*
 #ifdef QT_DEBUG
     qDebug().noquote() << errorMessage;
 #else
-    if (g_app.mainWindow()) {
-        QMessageBox::critical(g_app.mainWindow(), "Error", "Application has recorded an error:\n" + errorMessage + "\n\nPlease forward this message to the developers.");
-    } else {
-        qDebug().noquote() << errorMessage;
-    }
+    QMainWindow* window = g_app.mainWindow();
+    QMessageBox::critical(window, "Error", "Application has recorded an error:\n" + errorMessage + "\n\nPlease forward this message to the developers.");
 #endif
 }
 
@@ -80,6 +77,7 @@ bool ApplicationState::initialize(QString* error)
 //    connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
 //            this, &ApplicationState::appAboutToQuit);
 
+    m_initialized = true;
     return true;
 }
 
