@@ -22,25 +22,25 @@ QStringList dbStringToStringList(const QString &list)
     return list.split('\x1f', QString::KeepEmptyParts);
 }
 
-void addFieldToActivityInfo(ActivityInfo* info, QString fieldName, ActivityInfoFieldType type)
-{
-    ERR_VERIFY_NULL(info);
-    ERR_VERIFY(!fieldName.isNull() && !fieldName.isEmpty());
+//void addFieldToActivityInfo(ActivityInfo* info, QString fieldName, ActivityInfoFieldType type)
+//{
+//    ERR_VERIFY_NULL(info);
+//    ERR_VERIFY(!fieldName.isNull() && !fieldName.isEmpty());
 
-    info->fieldNames.append(fieldName);
-    info->fieldTypes.append(type);
+//    info->fieldNames.append(fieldName);
+//    info->fieldTypes.append(type);
 
-    g_app.database()->saveActivityInfo(info);
+//    g_app.database()->saveActivityInfo(info);
 
-    QVector<Activity*> activities;
-    g_app.database()->loadActivitiesAssociatedWithActivityInfo(info, &activities);
+//    QVector<Activity*> activities;
+//    g_app.database()->loadActivitiesAssociatedWithActivityInfo(info, &activities);
 
-    for (Activity* activity : activities)
-    {
-        activity->fieldValues.append("");
-        g_app.database()->saveActivity(activity);
-    }
-}
+//    for (Activity* activity : activities)
+//    {
+//        activity->fieldValues.append("");
+//        g_app.database()->saveActivity(activity);
+//    }
+//}
 
 QString dbActivityInfoFieldTypeVectorToString(const QVector<ActivityInfoFieldType>& vector)
 {

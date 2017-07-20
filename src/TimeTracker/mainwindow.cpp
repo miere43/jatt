@@ -12,6 +12,7 @@
 #include <QBoxLayout>
 #include <QFileDialog>
 #include <QSettings>
+#include <QProcess>
 
 void hotkeyCallback(Hotkey* hotkey, void* userdata);
 
@@ -173,30 +174,34 @@ MainWindow::~MainWindow()
     delete m_recorderHotkey;
 }
 
-void MainWindow::editActivityFieldDialogFinished(int result) {
-    QObject* sender = QObject::sender();
-    EditActivityFieldDialog* dialog = qobject_cast<EditActivityFieldDialog*>(sender);
-    ERR_VERIFY_NULL(dialog);
+void MainWindow::editActivityFieldDialogFinished(int result)
+{
+    // @FIX
+//    QObject* sender = QObject::sender();
+//    EditActivityFieldDialog* dialog = qobject_cast<EditActivityFieldDialog*>(sender);
+//    ERR_VERIFY_NULL(dialog);
 
-    if (result == QDialog::Accepted) {
-        Activity* activity = dialog->activity();
-        activity->fieldValues[dialog->fieldIndex()] = dialog->newValue().toString();
+//    if (result == QDialog::Accepted) {
+//        Activity* activity = dialog->activity();
+//        activity->fieldValues[dialog->fieldIndex()] = dialog->newValue().toString();
 
-        if (m_activityListModel->activities().contains(activity)) {
-            m_activityListModel->dataChangedHint(activity);
-        }
+//        if (m_activityListModel->activities().contains(activity)) {
+//            m_activityListModel->dataChangedHint(activity);
+//        }
 
-        g_app.database()->saveActivity(activity);
-    }
+//        g_app.database()->saveActivity(activity);
+//    }
 
-    dialog->deleteLater();
+//    dialog->deleteLater();
 }
 
-void MainWindow::showEditActivityFieldDialog(Activity* activity, int fieldIndex) {
-    EditActivityFieldDialog* dialog = new EditActivityFieldDialog(activity, fieldIndex, this);
-    connect(dialog, &EditActivityFieldDialog::finished,
-            this, &MainWindow::editActivityFieldDialogFinished);
-    dialog->show();
+void MainWindow::showEditActivityFieldDialog(Activity* activity, int fieldIndex)
+{
+    // @FIX
+    //    EditActivityFieldDialog* dialog = new EditActivityFieldDialog(activity, fieldIndex, this);
+//    connect(dialog, &EditActivityFieldDialog::finished,
+//            this, &MainWindow::editActivityFieldDialogFinished);
+//    dialog->show();
 }
 
 void MainWindow::activityMenuItemActionTriggered(bool checked) {
@@ -450,6 +455,11 @@ void MainWindow::activityRecorderRecordEvent(ActivityRecorderEvent event)
 
         this->setWindowTitle(g_app.appTitle);
     }
+    else if (event == ActivityRecorderEvent::Autosave)
+    {
+        g_app.database()->saveActivity(currentActivity);
+        // qDebug() << "Autosaved current activity";
+    }
 
     if (event == ActivityRecorderEvent::RecordingStarted || event == ActivityRecorderEvent::UpdateUITimer)
     {
@@ -603,16 +613,8 @@ void MainWindow::startQuickActivity(ActivityInfo* info) {
     activity->id = -1;
     activity->info = info;
 
-    if (info->fieldNames.count() > 0) {
-        activity->fieldValues.reserve(info->fieldNames.count());
-        for (int i = 0; i < info->fieldNames.count(); ++i) {
-            if (i == 0) {
-                activity->fieldValues.append(info->name);
-            } else {
-                activity->fieldValues.append(QStringLiteral(""));
-            }
-        }
-    }
+    activity->name = info->name;
+    activity->note = QStringLiteral("");
 
     activity->startTime = activity->endTime = getCurrentDateTimeUtc();
 
@@ -727,7 +729,8 @@ void MainWindow::splitActivity(Activity *activity) {
         newActivity->startTime   = interval.startTime;
         newActivity->endTime     = interval.endTime;
         newActivity->info        = activity->info;
-        newActivity->fieldValues = activity->fieldValues;
+        newActivity->name        = activity->name;
+        newActivity->note        = activity->note;
         newActivity->intervals.append(interval);
 
         if (!g_app.database()->saveActivity(newActivity)) {
@@ -811,4 +814,17 @@ void MainWindow::closeEvent(QCloseEvent *event)
     s.endGroup();
 
     event->accept();
+}
+
+void MainWindow::on_openSettingsAction_triggered()
+{
+//    QSettings s;
+//    QString settingsFileName = s.fileName();
+//    QFileInfo info = QFileInfo(settingsFileName);
+//    QDir dir = info.absoluteDir();
+//    QString fileName = info.fileName();
+//    dir.path();
+
+//    QProcess* process = new QProcess(this);
+//    process->start(dir.path());
 }

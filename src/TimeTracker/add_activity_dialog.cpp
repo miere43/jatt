@@ -130,18 +130,18 @@ Activity* AddActivityDialog::constructActivity()
     activity->startTime = getCurrentDateTimeUtc();
     activity->endTime = activity->startTime;
 
-    activity->fieldValues.reserve(m_activityInfoFieldWidgets.size());
+//    activity->fieldValues.reserve(m_activityInfoFieldWidgets.size());
 
-    for (const QWidget* fieldWidget : m_activityInfoFieldWidgets)
-    {
-        const QLineEdit* lineEdit = qobject_cast<const QLineEdit*>(fieldWidget);
-        if (!lineEdit) {
-            g_app.m_activityAllocator.deallocate(activity);
-            ERR_VERIFY_NULL_V(lineEdit, nullptr);
-        }
+//    for (const QWidget* fieldWidget : m_activityInfoFieldWidgets)
+//    {
+//        const QLineEdit* lineEdit = qobject_cast<const QLineEdit*>(fieldWidget);
+//        if (!lineEdit) {
+//            g_app.m_activityAllocator.deallocate(activity);
+//            ERR_VERIFY_NULL_V(lineEdit, nullptr);
+//        }
 
-        activity->fieldValues.append(lineEdit->text());
-    }
+//        activity->fieldValues.append(lineEdit->text());
+//    }
 
     g_app.database()->saveActivity(activity);
     m_activityWasConstructed = true;

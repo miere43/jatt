@@ -35,7 +35,6 @@ ActivityInfo* AddActivityInfoDialog::constructActivityInfo()
 
     g_app.database()->saveActivityInfo(info);
 
-    info->updateFormatter();
     m_activityInfoConstructed = true;
     return info;
 }

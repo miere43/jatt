@@ -35,7 +35,6 @@ SOURCES += main.cpp\
     add_activity_dialog.cpp \
     add_field_dialog.cpp \
     activity_list_model.cpp \
-    display_format.cpp \
     activity_recorder.cpp \
     activity_visualizer.cpp \
     add_activity_info_dialog.cpp \
@@ -53,7 +52,6 @@ HEADERS  += mainwindow.h \
     add_activity_dialog.h \
     add_field_dialog.h \
     activity_list_model.h \
-    display_format.h \
     activity_recorder.h \
     activity_visualizer.h \
     add_activity_info_dialog.h \

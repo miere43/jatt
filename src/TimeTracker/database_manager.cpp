@@ -50,13 +50,11 @@ bool DatabaseManager::establishDatabaseConnection(QString databasePath, QString*
 
 bool DatabaseManager::closeDatabaseConnection()
 {
-    if (!m_database.isValid())
-    {
+    if (!m_database.isValid()) {
         return false;
     }
 
-    if (m_database.isOpen())
-    {
+    if (m_database.isOpen()) {
         m_database.close();
     }
 
@@ -89,8 +87,6 @@ bool DatabaseManager::loadActivityInfos()
         info->displayFormat = query.value("display_format").value<QString>();
         info->displayRules = query.value("display_rules").value<QString>();
 
-        info->updateFormatter();
-
         m_activityInfos.insert(info->id, info);
         m_activityInfoList.append(info);
     }
@@ -106,7 +102,8 @@ QList<ActivityInfo*> DatabaseManager::activityInfos() const
     return m_activityInfoList;
 }
 
-Activity* DatabaseManager::loadActivity(qint64 id) {
+Activity* DatabaseManager::loadActivity(qint64 id)
+{
     ERR_VERIFY_V(id > 0, nullptr);
 
     Activity* activity = m_activities.value(id);
@@ -114,7 +111,7 @@ Activity* DatabaseManager::loadActivity(qint64 id) {
         return activity;
 
     QSqlQuery query = QSqlQuery(m_database);
-    query.prepare("SELECT 1 FROM activity WHERE id = :id");
+    query.prepare("SELECT * FROM activity WHERE id = :id LIMIT 1");
     query.bindValue(":id", id);
 
     if (!query.exec()) {
@@ -187,17 +184,18 @@ bool DatabaseManager::saveActivity(Activity* activity)
 
     if (!isInsertAction) {
         // Update activity.
-        query.prepare("UPDATE activity SET activity_info_id = :activity_info_id, field_values = :field_values, start_time = :start_time, end_time = :end_time, intervals = :intervals WHERE id = :id");
+        query.prepare("UPDATE activity SET activity_info_id = :activity_info_id, name = :name, note = :note, start_time = :start_time, end_time = :end_time, intervals = :intervals WHERE id = :id");
         query.bindValue(":id", activity->id);
     } else {
         // Insert activity.
-        query.prepare("INSERT INTO activity(activity_info_id, field_values, start_time, end_time, intervals) VALUES(:activity_info_id, :field_values, :start_time, :end_time, :intervals)");
+        query.prepare("INSERT INTO activity(activity_info_id, name, note, start_time, end_time, intervals) VALUES(:activity_info_id, :name, :note, :start_time, :end_time, :intervals)");
     }
 
     query.bindValue(":activity_info_id", activity->info->id);
     query.bindValue(":start_time", activity->startTime);
     query.bindValue(":end_time", activity->endTime);
-    query.bindValue(":field_values", dbStringListToString(activity->fieldValues));
+    query.bindValue(":name", activity->name);
+    query.bindValue(":note", activity->note);
 
     QByteArray intervals((const char*)activity->intervals.data(), sizeof(Interval) * activity->intervals.count());
     query.bindValue(":intervals", intervals);
@@ -335,7 +333,8 @@ void DatabaseManager::copyActivityValuesFromQuery(Activity *activity, QSqlQuery 
     ERR_VERIFY_NULL(query);
 
     activity->id = query->value("id").value<qint64>();
-    activity->fieldValues = dbStringToStringList(query->value("field_values").value<QString>());
+    activity->name = query->value("name").value<QString>();
+    activity->note = query->value("note").value<QString>();
     activity->startTime = query->value("start_time").value<qint64>();
     activity->endTime = query->value("end_time").value<qint64>();
 
@@ -401,7 +400,8 @@ bool DatabaseManager::createTables(QString* error) {
         "CREATE TABLE activity(\n"
         "  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n"
         "  activity_info_id INTEGER NOT NULL,\n"
-        "  field_values TEXT NOT NULL,\n"
+        "  name TEXT NOT NULL,\n"
+        "  note TEXT,\n"
         "  start_time INTEGER NOT NULL,\n"
         "  end_time INTEGER NOT NULL,\n"
         "  intervals BLOB,\n"

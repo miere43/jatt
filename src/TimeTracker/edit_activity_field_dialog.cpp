@@ -6,34 +6,35 @@ EditActivityFieldDialog::EditActivityFieldDialog(Activity* activity, int fieldIn
     QDialog(parent),
     ui(new Ui::EditActivityFieldDialog)
 {
-    ui->setupUi(this);
+//    ui->setupUi(this);
 
-    m_activity = activity;
-    m_fieldIndex = fieldIndex;
+//    m_activity = activity;
+//    m_fieldIndex = fieldIndex;
 
-    ERR_VERIFY_NULL(m_activity);
-    ERR_VERIFY_NULL(m_activity->info);
+//    ERR_VERIFY_NULL(m_activity);
+//    ERR_VERIFY_NULL(m_activity->info);
 
-    // @TODO: make sure field really exists.
+//    // @TODO: make sure field really exists.
 
-    this->setupUi();
+//    this->setupUi();
 }
 
-QVariant EditActivityFieldDialog::newValue() const {
+QVariant EditActivityFieldDialog::newValue() const
+{
     return ui->propertyLineEdit->text();
 }
 
 void EditActivityFieldDialog::setupUi()
 {
-    QString fieldName = m_activity->info->fieldNames[m_fieldIndex];
+//    QString fieldName = m_activity->info->fieldNames[m_fieldIndex];
 
-    ui->fieldNameLabel->setText(QStringLiteral("Edit <b>") + fieldName +
-                                QStringLiteral("</b> field of \"") + m_activity->displayString() + QStringLiteral("\"."));
+//    ui->fieldNameLabel->setText(QStringLiteral("Edit <b>") + fieldName +
+//                                QStringLiteral("</b> field of \"") + m_activity->displayString() + QStringLiteral("\"."));
 
-    ui->propertyLineEdit->setText(m_activity->field(m_fieldIndex));
-    ui->propertyLineEdit->selectAll();
+//    ui->propertyLineEdit->setText(m_activity->field(m_fieldIndex));
+//    ui->propertyLineEdit->selectAll();
 
-    ERR_VERIFY(m_activity->info->fieldNames.count() == m_activity->fieldValues.count());
+//    ERR_VERIFY(m_activity->info->fieldNames.count() == m_activity->fieldValues.count());
 }
 
 EditActivityFieldDialog::~EditActivityFieldDialog()

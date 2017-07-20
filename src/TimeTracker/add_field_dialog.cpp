@@ -18,8 +18,6 @@ AddFieldDialog::~AddFieldDialog()
 
 void AddFieldDialog::on_buttonBox_accepted()
 {
-    addFieldToActivityInfo(m_activityInfo, ui->fieldNameLineEdit->text(),
-                             /* @TODO */ ActivityInfoFieldType::String);
-    m_activityInfo->updateFormatter();
-    emit fieldAdded();
+    //addFieldToActivityInfo(m_activityInfo, ui->fieldNameLineEdit->text(),  /* @TODO */ ActivityInfoFieldType::String);
+    //emit fieldAdded();
 }

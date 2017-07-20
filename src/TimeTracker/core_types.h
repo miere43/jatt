@@ -6,7 +6,6 @@
 #include <QHash>
 
 #include "utilities.h"
-#include "display_format.h"
 
 struct Activity;
 
@@ -35,26 +34,20 @@ struct ActivityInfo
     QVector<ActivityInfoFieldType> fieldTypes;
     QString displayFormat;
     QString displayRules;
-
-    void updateFormatter();
-    QString formatActivity(Activity* activity);
-private:
-    DisplayFormat m_formatter;
 };
 
 struct Activity
 {
     qint64 id;
     ActivityInfo* info;
-    QStringList fieldValues;
     qint64 startTime;
     qint64 endTime;
+    QString name;
+    QString note;
     QVector<Interval> intervals;
 
     bool belongsToTimePeriod(qint64 startTime, qint64 endTime);
     void updateStartAndEndTime();
-    QString displayString();
-    QString field(int index) const;
 
     qint64 duration() const;
 };

@@ -60,28 +60,6 @@ QString createDurationStringFromMsecs(qint64 msecs)
                               .arg(secs,  2, 10, QChar('0'));
 }
 
-QString ActivityInfo::formatActivity(Activity *activity)
-{
-    ERR_VERIFY_NULL_V(activity, QString::null);
-    ERR_VERIFY_V(activity->id > 0, QString::null);
-    ERR_VERIFY_V(activity->info == this, QString::null);
-
-    return m_formatter.format(activity->fieldValues);
-}
-
-void ActivityInfo::updateFormatter()
-{
-    m_formatter.setFormat(displayFormat, fieldNames);
-}
-
-QString Activity::displayString()
-{
-    ERR_VERIFY_V(id > 0, QString::null);
-    ERR_VERIFY_V(info != nullptr, QString::null);
-
-    return info->formatActivity(this);
-}
-
 void Activity::updateStartAndEndTime()
 {
     qint64 min = INT64_MAX, max = INT64_MIN;
@@ -122,12 +100,6 @@ bool Activity::belongsToTimePeriod(qint64 startTime, qint64 endTime)
     return false;
 }
 
-QString Activity::field(int index) const {
-    if (index < 0 || index >= fieldValues.count()) {
-        return QString::null;
-    }
-    return fieldValues[index];
-}
 
 qint64 Activity::duration() const
 {

@@ -65,7 +65,7 @@ QVariant ActivityListModel::data(const QModelIndex &index, int role) const
 
     if (role == Qt::DisplayRole)
     {
-        return m_activities[index.row()]->displayString();
+        return m_activities[index.row()]->name;
     }
     else if (role == Qt::UserRole)
     {

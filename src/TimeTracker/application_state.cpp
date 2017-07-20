@@ -53,7 +53,7 @@ bool ApplicationState::initialize(QString* error)
         QDir appDir(appDirPath);
         appDir.mkdir("data");
         if (!appDir.cd("data")) {
-            *error = QString("Unable to create directory 'data' in '%0'.").arg(appDirPath);
+            *error = QString("Unable to create directory 'data' in '%1'.").arg(appDirPath);
             return false;
         }
         databasePath = appDir.filePath("user.s3db");

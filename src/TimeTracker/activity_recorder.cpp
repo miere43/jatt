@@ -10,8 +10,14 @@ ActivityRecorder::ActivityRecorder(QObject* parent)
     m_timer.setSingleShot(false);
     m_timer.setTimerType(Qt::PreciseTimer);
 
+    m_autosaveTimer.setInterval(60 * 1000);
+    m_autosaveTimer.setSingleShot(false);
+    m_autosaveTimer.setTimerType(Qt::CoarseTimer);
+
     connect(&m_timer, &QTimer::timeout,
             this, &ActivityRecorder::timerTimeout);
+    connect(&m_autosaveTimer, &QTimer::timeout,
+            this, &ActivityRecorder::autosaveTimerTimeout);
 }
 
 void ActivityRecorder::timerTimeout()
@@ -20,6 +26,14 @@ void ActivityRecorder::timerTimeout()
 
     syncActivityState();
     emit recordEvent(ActivityRecorderEvent::UpdateUITimer);
+}
+
+void ActivityRecorder::autosaveTimerTimeout()
+{
+    ERR_VERIFY(isRecording());
+
+    syncActivityState();
+    emit recordEvent(ActivityRecorderEvent::Autosave);
 }
 
 void ActivityRecorder::setTimerType(Qt::TimerType type)
@@ -64,6 +78,7 @@ void ActivityRecorder::record(Activity *activity)
     emit recordEvent(ActivityRecorderEvent::RecordingStarted);
 
     m_timer.start();
+    m_autosaveTimer.start();
 }
 
 void ActivityRecorder::stop()
@@ -71,6 +86,7 @@ void ActivityRecorder::stop()
     ERR_VERIFY(isRecording());
 
     m_timer.stop();
+    m_autosaveTimer.stop();
     syncActivityState();
     m_isRecording = false;
 
@@ -85,11 +101,18 @@ void ActivityRecorder::syncActivityState()
     m_activityInterval->endTime = m_activity->endTime;
 }
 
-inline qint64 qint64_max(qint64 a, qint64 b) {
+inline qint64 qint64_max(qint64 a, qint64 b)
+{
     return a > b ? a : b;
 }
 
-qint64 ActivityRecorder::duration() const {
+qint64 ActivityRecorder::duration() const
+{
     if (!isRecording()) return 0;
     return qint64_max(0, getCurrentDateTimeUtc() - m_activityInterval->startTime);
+}
+
+void ActivityRecorder::setAutosaveTimerInterval(int msecs)
+{
+    m_autosaveTimer.setInterval(msecs);
 }
