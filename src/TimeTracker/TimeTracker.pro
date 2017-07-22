@@ -41,7 +41,8 @@ SOURCES += main.cpp\
     activity_item_delegate.cpp \
     edit_activity_field_dialog.cpp \
     hotkey.cpp \
-    error_macros.cpp
+    error_macros.cpp \
+    statistics_dialog.cpp
 
 HEADERS  += mainwindow.h \
     application_state.h \
@@ -58,10 +59,12 @@ HEADERS  += mainwindow.h \
     activity_item_delegate.h \
     edit_activity_field_dialog.h \
     hotkey.h \
-    error_macros.h
+    error_macros.h \
+    statistics_dialog.h
 
 FORMS    += mainwindow.ui \
     add_activity_dialog.ui \
     add_field_dialog.ui \
     add_activity_info_dialog.ui \
-    edit_activity_field_dialog.ui
+    edit_activity_field_dialog.ui \
+    statistics_dialog.ui

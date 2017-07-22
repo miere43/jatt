@@ -5,6 +5,7 @@
 #include "add_activity_dialog.h"
 #include "edit_activity_field_dialog.h"
 #include "error_macros.h"
+#include "statistics_dialog.h"
 
 #include <QtAlgorithms>
 #include <QDebug>
@@ -827,4 +828,10 @@ void MainWindow::on_openSettingsAction_triggered()
 
 //    QProcess* process = new QProcess(this);
 //    process->start(dir.path());
+}
+
+void MainWindow::on_statisticsAction_triggered()
+{
+    StatisticsDialog* dialog = new StatisticsDialog(this);
+    dialog->show();
 }

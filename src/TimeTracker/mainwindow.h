@@ -60,6 +60,8 @@ private slots:
     void changePageRightShortcutActivated();
     void on_openSettingsAction_triggered();
 
+    void on_statisticsAction_triggered();
+
 private:
     void closeEvent(QCloseEvent *event) override;
     void readAndApplySettings();
