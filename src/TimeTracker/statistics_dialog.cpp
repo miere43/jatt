@@ -4,21 +4,172 @@
 #include "application_state.h"
 #include "utilities.h"
 
+#include <algorithm>
 #include <QMessageBox>
 #include <QHash>
+
+static QString formatMs(qint64 time)
+{
+    qint64 secs = time / 1000;
+    qint64 mins = secs / 60;
+    qint64 hrs  = mins / 60;
+    qint64 msecs = time % 1000;
+    mins = mins % 60;
+    secs = secs % 60;
+
+    return QString(QStringLiteral("%1:%2:%3.%4"))
+            .arg(hrs, 2, 10, QLatin1Char('0'))
+            .arg(mins, 2, 10, QLatin1Char('0'))
+            .arg(secs, 2, 10, QLatin1Char('0'))
+            .arg(msecs, 4, 10, QLatin1Char('0'));
+}
+
+static inline qint64 qint64_clamp(qint64 value, qint64 min, qint64 max)
+{
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
+}
+
+static inline qint64 clampActivityDuration(const Activity* activity, qint64 min, qint64 max)
+{
+    qint64 total = 0i64;
+    for (const Interval& interval : activity->intervals)
+    {
+        qint64 intervalMin = qint64_clamp(interval.startTime, min, max);
+        qint64 intervalMax = qint64_clamp(interval.endTime, min, max);
+        total += intervalMax - intervalMin;
+    }
+    return total;
+}
+
+StatisticsTableModel::StatisticsTableModel(QObject *parent)
+    : QAbstractTableModel(parent)
+{
+
+}
+
+void StatisticsTableModel::setItems(QVector<StatisticsTableItem> items)
+{
+    beginResetModel();
+    m_items = items;
+    endResetModel();
+}
+
+int StatisticsTableModel::rowCount(const QModelIndex &parent) const
+{
+    Q_UNUSED(parent);
+    return m_items.count();
+}
+
+int StatisticsTableModel::columnCount(const QModelIndex &parent) const
+{
+    Q_UNUSED(parent);
+    if (m_items.count() == 0) return 0;
+    return 2;
+}
+
+QVariant StatisticsTableModel::data(const QModelIndex &index, int role) const
+{
+    if (role != Qt::DisplayRole) return QVariant();
+
+    const StatisticsTableItem& item = m_items[index.row()];
+    switch (index.column())
+    {
+        case 0:
+        {
+            return item.name;
+        }
+        case 1:
+        {
+            return formatMs(item.time);
+        }
+        default:
+        {
+            ERR_VERIFY_V(false, QVariant());
+        }
+    }
+
+    ERR_VERIFY_V(false, QVariant());
+}
+
+QVariant StatisticsTableModel::headerData(int section, Qt::Orientation orientation, int role) const
+{
+    if (role == Qt::DisplayRole)
+    {
+        if (orientation == Qt::Horizontal)
+        {
+            if (section == 0) return QStringLiteral("Activities");
+            if (section == 1) return QStringLiteral("Time");
+            ERR_VERIFY_V(false, QVariant());
+        }
+        else if (orientation == Qt::Vertical)
+        {
+            return QVariant();
+        }
+        ERR_VERIFY_V(false, QVariant());
+    }
+
+    return QVariant();
+}
+
+static inline bool tableItemTimeLessThanAsc(const StatisticsTableItem& a, const StatisticsTableItem& b)
+{
+    return a.time < b.time;
+}
+
+static inline bool tableItemTimeLessThanDesc(const StatisticsTableItem& a, const StatisticsTableItem& b)
+{
+    return a.time > b.time;
+}
+
+static inline bool tableItemNameLessThanAsc(const StatisticsTableItem& a, const StatisticsTableItem& b)
+{
+    // @TODO: maybe this isn't right way to do it.
+    return a.name.toLower() < b.name.toLower();
+}
+
+static inline bool tableItemNameLessThanDesc(const StatisticsTableItem& a, const StatisticsTableItem& b)
+{
+    return a.name.toLower() > b.name.toLower();
+}
+
+
+void StatisticsTableModel::sort(int column, Qt::SortOrder order)
+{
+    if (column < 0 || column > 1 || m_items.count() == 0) return;
+    emit layoutAboutToBeChanged();
+
+    if (column == 0)
+    {
+        std::sort(m_items.begin(), m_items.end(),
+                  order == Qt::AscendingOrder ? tableItemNameLessThanAsc : tableItemNameLessThanDesc);
+    }
+    else if (column == 1)
+    {
+        std::sort(m_items.begin(), m_items.end(),
+                  order == Qt::AscendingOrder ? tableItemTimeLessThanAsc : tableItemTimeLessThanDesc);
+    }
+
+    emit layoutChanged();
+}
 
 StatisticsDialog::StatisticsDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::StatisticsDialog)
 {
     ui->setupUi(this);
+    m_tableModel = new StatisticsTableModel(this);
+    ui->infoTable->setModel(m_tableModel);
 
+    // @TODO: ugly
     this->on_selectRangeCombobox_currentIndexChanged(ui->selectRangeCombobox->currentIndex());
 }
 
 StatisticsDialog::~StatisticsDialog()
 {
     delete ui;
+    delete m_tableModel;
 }
 
 void StatisticsDialog::on_selectRangeCombobox_currentIndexChanged(int index)
@@ -73,48 +224,11 @@ void StatisticsDialog::on_selectRangeCombobox_currentIndexChanged(int index)
     }
 }
 
-static QString formatMs(qint64 time)
-{
-    qint64 secs = time / 1000;
-    qint64 mins = secs / 60;
-    qint64 hrs  = mins / 60;
-    qint64 msecs = time % 1000;
-    mins = mins % 60;
-    secs = secs % 60;
-
-    return QString(QStringLiteral("%1:%2:%3.%4"))
-            .arg(hrs, 2, 10, QLatin1Char('0'))
-            .arg(mins, 2, 10, QLatin1Char('0'))
-            .arg(secs, 2, 10, QLatin1Char('0'))
-            .arg(msecs, 4, 10, QLatin1Char('0'));
-}
-
-static inline qint64 qint64_clamp(qint64 value, qint64 min, qint64 max)
-{
-    if (value < min) return min;
-    if (value > max) return max;
-    return value;
-}
-
-static inline qint64 clampActivityDuration(const Activity* activity, qint64 min, qint64 max)
-{
-    qint64 total = 0i64;
-    for (const Interval& interval : activity->intervals)
-    {
-        qint64 intervalMin = qint64_clamp(interval.startTime, min, max);
-        qint64 intervalMax = qint64_clamp(interval.endTime, min, max);
-        total += intervalMax - intervalMin;
-    }
-    return total;
-}
-
 void StatisticsDialog::calcStatisticsForTimeRange(qint64 startTime, qint64 endTime)
 {
     ERR_VERIFY(startTime >= 0);
     ERR_VERIFY(endTime >= 0);
     ERR_VERIFY(startTime <= endTime);
-
-    // @TODO: we shouldn't count activity duration before 'startTime' or 'endTime'!!!
 
     QList<ActivityInfo*> activityInfos = g_app.database()->activityInfos();
     if (activityInfos.length() == 0)
@@ -147,19 +261,19 @@ void StatisticsDialog::calcStatisticsForTimeRange(qint64 startTime, qint64 endTi
         }
     }
 
-    QString output;
+    m_items.clear();
+
     qint64 total = 0LL;
     for (auto it = count.cbegin(); it != count.cend(); ++it)
     {
         qint64 duration = it.value();
-        output.append(it.key()->name);
-        output.append(QStringLiteral(": "));
-        output.append(formatMs(duration));
-        output.append(QStringLiteral("\n"));
-        total += duration;
+        if (duration > 0)
+        {
+            m_items.append(StatisticsTableItem { it.key()->name, duration });
+            total += duration;
+        }
     }
-    output.append(QStringLiteral("Total: "));
-    output.append(formatMs(total));
+    m_items.append(StatisticsTableItem { QStringLiteral("Total"), total });
 
-    ui->displayLabel->setText(output);
+    m_tableModel->setItems(m_items);
 }
