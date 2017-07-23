@@ -16,9 +16,9 @@ ApplicationState::ApplicationState(QObject *parent)
     : QObject(parent)
 {
 #ifdef APP_DEBUG_DB
-    appTitle = QStringLiteral("Qt Time Tracker");
-#else
     appTitle = QStringLiteral("(Debug) Qt Time Tracker");
+#else
+    appTitle = QStringLiteral("Qt Time Tracker");
 #endif
 }
 

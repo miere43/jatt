@@ -28,7 +28,7 @@ MainWindow::MainWindow(QWidget *parent)
     g_app.setMainWindow(this);
     ui->setupUi(this);
 
-#ifndef APP_DEBUG_DB
+#ifdef APP_DEBUG_DB
     this->setWindowTitle(g_app.appTitle);
 #endif
 
@@ -133,9 +133,7 @@ void MainWindow::editSelectedActivityShortcutActivated() {
     Activity* activity = selectedActivity();
     if (!activity) return;
 
-    if (activity->info->fieldNames.count() > 0) {
-        showEditActivityFieldDialog(activity, 0);
-    }
+    showEditActivityFieldDialog(activity);
 }
 
 void MainWindow::changePageLeftShortcutActivated() {
@@ -156,15 +154,7 @@ QMenu* MainWindow::createActivityInfoMenu(ActivityInfo *info) {
     m->addAction(ui->splitActivityAction);
     m->addSeparator();
 
-    int i = 0;
-    for (const QString& fieldName : info->fieldNames) {
-        QAction* action = m->addAction(QString("Edit \"") + fieldName + "\"");
-        // @TODO: this is so eh, maybe there is a better solution?
-        action->setProperty("fieldIndex", QVariant::fromValue<int>(i));
-        connect(action, &QAction::triggered,
-                this, &MainWindow::activityMenuItemActionTriggered);
-        ++i;
-    }
+    Q_UNUSED(info);
     return m;
 }
 
@@ -177,32 +167,48 @@ MainWindow::~MainWindow()
 
 void MainWindow::editActivityFieldDialogFinished(int result)
 {
-    // @FIX
-//    QObject* sender = QObject::sender();
-//    EditActivityFieldDialog* dialog = qobject_cast<EditActivityFieldDialog*>(sender);
-//    ERR_VERIFY_NULL(dialog);
+    QObject* sender = QObject::sender();
+    EditActivityFieldDialog* dialog = qobject_cast<EditActivityFieldDialog*>(sender);
+    ERR_VERIFY_NULL(dialog);
 
-//    if (result == QDialog::Accepted) {
-//        Activity* activity = dialog->activity();
-//        activity->fieldValues[dialog->fieldIndex()] = dialog->newValue().toString();
+    bool changed = false;
+    if (result == QDialog::Accepted)
+    {
+        Activity* activity = dialog->activity();
 
-//        if (m_activityListModel->activities().contains(activity)) {
-//            m_activityListModel->dataChangedHint(activity);
-//        }
 
-//        g_app.database()->saveActivity(activity);
-//    }
+        if (dialog->isNameFieldChanged())
+        {
+            changed = true;
+            activity->name = dialog->newName();
+        }
 
-//    dialog->deleteLater();
+        if (dialog->isNoteFieldChanged())
+        {
+            changed = true;
+            activity->note = dialog->newNote();
+        }
+
+        if (changed)
+        {
+            if (m_activityListModel->activities().contains(activity))
+            {
+                m_activityListModel->dataChangedHint(activity);
+            }
+
+            g_app.database()->saveActivity(activity);
+        }
+    }
+
+    dialog->deleteLater();
 }
 
-void MainWindow::showEditActivityFieldDialog(Activity* activity, int fieldIndex)
+void MainWindow::showEditActivityFieldDialog(Activity* activity)
 {
-    // @FIX
-    //    EditActivityFieldDialog* dialog = new EditActivityFieldDialog(activity, fieldIndex, this);
-//    connect(dialog, &EditActivityFieldDialog::finished,
-//            this, &MainWindow::editActivityFieldDialogFinished);
-//    dialog->show();
+    EditActivityFieldDialog* dialog = new EditActivityFieldDialog(activity, this);
+    connect(dialog, &EditActivityFieldDialog::finished,
+            this, &MainWindow::editActivityFieldDialogFinished);
+    dialog->show();
 }
 
 void MainWindow::activityMenuItemActionTriggered(bool checked) {
@@ -215,8 +221,7 @@ void MainWindow::activityMenuItemActionTriggered(bool checked) {
     Activity* activity = selectedActivity();
     ERR_VERIFY_NULL(activity);
 
-    int fieldIndex = action->property("fieldIndex").value<int>();
-    showEditActivityFieldDialog(activity, fieldIndex);
+    showEditActivityFieldDialog(activity);
 }
 
 void MainWindow::activitiesListViewMenuRequested(const QPoint &pos)
@@ -244,9 +249,7 @@ void MainWindow::activitiesListViewDoubleClicked(const QModelIndex &index) {
         Activity* activity = (Activity*)index.data(Qt::UserRole).value<void*>();
         ERR_VERIFY_NULL(activity);
 
-        if (activity->info->fieldNames.count() > 0) {
-            showEditActivityFieldDialog(activity, 0);
-        }
+        showEditActivityFieldDialog(activity);
     }
 }
 

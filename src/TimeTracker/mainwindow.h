@@ -67,7 +67,7 @@ private:
     void readAndApplySettings();
 
     void splitActivity(Activity* activity);
-    void showEditActivityFieldDialog(Activity* activity, int fieldIndex);
+    void showEditActivityFieldDialog(Activity* activity);
 
     void setViewTimePeriod(qint64 startTime, qint64 endTime);
     void setViewDay(qint64 day);
