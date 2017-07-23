@@ -2,6 +2,7 @@
 #include "ui_edit_activity_field_dialog.h"
 #include "error_macros.h"
 
+#include <QDebug>
 
 EditActivityFieldDialog::EditActivityFieldDialog(Activity* activity, QWidget *parent) :
     QDialog(parent),
@@ -14,12 +15,9 @@ EditActivityFieldDialog::EditActivityFieldDialog(Activity* activity, QWidget *pa
     ERR_VERIFY_NULL(m_activity);
     ERR_VERIFY_NULL(m_activity->info);
 
-    m_isNameFieldChanged = true;
-    m_isNoteFieldChanged = true; // @TODO @TEMP
-
     ui->nameEdit->setText(activity->name);
     ui->nameEdit->selectAll();
-    ui->noteEdit->setPlainText(activity->note);
+    ui->noteEdit->setText(activity->note);
 }
 
 QString EditActivityFieldDialog::newName() const
@@ -30,6 +28,19 @@ QString EditActivityFieldDialog::newName() const
 QString EditActivityFieldDialog::newNote() const
 {
     return ui->noteEdit->toPlainText();
+}
+
+bool EditActivityFieldDialog::isNameFieldChanged() const
+{
+    return ui->nameEdit->isModified();
+}
+
+bool EditActivityFieldDialog::isNoteFieldChanged() const
+{
+    QTextDocument * document = ui->noteEdit->document();
+    ERR_VERIFY_NULL_V(document, true);
+
+    return document->isModified();
 }
 
 EditActivityFieldDialog::~EditActivityFieldDialog()

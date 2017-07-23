@@ -176,7 +176,6 @@ void MainWindow::editActivityFieldDialogFinished(int result)
     {
         Activity* activity = dialog->activity();
 
-
         if (dialog->isNameFieldChanged())
         {
             changed = true;

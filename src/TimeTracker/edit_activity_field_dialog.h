@@ -18,8 +18,8 @@ public:
 
     QString newName() const;
     QString newNote() const;
-    inline bool isNameFieldChanged() const { return m_isNameFieldChanged; }
-    inline bool isNoteFieldChanged() const { return m_isNoteFieldChanged; }
+    bool isNameFieldChanged() const;
+    bool isNoteFieldChanged() const;
 
     inline Activity* activity() const { return m_activity; }
 private:
