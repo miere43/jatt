@@ -188,6 +188,12 @@ void MainWindow::editActivityFieldDialogFinished(int result)
             activity->note = dialog->newNote();
         }
 
+        if (dialog->isActivityInfoChanged())
+        {
+            changed = true;
+            activity->info = dialog->newActivityInfo();
+        }
+
         if (changed)
         {
             if (m_activityListModel->activities().contains(activity))

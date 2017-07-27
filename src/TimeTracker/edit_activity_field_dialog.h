@@ -18,16 +18,15 @@ public:
 
     QString newName() const;
     QString newNote() const;
+    ActivityInfo* newActivityInfo() const;
     bool isNameFieldChanged() const;
     bool isNoteFieldChanged() const;
+    bool isActivityInfoChanged() const;
 
     inline Activity* activity() const { return m_activity; }
 private:
     Ui::EditActivityFieldDialog *ui;
-    Activity* m_activity;
-
-    bool m_isNameFieldChanged = false;
-    bool m_isNoteFieldChanged = false;
+    Activity* m_activity = nullptr;
 };
 
 #endif // EDIT_ACTIVITY_FIELD_DIALOG_H
