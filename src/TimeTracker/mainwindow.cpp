@@ -16,9 +16,6 @@
 #include <QProcess>
 
 void hotkeyCallback(Hotkey* hotkey, void* userdata);
-enum {
-    ACTIVITY_MENU_ACTIVITY_USERDATA = 0
-};
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)

@@ -53,6 +53,16 @@ void StatisticsTableModel::setItems(QVector<StatisticsTableItem> items)
 {
     beginResetModel();
     m_items = items;
+
+    StatisticsTableItem total;
+    total.name = QStringLiteral("Total");
+    total.time = 0;
+    for (const StatisticsTableItem& item : items)
+    {
+        total.time += item.time;
+    }
+
+    m_items.append(total);
     endResetModel();
 }
 
@@ -137,17 +147,19 @@ static inline bool tableItemNameLessThanDesc(const StatisticsTableItem& a, const
 
 void StatisticsTableModel::sort(int column, Qt::SortOrder order)
 {
-    if (column < 0 || column > 1 || m_items.count() == 0) return;
+    if (column < 0 || column > 1 || m_items.count() <= 1) return;
     emit layoutAboutToBeChanged();
 
+
+    // We assume that last item is 'Total' row, don't sort it.
     if (column == 0)
     {
-        std::sort(m_items.begin(), m_items.end(),
+        std::sort(m_items.begin(), m_items.end() - 1,
                   order == Qt::AscendingOrder ? tableItemNameLessThanAsc : tableItemNameLessThanDesc);
     }
     else if (column == 1)
     {
-        std::sort(m_items.begin(), m_items.end(),
+        std::sort(m_items.begin(), m_items.end() - 1,
                   order == Qt::AscendingOrder ? tableItemTimeLessThanAsc : tableItemTimeLessThanDesc);
     }
 
@@ -262,18 +274,14 @@ void StatisticsDialog::calcStatisticsForTimeRange(qint64 startTime, qint64 endTi
     }
 
     m_items.clear();
-
-    qint64 total = 0LL;
     for (auto it = count.cbegin(); it != count.cend(); ++it)
     {
         qint64 duration = it.value();
         if (duration > 0)
         {
             m_items.append(StatisticsTableItem { it.key()->name, duration });
-            total += duration;
         }
     }
-    m_items.append(StatisticsTableItem { QStringLiteral("Total"), total });
 
     m_tableModel->setItems(m_items);
 }
