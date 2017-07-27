@@ -30,7 +30,7 @@ public:
     ~MainWindow();
 
     const QVector<Activity*>& currentActivities() const;
-    bool canModifyActivityIntervals(Activity* activity) const;
+    bool canModifyActivityIntervals(const Activity* activity) const;
 
     void handleHotkey(Hotkey* hotkey);
 private slots:
@@ -48,8 +48,7 @@ private slots:
     void activityRecorderRecordEvent(ActivityRecorderEvent event);
 
     void startQuickActivityButtonClicked();
-    void deleteSelectedActivityTriggered(bool checked);
-    void on_joinNextActivityAction_triggered();
+
 
     void editActivityFieldDialogFinished(int result);
     void activityMenuItemActionTriggered(bool checked);
@@ -59,9 +58,11 @@ private slots:
     void changePageLeftShortcutActivated();
     void changePageRightShortcutActivated();
     void on_openSettingsAction_triggered();
-
     void on_statisticsAction_triggered();
 
+    void on_editActivityAction_triggered();
+    void on_deleteActivityAction_triggered();
+    void on_joinNextActivityAction_triggered();
 private:
     void closeEvent(QCloseEvent *event) override;
     void readAndApplySettings();
@@ -79,6 +80,9 @@ private:
 
     void addQuickActivityButtons();
     void startQuickActivity(ActivityInfo* info);
+
+    void deleteActivity(Activity* activity);
+    void joinActivities(Activity* targetActivity, QVector<Activity*> activitiesToJoin);
 
 
 //    void setCurrentActivity(Activity* activity);
@@ -111,15 +115,12 @@ private:
     Activity* m_lastActiveActivity = nullptr;
 
     QMenu m_activityItemMenu;
+    Activity* m_activityItemMenu_activity = nullptr;
     QMenu m_activityMenu;
 
     QShortcut* m_changePageLeftShortcut;
     QShortcut* m_changePageRightShortcut;
     QShortcut* m_editSelectedActivityShortcut;
-
-    QHash<ActivityInfo*, QMenu*> m_listMenus;
-
-    QMenu* createActivityInfoMenu(ActivityInfo* info);
 };
 
 #endif // MAINWINDOW_H

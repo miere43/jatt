@@ -16,7 +16,9 @@
 #include <QProcess>
 
 void hotkeyCallback(Hotkey* hotkey, void* userdata);
-
+enum {
+    ACTIVITY_MENU_ACTIVITY_USERDATA = 0
+};
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -60,18 +62,15 @@ MainWindow::MainWindow(QWidget *parent)
             this, &MainWindow::changePageRightShortcutActivated);
 
     m_activityVisualizer->setTimelineRenderMode(ActivityVisualizer::Full);
-
     m_activityMenu.addAction(ui->addActivityAction);
 
-    connect(ui->deleteActivityAction, &QAction::triggered,
-            this, &MainWindow::deleteSelectedActivityTriggered);
+    m_activityItemMenu.addAction(ui->editActivityAction);
+    m_activityItemMenu.addAction(ui->deleteActivityAction);
+    m_activityItemMenu.addSeparator();
+    m_activityItemMenu.addAction(ui->joinNextActivityAction);
+    m_activityItemMenu.addAction(ui->splitActivityAction);
 
     g_app.database()->loadActivityInfos();
-    QList<ActivityInfo*> list = g_app.database()->activityInfos();
-    m_listMenus.reserve(list.count());
-    for (ActivityInfo* info : list) {
-        m_listMenus.insert(info, createActivityInfoMenu(info));
-    }
 
     addQuickActivityButtons();
     readAndApplySettings();
@@ -143,19 +142,6 @@ void MainWindow::changePageLeftShortcutActivated() {
 
 void MainWindow::changePageRightShortcutActivated() {
     setViewDay(m_viewDay + 1);
-}
-
-QMenu* MainWindow::createActivityInfoMenu(ActivityInfo *info) {
-    QMenu* m = new QMenu(this);
-    m->addAction(ui->editActivityAction);
-    m->addAction(ui->deleteActivityAction);
-    m->addSeparator();
-    m->addAction(ui->joinNextActivityAction);
-    m->addAction(ui->splitActivityAction);
-    m->addSeparator();
-
-    Q_UNUSED(info);
-    return m;
 }
 
 MainWindow::~MainWindow()
@@ -238,14 +224,9 @@ void MainWindow::activitiesListViewMenuRequested(const QPoint &pos)
         Activity* activity = (Activity*)item.data(Qt::UserRole).value<void*>();
         ERR_VERIFY_NULL(activity);
         ERR_VERIFY_NULL(activity->info);
+        m_activityItemMenu_activity = activity;
 
-        // @TODO: can move QMenu* from hashtable to ActivityInfo struct (because all AI's have a menu)
-        QMenu* menu = m_listMenus.value(activity->info, nullptr);
-        if (menu == nullptr) {
-            ERR_VERIFY(false); // All Activity Info instances should have a menu associated with them.
-        }
-
-        menu->exec(ui->activitiesListView->mapToGlobal(pos));
+        m_activityItemMenu.exec(ui->activitiesListView->mapToGlobal(pos));
     }
 }
 
@@ -520,27 +501,18 @@ void MainWindow::selectedActivityChanged(const QItemSelection &selected, const Q
     }
 }
 
-void MainWindow::deleteSelectedActivityTriggered(bool checked)
+void MainWindow::deleteActivity(Activity* activity)
 {
-    Q_UNUSED(checked);
-
-    QModelIndexList selection = ui->activitiesListView->selectionModel()->selection().indexes();
-    if (selection.count() == 0) {
-        QMessageBox::critical(this, "Error", "Activity is not selected.");
-        return;
-    }
-
-    Activity* activity = ((Activity*)selection.at(0).data(Qt::UserRole).value<void*>());
     ERR_VERIFY_NULL(activity);
 
     if (m_activityRecorder.isRecording() && m_activityRecorder.activity() == activity) {
-        QMessageBox::critical(this, "Error", "Cannot delete currently recording activity");
+        QMessageBox::critical(this, "Error", "Cannot delete currently recording activity.");
         return;
     }
 
     removeActivityFromView(activity);
 
-    if (activity->id >= 0) {
+    if (activity->id > 0) {
         g_app.database()->deleteActivity(activity->id);
     }
 
@@ -639,60 +611,82 @@ void MainWindow::startQuickActivity(ActivityInfo* info) {
     m_activityRecorder.record(activity);
 }
 
-// @TODO: make transaction-based
-void MainWindow::on_joinNextActivityAction_triggered()
+void MainWindow::joinActivities(Activity* targetActivity, QVector<Activity*> activitiesToJoin)
 {
-    QModelIndexList selection = ui->activitiesListView->selectionModel()->selection().indexes();
-    if (selection.count() == 0)
+    ERR_VERIFY_NULL(targetActivity);
+    ERR_VERIFY(activitiesToJoin.count() > 0);
+    if (!canModifyActivityIntervals(targetActivity))
     {
-        QMessageBox::critical(this, "Error", "Activity is not selected.");
+        QMessageBox::critical(this, "Join Error", QString("Unable to join activities to \"%1\".")
+                                                  .arg(targetActivity->name));
         return;
     }
 
-    Activity* sel = ((Activity*)selection.at(0).data(Qt::UserRole).value<void*>());
-    ERR_VERIFY_NULL(sel);
+    Activity temp = *targetActivity;
 
-    int row = selection.at(0).row();
-    QModelIndex idx = m_activityListModel->index(row + 1);
-    if (!idx.isValid()) {
-        QMessageBox::critical(this, "Error", "Next item is invalid.");
-        return;
+    for (const Activity * activity : activitiesToJoin)
+    {
+        if (activity->info != temp.info)
+        {
+            QMessageBox::critical(this, "Join Error", QString("Unable to join activity \"%1\" to \"%2\" because their types are different.")
+                                                      .arg(activity->name)
+                                                      .arg(targetActivity->name));
+            return;
+        }
+        if (!canModifyActivityIntervals(activity))
+        {
+            QMessageBox::critical(this, "Join Error", QString("Unable to join activity \"%1\" to \"%2\".")
+                                                      .arg(activity->name)
+                                                      .arg(targetActivity->name));
+            return;
+        }
+
+        for (const Interval& interval : activity->intervals)
+        {
+            temp.intervals.append(interval);
+        }
     }
 
-    Activity* next = (Activity*)m_activityListModel->data(idx, Qt::UserRole).value<void*>();
-    if (!next) {
-        QMessageBox::critical(this, "Error", "Next item is invalid (2).");
-        return;
+    if (g_app.database()->transaction())
+    {
+        for (const Activity * activity : activitiesToJoin)
+        {
+            if (!g_app.database()->deleteActivity(activity->id))
+            {
+                g_app.database()->rollback();
+                QMessageBox::critical(this, "Join Error", QString("Unable to delete activity \"%1\" from database.")
+                                                          .arg(activity->name));
+                return;
+            }
+        }
+
+        Activity initial = *targetActivity;
+        *targetActivity = temp;
+        if (!g_app.database()->saveActivity(&temp))
+        {
+            *targetActivity = initial;
+            g_app.database()->rollback();
+            QMessageBox::critical(this, "Join Error", QString("Unable to update activity \"%1\".")
+                                                      .arg(targetActivity->name));
+            return;
+        }
+
+        if (!g_app.database()->commit())
+        {
+            QMessageBox::critical(this, "Join Error", QStringLiteral("Unable to commit changes to the database."));
+            return;
+        }
     }
 
-    if (next->id <= 0) {
-        QMessageBox::critical(this, "Error", "Activity is not uploaded yet.");
-        return;
+    for (Activity * activity : activitiesToJoin)
+    {
+        removeActivityFromView(activity);
+        g_app.m_activityAllocator.deallocate(activity);
     }
-
-    if (sel->info != next->info) {
-        QMessageBox::critical(this, "Error", "Activity Infos should match.");
-        return;
-    }
-
-    if (!canModifyActivityIntervals(next) || !canModifyActivityIntervals(sel)) {
-        QMessageBox::critical(this, "Error", "Cannot modify intervals right now.");
-        return;
-    }
-
-    for (const Interval& interval : next->intervals) {
-        sel->intervals.append(interval);
-    }
-
-    removeActivityFromView(next);
     updateActivityDurationLabel();
-
-    g_app.database()->saveActivity(sel);
-    g_app.database()->deleteActivity(next->id);
-    g_app.m_activityAllocator.deallocate(next);
 }
 
-bool MainWindow::canModifyActivityIntervals(Activity *activity) const
+bool MainWindow::canModifyActivityIntervals(const Activity *activity) const
 {
     ERR_VERIFY_NULL_V(activity, false);
     if (!m_activityRecorder.isRecording()) return true;
@@ -783,14 +777,6 @@ qint64 MainWindow::getCurrentDayIndex() const {
     return g_app.currentDaySinceEpochLocal();
 }
 
-//void MainWindow::dumpCurrent() {
-//    qDebug().nospace() << '[';
-//    for (const Activity* a : m_currentViewTimePeriodActivities) {
-//        qDebug() << a->id;
-//    }
-//    qDebug().nospace() << ']';
-//}
-
 void MainWindow::readAndApplySettings() {
     QSettings s;
     s.beginGroup(QStringLiteral("mainWindow"));
@@ -842,4 +828,71 @@ void MainWindow::on_statisticsAction_triggered()
 {
     StatisticsDialog* dialog = new StatisticsDialog(this);
     dialog->show();
+}
+
+void MainWindow::on_editActivityAction_triggered()
+{
+    ERR_VERIFY_NULL(m_activityItemMenu_activity);
+    Activity* a = m_activityItemMenu_activity;
+    m_activityItemMenu_activity = nullptr;
+
+    showEditActivityFieldDialog(a);
+}
+
+void MainWindow::on_deleteActivityAction_triggered()
+{
+    ERR_VERIFY_NULL(m_activityItemMenu_activity);
+    Activity* a = m_activityItemMenu_activity;
+    m_activityItemMenu_activity = nullptr;
+
+    deleteActivity(a);
+}
+
+void MainWindow::on_joinNextActivityAction_triggered()
+{
+    QModelIndexList selection = ui->activitiesListView->selectionModel()->selection().indexes();
+    if (selection.count() == 0)
+    {
+        QMessageBox::critical(this, "Error", "Activity is not selected.");
+        return;
+    }
+
+    Activity* sel = ((Activity*)selection.at(0).data(Qt::UserRole).value<void*>());
+    ERR_VERIFY_NULL(sel);
+
+    int row = selection.at(0).row();
+    QModelIndex idx = m_activityListModel->index(row + 1);
+    if (!idx.isValid()) {
+        QMessageBox::critical(this, "Error", "Next item is invalid.");
+        return;
+    }
+
+    Activity* next = (Activity*)m_activityListModel->data(idx, Qt::UserRole).value<void*>();
+    if (!next) {
+        QMessageBox::critical(this, "Error", "Next item is invalid (2).");
+        return;
+    }
+
+    if (next->id <= 0) {
+        QMessageBox::critical(this, "Error", "Activity is not uploaded yet.");
+        return;
+    }
+
+    if (sel->info != next->info) {
+        QMessageBox::critical(this, "Error", QString("Activity \"%1\" type doesn't match \"%2\" type (\"%3\" vs \"%4\").")
+                                             .arg(sel->name)
+                                             .arg(next->name)
+                                             .arg(sel->info->name)
+                                             .arg(next->info->name));
+        return;
+    }
+
+    if (!canModifyActivityIntervals(next) || !canModifyActivityIntervals(sel)) {
+        QMessageBox::critical(this, "Error", "Cannot modify intervals right now.");
+        return;
+    }
+
+    QVector<Activity *> activitiesToJoin;
+    activitiesToJoin.append(next);
+    joinActivities(sel, activitiesToJoin);
 }
