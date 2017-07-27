@@ -47,6 +47,7 @@ private:
     Ui::StatisticsDialog *ui;
     QVector<StatisticsTableItem> m_items;
     StatisticsTableModel * m_tableModel = 0;
+    bool m_isFirstStatsCalc = true;
 
     void calcStatisticsForTimeRange(qint64 startTime, qint64 endTime);
 };

@@ -284,4 +284,15 @@ void StatisticsDialog::calcStatisticsForTimeRange(qint64 startTime, qint64 endTi
     }
 
     m_tableModel->setItems(m_items);
+
+    QHeaderView* headerView = ui->infoTable->horizontalHeader();
+    if (m_isFirstStatsCalc)
+    {
+        m_isFirstStatsCalc = false;
+        headerView->setSortIndicator(1, Qt::DescendingOrder);
+    }
+    else
+    {
+        m_tableModel->sort(headerView->sortIndicatorSection(), headerView->sortIndicatorOrder());
+    }
 }
