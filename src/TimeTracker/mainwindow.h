@@ -63,6 +63,8 @@ private slots:
     void on_editActivityAction_triggered();
     void on_deleteActivityAction_triggered();
     void on_joinNextActivityAction_triggered();
+    void on_openActivityBrowserAction_triggered();
+
 private:
     void closeEvent(QCloseEvent *event) override;
     void readAndApplySettings();

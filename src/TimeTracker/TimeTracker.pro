@@ -42,7 +42,10 @@ SOURCES += main.cpp\
     edit_activity_field_dialog.cpp \
     hotkey.cpp \
     error_macros.cpp \
-    statistics_dialog.cpp
+    statistics_dialog.cpp \
+    activity_browser.cpp \
+    activity_table_model.cpp \
+    search_query.cpp
 
 HEADERS  += mainwindow.h \
     application_state.h \
@@ -60,11 +63,15 @@ HEADERS  += mainwindow.h \
     edit_activity_field_dialog.h \
     hotkey.h \
     error_macros.h \
-    statistics_dialog.h
+    statistics_dialog.h \
+    activity_browser.h \
+    activity_table_model.h \
+    search_query.h
 
 FORMS    += mainwindow.ui \
     add_activity_dialog.ui \
     add_field_dialog.ui \
     add_activity_info_dialog.ui \
     edit_activity_field_dialog.ui \
-    statistics_dialog.ui
+    statistics_dialog.ui \
+    activity_browser.ui

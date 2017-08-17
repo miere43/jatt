@@ -6,6 +6,7 @@
 #include "edit_activity_field_dialog.h"
 #include "error_macros.h"
 #include "statistics_dialog.h"
+#include "activity_browser.h"
 
 #include <QtAlgorithms>
 #include <QDebug>
@@ -892,4 +893,10 @@ void MainWindow::on_joinNextActivityAction_triggered()
     QVector<Activity *> activitiesToJoin;
     activitiesToJoin.append(next);
     joinActivities(sel, activitiesToJoin);
+}
+
+void MainWindow::on_openActivityBrowserAction_triggered()
+{
+    ActivityBrowser * browser = new ActivityBrowser(this);
+    browser->showNormal(); // @TODO: delete it.
 }

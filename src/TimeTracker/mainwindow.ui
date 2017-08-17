@@ -138,7 +138,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="addActivityAction"/>
-   <addaction name="editActivityAction"/>
+   <addaction name="openActivityBrowserAction"/>
    <addaction name="openSettingsAction"/>
    <addaction name="statisticsAction"/>
   </widget>
@@ -220,6 +220,11 @@
    </property>
    <property name="toolTip">
     <string>Open settings file</string>
+   </property>
+  </action>
+  <action name="openActivityBrowserAction">
+   <property name="text">
+    <string>Activity Browser</string>
    </property>
   </action>
  </widget>
