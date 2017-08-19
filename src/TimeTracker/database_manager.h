@@ -8,6 +8,7 @@
 
 #include "core_types.h"
 #include "block_allocator.h"
+#include "search_query.h"
 
 class DatabaseManager : public QObject
 {
@@ -37,7 +38,10 @@ public:
     bool loadActivitiesBetweenStartAndEndTime(QVector<Activity*>* activities, qint64 startTime, qint64 endTime, bool checkIntervals = false);
     bool m_activityInfosLoaded = false;
 
+    bool executeSearchQuery(QVector<Activity *> * activities, SearchQuery::GeneratedSqlQuery * searchQuery);
+
     static void copyActivityValuesFromQuery(Activity* activity, QSqlQuery* query);
+
 
     QSqlDatabase m_database;
     QHash<qint64, ActivityInfo*> m_activityInfos;

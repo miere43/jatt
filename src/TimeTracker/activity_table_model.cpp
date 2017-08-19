@@ -5,10 +5,20 @@ ActivityTableModel::ActivityTableModel(QObject *parent)
 {
 }
 
-//QVariant ActivityTableModel::headerData(int section, Qt::Orientation orientation, int role) const
-//{
-//    // FIXME: Implement me!
-//}
+QVariant ActivityTableModel::headerData(int section, Qt::Orientation orientation, int role) const
+{
+    if (orientation == Qt::Vertical && role == Qt::DisplayRole)
+    {
+        return QString::number(section);
+    }
+
+    if (section == 0 && role == Qt::DisplayRole && orientation == Qt::Horizontal)
+    {
+        return QStringLiteral("Name");
+    }
+
+    return QVariant();
+}
 
 //bool ActivityTableModel::setHeaderData(int section, Qt::Orientation orientation, const QVariant &value, int role)
 //{

@@ -421,3 +421,41 @@ bool DatabaseManager::createTables(QString* error) {
 
     return true;
 }
+
+
+bool DatabaseManager::executeSearchQuery(QVector<Activity *> * activities, SearchQuery::GeneratedSqlQuery * searchQuery)
+{
+    ERR_VERIFY_NULL_V(activities, false);
+    ERR_VERIFY_NULL_V(searchQuery, false);
+
+    QSqlQuery query = QSqlQuery(m_database);
+    query.prepare(searchQuery->query);
+    for (const QVariant& arg : searchQuery->args)
+    {
+        query.addBindValue(arg);
+    }
+
+    if (!query.exec())
+    {
+        return false;
+    }
+    else
+    {
+        while (query.next())
+        {
+            qint64 activityId = query.value("id").value<qint64>();
+            Activity * activity = m_activities.value(activityId);
+            if (!activity)
+            {
+                activity = g_app.m_activityAllocator.allocate();
+                copyActivityValuesFromQuery(activity, &query);
+                m_activities.insert(activityId, activity);
+            }
+
+            activities->append(activity);
+        }
+    }
+
+    return true;
+}
+

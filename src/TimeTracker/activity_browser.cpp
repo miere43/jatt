@@ -3,6 +3,7 @@
 
 #include "application_state.h"
 #include "core_types.h"
+#include "search_query.h"
 
 #include <QMessageBox>
 
@@ -22,21 +23,31 @@ ActivityBrowser::~ActivityBrowser()
 
 void ActivityBrowser::search(QString query)
 {
-    if (query.isEmpty())
+    DatabaseManager * db = g_app.database();
+    m_activities.clear();
+    m_activityTableModel->setActivities(m_activities);
+
+    SearchQuery searchQuery = SearchQuery(query);
+    if (!searchQuery.isValid())
     {
-        QMessageBox::information(this, QStringLiteral("Search query is empty"), "");
+        QMessageBox::critical(this, "Error", "Search query is not valid.");
         return;
     }
 
-    DatabaseManager * db = g_app.database();
-    m_activities.clear();
+    SearchQuery::GeneratedSqlQuery queryInfo = searchQuery.sqlQuery();
+    ERR_VERIFY(queryInfo.isValid);
 
-    ERR_VERIFY(db->loadActivitiesBetweenStartAndEndTime(&m_activities, 0i64, INT64_MAX, false));
+    if (!db->executeSearchQuery(&m_activities, &queryInfo))
+    {
+        QMessageBox::critical(this, "Error", "Unable to execute your query.");
+        return;
+    }
 
     m_activityTableModel->setActivities(m_activities);
 }
 
-void ActivityBrowser::on_searchButton_clicked()
+
+void ActivityBrowser::executeSearchAction()
 {
     QString query = ui->searchQueryLineEdit->text();
 

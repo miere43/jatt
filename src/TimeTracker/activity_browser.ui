@@ -25,12 +25,22 @@
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="searchQueryLineEdit"/>
+       <widget class="QLineEdit" name="searchQueryLineEdit">
+        <property name="placeholderText">
+         <string>Enter search query...</string>
+        </property>
+        <property name="clearButtonEnabled">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QPushButton" name="searchButton">
         <property name="text">
          <string>Search</string>
+        </property>
+        <property name="autoDefault">
+         <bool>false</bool>
         </property>
        </widget>
       </item>
@@ -53,6 +63,47 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+ <tabstops>
+  <tabstop>searchQueryLineEdit</tabstop>
+  <tabstop>searchResultsTable</tabstop>
+  <tabstop>searchButton</tabstop>
+ </tabstops>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>searchQueryLineEdit</sender>
+   <signal>returnPressed()</signal>
+   <receiver>ActivityBrowser</receiver>
+   <slot>executeSearchAction()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>270</x>
+     <y>41</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>291</x>
+     <y>202</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>searchButton</sender>
+   <signal>clicked()</signal>
+   <receiver>ActivityBrowser</receiver>
+   <slot>executeSearchAction()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>536</x>
+     <y>42</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>291</x>
+     <y>202</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>executeSearchAction()</slot>
+ </slots>
 </ui>

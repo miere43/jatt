@@ -12,8 +12,8 @@ class ActivityTableModel : public QAbstractTableModel
 public:
     explicit ActivityTableModel(QObject *parent = nullptr);
 
-//    // Header:
-//    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    // Header:
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
 //    bool setHeaderData(int section, Qt::Orientation orientation, const QVariant &value, int role = Qt::EditRole) override;
 

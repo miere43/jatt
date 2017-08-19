@@ -18,12 +18,12 @@ public:
     ~ActivityBrowser();
 
 private slots:
-    void on_searchButton_clicked();
-
+    void executeSearchAction();
 private:
     Ui::ActivityBrowser *ui;
     QVector<Activity *> m_activities;
     ActivityTableModel * m_activityTableModel = nullptr;
+
 
     void search(QString query);
 };

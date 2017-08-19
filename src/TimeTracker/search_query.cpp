@@ -1,102 +1,121 @@
 #include "search_query.h"
 #include "error_macros.h"
 
+#include <QDebug>
+
 SearchQuery::SearchQuery(QString query)
 {
     parseQueryString(query);
 }
 
-QString SearchQuery::sqlQueryString()
+SearchQuery::GeneratedSqlQuery SearchQuery::sqlQuery()
 {
-    return "SELECT * FROM activities"; // @TODO: FIX ME
+    return m_sqlQuery;
 }
 
 bool SearchQuery::isValid()
 {
-    return m_isParsed;
+    return m_isValid;
+}
+
+QVector<QStringRef> SearchQuery::tokenize(QString query)
+{
+    int  textLength = query.length();
+    const QChar * textData = query.constData();
+    bool inQuote = false;
+    int start = 0;
+    int count = 0;
+    QVector<QStringRef> tokens;
+
+    for (int i = 0; i < textLength; ++i)
+    {
+        ushort c = textData[i].unicode();
+
+        if (c == '\"')
+        {
+            if (inQuote)
+            {
+                if (count != 0) tokens.append(QStringRef(&query, start, count));
+                count = 0;
+                start = i + 1;
+                inQuote = false;
+                continue;
+            }
+            else
+            {
+                inQuote = true;
+                start = i + 1;
+                count = 0;
+                continue;
+            }
+        }
+        else if (inQuote)
+        {
+            ++count;
+            continue;
+        }
+        else if (c == ' ')
+        {
+            if (count != 0) tokens.append(QStringRef(&query, start, count));
+            count = 0;
+            start = i + 1;
+            continue;
+        }
+        else
+        {
+            ++count;
+            continue;
+        }
+    }
+
+    if (count != 0) tokens.append(QStringRef(&query, start, count));
+    // @TODO: handle unclosed quote.
+
+    return tokens;
+}
+
+bool SearchQuery::buildSqlQueryString(SearchQuery::GeneratedSqlQuery * result, QVector<QStringRef> tokens)
+{
+    ERR_VERIFY_NULL_V(result, false);
+    result->isValid = false;
+
+    QString query = "SELECT * FROM activity WHERE";
+    bool first = true;
+    for (const QStringRef& token : tokens)
+    {
+        if (!first)
+        {
+            query.append(QStringLiteral(" or"));
+        }
+        query.append(QStringLiteral(" name LIKE ?"));
+        result->args.append(QStringLiteral("%") + token.toString() + QStringLiteral("%"));
+        first = false;
+    }
+
+    qDebug() << "query" << query;
+    qDebug() << "args" << result->args;
+
+    result->query   = query;
+    result->isValid = true;
+    return result;
 }
 
 bool SearchQuery::parseQueryString(QString query)
 {
-    if (query.isEmpty()) return false;
+    QVector<QStringRef> tokens = tokenize(query);
+    if (tokens.count() == 0)
+    {
+        m_isValid = false;
+        return false;
+    }
+
+    if (!buildSqlQueryString(&m_sqlQuery, tokens))
+    {
+        m_isValid = false;
+        return false;
+    }
+
     m_sourceQuery = query;
-
-    addTextChunk(0, query.length() - 1);
-
-//    enum class ParseState
-//    {
-//        Chunk,
-//        Property,
-//    } parseState = ParseState::Chunk;
-
-//    int start = -1;
-//    int end   = 0;
-
-//    int textLength = query.length();
-
-//    const QChar * textData = query.constData();
-//    ERR_VERIFY_NULL_V(textData, false);
-
-//    QStringRef propertyKey;
-//    QStringRef propertyValue;
-
-//    enum class QuoteType
-//    {
-//        None,
-//        Single,
-//        Double
-//    } quoteType = QuoteType::None;
-//    QChar c;
-//    for (int i = 0; i < textLength; ++i)
-//    {
-//        c = textData[i];
-
-//        if (c == QChar(' '))
-//        {
-//            if (start == -1) continue;
-
-//        }
-
-////        if (parseState == ParseState::Chunk)
-////        {
-////            if (start == -1)
-////            {
-////                start = i;
-////                end = 0;
-////                continue;
-////            }
-////            else
-////            {
-////                if (c == QChar(' '))
-////                {
-////                    addTextChunk(start, end);
-////                    start = -1;
-////                    end = 0;
-////                }
-////                else if (c == QChar(':') && )
-////                {
-////                    parseState = ParseState::Property;
-////                    propertyKey =
-////                }
-////                else
-////                {
-////                    ++end;
-////                }
-////                continue;
-////            }
-////        }
-//    }
-
+    m_isValid = true;
     return true;
 }
-
-void SearchQuery::addTextChunk(int start, int end)
-{
-    ERR_VERIFY(start <= end);
-    ERR_VERIFY(start >= 0);
-    ERR_VERIFY(end >= 0);
-
-    QStringRef chunk(&m_sourceQuery, start, end - start);
-    m_queryTextChunks.append(chunk);
-}
-
