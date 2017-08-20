@@ -75,7 +75,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     // @TODO: load key combination from settings
     m_recorderHotkey = new Hotkey((HWND)this->winId(), 1, Qt::ControlModifier, Qt::Key_Space, hotkeyCallback, (void*)this);
-    if (!m_recorderHotkey->isActive()) {
+    if (!m_recorderHotkey->isActive())
+    {
 #ifdef QT_DEBUG
         qDebug() << "Unable to register hotkey: " + m_recorderHotkey->errorMessage();
 #else
@@ -84,38 +85,50 @@ MainWindow::MainWindow(QWidget *parent)
     }
 }
 
-void hotkeyCallback(Hotkey* hotkey, void* userdata) {
+void hotkeyCallback(Hotkey* hotkey, void* userdata)
+{
     MainWindow* window = (MainWindow*)userdata;
     window->handleHotkey(hotkey);
 }
 
-void MainWindow::handleHotkey(Hotkey *hotkey) {
-    if (hotkey == m_recorderHotkey) {
-        if (m_activityRecorder.isRecording()) {
+void MainWindow::handleHotkey(Hotkey *hotkey)
+{
+    if (hotkey == m_recorderHotkey)
+    {
+        if (m_activityRecorder.isRecording())
+        {
             m_activityRecorder.stop();
-        } else {
-            if (m_lastActiveActivity != nullptr) {
+        }
+        else
+        {
+            if (m_lastActiveActivity != nullptr)
+            {
                 m_activityRecorder.record(m_lastActiveActivity);
             }
         }
     }
 }
 
-inline qint64 clamp(qint64 value, qint64 min, qint64 max) {
+inline qint64 clamp(qint64 value, qint64 min, qint64 max)
+{
     if (value < min) return min;
     if (value > max) return max;
     return value;
 }
 
-qint64 visibleActivitiesDuration(const QVector<Activity*>& activities, qint64 lowBound, qint64 highBound) {
+qint64 visibleActivitiesDuration(const QVector<Activity*>& activities, qint64 lowBound, qint64 highBound)
+{
     ERR_VERIFY_V(lowBound < highBound, 0);
 
     qint64 sum = 0;
-    for (const Activity* activity : activities) {
-        for (const Interval& interval : activity->intervals) {
+    for (const Activity* activity : activities)
+    {
+        for (const Interval& interval : activity->intervals)
+        {
             qint64 ist = clamp(interval.startTime, lowBound, highBound);
             qint64 iet = clamp(interval.endTime,   lowBound, highBound);
-            if (ist > iet) {
+            if (ist > iet)
+            {
                 qWarning() << "invalid time";
                 continue;
             }
@@ -126,19 +139,21 @@ qint64 visibleActivitiesDuration(const QVector<Activity*>& activities, qint64 lo
     return sum;
 }
 
-void MainWindow::editSelectedActivityShortcutActivated() {
+void MainWindow::editSelectedActivityShortcutActivated()
+{
     Activity* activity = selectedActivity();
     if (!activity) return;
 
     showEditActivityFieldDialog(activity);
 }
 
-void MainWindow::changePageLeftShortcutActivated() {
-    if (m_viewDay > 0)
-        setViewDay(m_viewDay - 1);
+void MainWindow::changePageLeftShortcutActivated()
+{
+    if (m_viewDay > 0) setViewDay(m_viewDay - 1);
 }
 
-void MainWindow::changePageRightShortcutActivated() {
+void MainWindow::changePageRightShortcutActivated()
+{
     setViewDay(m_viewDay + 1);
 }
 
@@ -194,20 +209,21 @@ void MainWindow::editActivityFieldDialogFinished(int result)
 
 void MainWindow::showEditActivityFieldDialog(Activity* activity)
 {
-    EditActivityFieldDialog* dialog = new EditActivityFieldDialog(activity, this);
+    EditActivityFieldDialog * dialog = new EditActivityFieldDialog(activity, this);
     connect(dialog, &EditActivityFieldDialog::finished,
             this, &MainWindow::editActivityFieldDialogFinished);
     dialog->show();
 }
 
-void MainWindow::activityMenuItemActionTriggered(bool checked) {
+void MainWindow::activityMenuItemActionTriggered(bool checked)
+{
     Q_UNUSED(checked);
 
-    QObject* sender = QObject::sender();
-    QAction* action = qobject_cast<QAction*>(sender);
+    QObject * sender = QObject::sender();
+    QAction * action = qobject_cast<QAction*>(sender);
     ERR_VERIFY_NULL(action);
 
-    Activity* activity = selectedActivity();
+    Activity * activity = selectedActivity();
     ERR_VERIFY_NULL(activity);
 
     showEditActivityFieldDialog(activity);
@@ -216,9 +232,12 @@ void MainWindow::activityMenuItemActionTriggered(bool checked) {
 void MainWindow::activitiesListViewMenuRequested(const QPoint &pos)
 {
     QModelIndex item = ui->activitiesListView->indexAt(pos);
-    if (!item.isValid()){
+    if (!item.isValid())
+    {
         m_activityMenu.exec(ui->activitiesListView->mapToGlobal(pos));
-    } else {
+    }
+    else
+    {
         Activity* activity = (Activity*)item.data(Qt::UserRole).value<void*>();
         ERR_VERIFY_NULL(activity);
         ERR_VERIFY_NULL(activity->info);
@@ -228,8 +247,10 @@ void MainWindow::activitiesListViewMenuRequested(const QPoint &pos)
     }
 }
 
-void MainWindow::activitiesListViewDoubleClicked(const QModelIndex &index) {
-    if (index.isValid()) {
+void MainWindow::activitiesListViewDoubleClicked(const QModelIndex &index)
+{
+    if (index.isValid())
+    {
         Activity* activity = (Activity*)index.data(Qt::UserRole).value<void*>();
         ERR_VERIFY_NULL(activity);
 
@@ -244,7 +265,7 @@ void MainWindow::on_addActivityAction_triggered()
 
 void MainWindow::showAddActivityDialog()
 {
-    AddActivityDialog* dialog = new AddActivityDialog(this);
+    AddActivityDialog * dialog = new AddActivityDialog(this);
     connect(dialog, &AddActivityDialog::finished,
             this, &MainWindow::addActivityDialogFinished);
     dialog->exec();
@@ -252,7 +273,7 @@ void MainWindow::showAddActivityDialog()
 
 void MainWindow::addActivityDialogFinished(int result)
 {
-    QObject* sender = QObject::sender();
+    QObject * sender = QObject::sender();
     AddActivityDialog* dialog = qobject_cast<AddActivityDialog*>(sender);
     ERR_VERIFY_NULL(dialog);
 
@@ -279,11 +300,13 @@ void MainWindow::addActivityDialogFinished(int result)
 }
 
 #include <QtAlgorithms>
-bool activityLessThan(const Activity* a, const Activity* b) {
+bool activityLessThan(const Activity* a, const Activity* b)
+{
     return a->startTime < b->startTime;
 }
 
-void activitySort(QVector<Activity*>* vec) {
+void activitySort(QVector<Activity*>* vec)
+{
     qSort(vec->begin(), vec->end(), activityLessThan);
 }
 
@@ -301,9 +324,10 @@ void MainWindow::setViewTimePeriod(qint64 startTime, qint64 endTime)
         Activity* currentActivity = m_activityRecorder.activity();
         ERR_VERIFY_NULL(currentActivity);
 
-        if (currentActivity->belongsToTimePeriod(startTime, endTime)) {
-            if (!m_currentViewTimePeriodActivities.contains(currentActivity)) {
-                // qDebug() << "added current activity " << currentActivity->fieldValues[0];
+        if (currentActivity->belongsToTimePeriod(startTime, endTime))
+        {
+            if (!m_currentViewTimePeriodActivities.contains(currentActivity))
+            {
                 m_currentViewTimePeriodActivities.append(currentActivity);
             }
         }
@@ -319,7 +343,8 @@ void MainWindow::setViewTimePeriod(qint64 startTime, qint64 endTime)
     updateVisibleActivitiesDurationLabel();
 }
 
-void MainWindow::updateVisibleActivitiesDurationLabel() {
+void MainWindow::updateVisibleActivitiesDurationLabel()
+{
     ui->timePeriodTotalTimeLabel->setText(
         createDurationStringFromMsecs(
             visibleActivitiesDuration(m_currentViewTimePeriodActivities,
@@ -327,18 +352,25 @@ void MainWindow::updateVisibleActivitiesDurationLabel() {
                                       m_currentViewTimePeriodEndTime)));
 }
 
-void MainWindow::updateActivityDurationLabel() {
+void MainWindow::updateActivityDurationLabel()
+{
     // @TODO: this is weird stuff
-    Activity* currentActivity;
-    if (m_activityRecorder.isRecording()) {
+    Activity * currentActivity;
+    if (m_activityRecorder.isRecording())
+    {
         currentActivity = m_activityRecorder.activity();
-    } else {
+    }
+    else
+    {
         currentActivity = selectedActivity();
     }
 
-    if (currentActivity == nullptr) {
+    if (currentActivity == nullptr)
+    {
         ui->activityDurationLabel->setText(QStringLiteral("00:00:00"));
-    } else {
+    }
+    else
+    {
         ui->activityDurationLabel->setText(createDurationStringFromMsecs(currentActivity->duration()));
     }
 }
@@ -424,7 +456,8 @@ void MainWindow::activityRecorderRecordEvent(ActivityRecorderEvent event)
         // @TODO: now we assume that setViewTimePeriod was called already, that may change in the future.
         if (currentActivity->belongsToTimePeriod(m_currentViewTimePeriodStartTime, m_currentViewTimePeriodEndTime))
         {
-            if (!m_currentViewTimePeriodActivities.contains(currentActivity)) {
+            if (!m_currentViewTimePeriodActivities.contains(currentActivity))
+            {
                 m_currentViewTimePeriodActivities.append(currentActivity);
             }
             m_activityVisualizer->selectActivity(currentActivity);
@@ -454,7 +487,8 @@ void MainWindow::activityRecorderRecordEvent(ActivityRecorderEvent event)
         updateActivityDurationLabel();
     }
 
-    if (currentActivity->belongsToTimePeriod(m_currentViewTimePeriodStartTime, m_currentViewTimePeriodEndTime)) {
+    if (currentActivity->belongsToTimePeriod(m_currentViewTimePeriodStartTime, m_currentViewTimePeriodEndTime))
+    {
         updateVisibleActivitiesDurationLabel();
     }
 
@@ -499,35 +533,41 @@ void MainWindow::selectedActivityChanged(const QItemSelection &selected, const Q
     }
 }
 
-void MainWindow::deleteActivity(Activity* activity)
+void MainWindow::deleteActivity(Activity * activity)
 {
     ERR_VERIFY_NULL(activity);
 
-    if (m_activityRecorder.isRecording() && m_activityRecorder.activity() == activity) {
+    if (m_activityRecorder.isRecording() && m_activityRecorder.activity() == activity)
+    {
         QMessageBox::critical(this, "Error", "Cannot delete currently recording activity.");
         return;
     }
 
     removeActivityFromView(activity);
 
-    if (activity->id > 0) {
+    if (activity->id > 0)
+    {
         g_app.database()->deleteActivity(activity->id);
     }
 
     g_app.m_activityAllocator.deallocate(activity);
 }
 
-void MainWindow::removeActivityFromView(Activity *activity) {
-    if (m_activityRecorder.isRecording()) {
+void MainWindow::removeActivityFromView(Activity *activity)
+{
+    if (m_activityRecorder.isRecording())
+    {
         ERR_VERIFY(m_activityRecorder.activity() != activity);
     }
 
-    if (m_lastActiveActivity == activity) {
+    if (m_lastActiveActivity == activity)
+    {
         m_lastActiveActivity = nullptr;
     }
 
     int index = m_currentViewTimePeriodActivities.indexOf(activity);
-    if (index != -1) {
+    if (index != -1)
+    {
         m_currentViewTimePeriodActivities.remove(index);
         m_activityListModel->removeActivity(activity);
         m_activityVisualizer->update();
@@ -535,7 +575,8 @@ void MainWindow::removeActivityFromView(Activity *activity) {
     }
 }
 
-const QVector<Activity*>& MainWindow::currentActivities() const {
+const QVector<Activity*>& MainWindow::currentActivities() const
+{
     return m_currentViewTimePeriodActivities;
 }
 
@@ -552,10 +593,10 @@ void MainWindow::startQuickActivityButtonClicked()
 }
 
 void MainWindow::addQuickActivityButtons()
-{/*
-    g_app.database()->loadActivityInfos();*/
+{
     QList<ActivityInfo*> infos = g_app.database()->activityInfos();
-    for (ActivityInfo* info : infos) {
+    for (ActivityInfo* info : infos)
+    {
         QPushButton* button = new QPushButton(this);
         button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         button->setCursor(QCursor(Qt::PointingHandCursor));
@@ -579,11 +620,13 @@ void MainWindow::addQuickActivityButtons()
     }
 }
 
-void MainWindow::startQuickActivity(ActivityInfo* info) {
+void MainWindow::startQuickActivity(ActivityInfo* info)
+{
 
     ERR_VERIFY_NULL(info);
 
-    if (m_activityRecorder.isRecording()) {
+    if (m_activityRecorder.isRecording())
+    {
         QMessageBox::critical(this, "Error", "Unable to create quick activity because already recording.");
         return;
     }
@@ -599,17 +642,20 @@ void MainWindow::startQuickActivity(ActivityInfo* info) {
 
     g_app.database()->saveActivity(activity);
 
-    if (activity->belongsToTimePeriod(m_currentViewTimePeriodStartTime, m_currentViewTimePeriodEndTime)) {
+    if (activity->belongsToTimePeriod(m_currentViewTimePeriodStartTime, m_currentViewTimePeriodEndTime))
+    {
         QModelIndex index = m_activityListModel->addActivity(activity);
         ui->activitiesListView->selectionModel()->select(index, QItemSelectionModel::ClearAndSelect);
-    } else {
+    }
+    else
+    {
         setViewDay(getCurrentDayIndex());
     }
 
     m_activityRecorder.record(activity);
 }
 
-void MainWindow::joinActivities(Activity* targetActivity, QVector<Activity*> activitiesToJoin)
+void MainWindow::joinActivities(Activity * targetActivity, QVector<Activity *> activitiesToJoin)
 {
     ERR_VERIFY_NULL(targetActivity);
     ERR_VERIFY(activitiesToJoin.count() > 0);
@@ -684,7 +730,7 @@ void MainWindow::joinActivities(Activity* targetActivity, QVector<Activity*> act
     updateActivityDurationLabel();
 }
 
-bool MainWindow::canModifyActivityIntervals(const Activity *activity) const
+bool MainWindow::canModifyActivityIntervals(const Activity * activity) const
 {
     ERR_VERIFY_NULL_V(activity, false);
     if (!m_activityRecorder.isRecording()) return true;
@@ -698,32 +744,36 @@ bool MainWindow::canModifyActivityIntervals(const Activity *activity) const
 void MainWindow::on_splitActivityAction_triggered()
 {
     Activity* a = selectedActivity();
-    if (a == nullptr)
-        return;
+    if (a == nullptr) return;
     splitActivity(a);
 }
 
-void MainWindow::splitActivity(Activity *activity) {
+void MainWindow::splitActivity(Activity * activity)
+{
     ERR_VERIFY_NULL(activity);
 
-    if (!canModifyActivityIntervals(activity) || (m_activityRecorder.isRecording() && m_activityRecorder.activity() == activity)) {
+    if (!canModifyActivityIntervals(activity) || (m_activityRecorder.isRecording() && m_activityRecorder.activity() == activity))
+    {
         QMessageBox::critical(this, "Error", "Unable to split this activity right now.");
         return;
     }
 
-    if (activity->intervals.count() < 2) {
+    if (activity->intervals.count() < 2)
+    {
         QMessageBox::information(this, "Error", "Activity is represented by a single interval, nothing to split.");
         return;
     }
 
     QVector<Activity*> newActivities = QVector<Activity*>(activity->intervals.count());
 
-    if (!g_app.database()->transaction()) {
+    if (!g_app.database()->transaction())
+    {
         QMessageBox::critical(this, "Error", "Unable to start transaction");
         return;
     }
 
-    for (int i = 0; i < activity->intervals.count(); ++i) {
+    for (int i = 0; i < activity->intervals.count(); ++i)
+    {
         Interval interval = activity->intervals[i];
         Activity* newActivity = g_app.m_activityAllocator.allocate();
         newActivity->id          = -1;
@@ -734,27 +784,32 @@ void MainWindow::splitActivity(Activity *activity) {
         newActivity->note        = activity->note;
         newActivity->intervals.append(interval);
 
-        if (!g_app.database()->saveActivity(newActivity)) {
+        if (!g_app.database()->saveActivity(newActivity))
+        {
             goto dberror;
         }
         newActivities[i] = newActivity;
     }
 
-    if (!g_app.database()->deleteActivity(activity->id)) {
+    if (!g_app.database()->deleteActivity(activity->id))
+    {
         goto dberror;
     }
 
-    if (!g_app.database()->commit()) {
+    if (!g_app.database()->commit())
+    {
         goto dberror;
     }
 
     removeActivityFromView(activity);
 
-    for (Activity* a : newActivities) {
+    for (Activity* a : newActivities)
+    {
         ERR_VERIFY_NULL(a);
         ERR_VERIFY(a->id > 0);
         m_currentViewTimePeriodActivities.append(a);
     }
+
     m_activityListModel->addActivities(newActivities);
     m_activityVisualizer->update();
     updateVisibleActivitiesDurationLabel();
@@ -766,27 +821,32 @@ void MainWindow::splitActivity(Activity *activity) {
     dberror:
     g_app.database()->rollback();
     QMessageBox::critical(this, "Error", "Unable to save changes in the database.");
-    for (Activity* a : newActivities) {
+    for (Activity* a : newActivities)
+    {
         if (a) g_app.m_activityAllocator.deallocate(a);
     }
 }
 
-qint64 MainWindow::getCurrentDayIndex() const {
+qint64 MainWindow::getCurrentDayIndex() const
+{
     return g_app.currentDaySinceEpochLocal();
 }
 
-void MainWindow::readAndApplySettings() {
+void MainWindow::readAndApplySettings()
+{
     QSettings s;
     s.beginGroup(QStringLiteral("mainWindow"));
     {
         QByteArray geometry = s.value(QStringLiteral("geometry")).toByteArray();
-        if (!geometry.isEmpty()) {
+        if (!geometry.isEmpty())
+        {
             this->restoreGeometry(geometry);
         }
     }
     {
         QByteArray state = s.value(QStringLiteral("state")).toByteArray();
-        if (!state.isEmpty()) {
+        if (!state.isEmpty())
+        {
             this->restoreState(state);
         }
     }
@@ -795,7 +855,8 @@ void MainWindow::readAndApplySettings() {
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    if (m_activityRecorder.isRecording()) {
+    if (m_activityRecorder.isRecording())
+    {
         m_activityRecorder.stop();
     }
 
