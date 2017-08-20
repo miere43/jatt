@@ -7,14 +7,20 @@ ActivityTableModel::ActivityTableModel(QObject *parent)
 
 QVariant ActivityTableModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    if (orientation == Qt::Vertical && role == Qt::DisplayRole)
+    if (role == Qt::DisplayRole && orientation == Qt::Vertical)
     {
         return QString::number(section);
     }
 
-    if (section == 0 && role == Qt::DisplayRole && orientation == Qt::Horizontal)
+    if (role == Qt::DisplayRole && orientation == Qt::Horizontal)
     {
-        return QStringLiteral("Name");
+        switch (section)
+        {
+            case 0: return QStringLiteral("Name");
+            case 1: return QStringLiteral("Note");
+            case 2: return QStringLiteral("Duration");
+            case 3: return QStringLiteral("Category");
+        }
     }
 
     return QVariant();
@@ -44,13 +50,12 @@ int ActivityTableModel::columnCount(const QModelIndex &parent) const
     if (parent.isValid())
         return 0;
 
-    return 1;
+    return 4;
 }
 
 QVariant ActivityTableModel::data(const QModelIndex &index, int role) const
 {
-    if (!index.isValid())
-        return QVariant();
+    if (!index.isValid()) return QVariant();
 
     int row = index.row();
     int col = index.column();
@@ -58,7 +63,14 @@ QVariant ActivityTableModel::data(const QModelIndex &index, int role) const
 
     if (role == Qt::DisplayRole)
     {
-        return activity->name;
+        switch (col)
+        {
+            case 0:  return activity->name;
+            case 1:  return activity->note;
+            case 2:  return formatDuration(activity->duration());
+            case 3:  return activity->info->name;
+            default: return QVariant();
+        }
     }
 
     // FIXME: Implement me!

@@ -36,17 +36,18 @@ public:
     bool deleteActivity(qint64 activityId);
 
     bool loadActivitiesBetweenStartAndEndTime(QVector<Activity*>* activities, qint64 startTime, qint64 endTime, bool checkIntervals = false);
-    bool m_activityInfosLoaded = false;
 
     bool executeSearchQuery(QVector<Activity *> * activities, SearchQuery::GeneratedSqlQuery * searchQuery);
 
-    static void copyActivityValuesFromQuery(Activity* activity, QSqlQuery* query);
-
-
+    bool m_activityInfosLoaded = false;
     QSqlDatabase m_database;
     QHash<qint64, ActivityInfo*> m_activityInfos;
     QHash<qint64, Activity*> m_activities;
     QList<ActivityInfo*> m_activityInfoList;
+
+private:
+    static void copyActivityValuesFromQuery(Activity * activity, QSqlQuery * query);
+    void loadAssociatedActivityInfo(Activity * activity, QSqlQuery * query);
 };
 
 #endif // DATABASE_MANAGER_H

@@ -8,21 +8,7 @@
 #include <QMessageBox>
 #include <QHash>
 
-static QString formatMs(qint64 time)
-{
-    qint64 secs = time / 1000;
-    qint64 mins = secs / 60;
-    qint64 hrs  = mins / 60;
-    qint64 msecs = time % 1000;
-    mins = mins % 60;
-    secs = secs % 60;
 
-    return QString(QStringLiteral("%1:%2:%3.%4"))
-            .arg(hrs, 2, 10, QLatin1Char('0'))
-            .arg(mins, 2, 10, QLatin1Char('0'))
-            .arg(secs, 2, 10, QLatin1Char('0'))
-            .arg(msecs, 4, 10, QLatin1Char('0'));
-}
 
 static inline qint64 qint64_clamp(qint64 value, qint64 min, qint64 max)
 {
@@ -92,7 +78,7 @@ QVariant StatisticsTableModel::data(const QModelIndex &index, int role) const
         }
         case 1:
         {
-            return formatMs(item.time);
+            return formatDuration(item.time);
         }
         default:
         {

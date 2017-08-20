@@ -292,22 +292,9 @@ bool DatabaseManager::loadActivitiesBetweenStartAndEndTime(QVector<Activity*>* a
             activity = g_app.m_activityAllocator.allocate();
             ERR_VERIFY_CONTINUE(activity);
 
-            qint64 activityInfoId = query.value("activity_info_id").value<qint64>();
-            ActivityInfo* info = m_activityInfos.value(activityInfoId);
-            if (!info)
-            {
-                if (!loadActivityInfos())
-                {
-                    return false;
-                }
-                info = m_activityInfos.value(activityInfoId);
-                if (!info)
-                {
-                    return false;
-                }
-            }
-            activity->info = info;
             copyActivityValuesFromQuery(activity, &query);
+            loadAssociatedActivityInfo(activity, &query);
+
             m_activities.insert(activityId, activity);
         }
 
@@ -440,7 +427,11 @@ bool DatabaseManager::executeSearchQuery(QVector<Activity *> * activities, Searc
             if (!activity)
             {
                 activity = g_app.m_activityAllocator.allocate();
+                ERR_VERIFY_CONTINUE(activity);
+
                 copyActivityValuesFromQuery(activity, &query);
+                loadAssociatedActivityInfo(activity, &query);
+
                 m_activities.insert(activityId, activity);
             }
 
@@ -451,3 +442,23 @@ bool DatabaseManager::executeSearchQuery(QVector<Activity *> * activities, Searc
     return true;
 }
 
+void DatabaseManager::loadAssociatedActivityInfo(Activity * activity, QSqlQuery * query)
+{
+    qint64 activityInfoId = query->value("activity_info_id").value<qint64>();
+    ActivityInfo* info = m_activityInfos.value(activityInfoId);
+    if (!info)
+    {
+        if (!loadActivityInfos())
+        {
+            qDebug() << __FUNCTION__ << "unable to load activity infos";
+            return;
+        }
+        info = m_activityInfos.value(activityInfoId);
+        if (!info)
+        {
+            qDebug() << __FUNCTION__ << "activity info with id" << activityInfoId << "is missing.";
+            return;
+        }
+    }
+    activity->info = info;
+}
