@@ -82,10 +82,6 @@ bool DatabaseManager::loadActivityInfos()
         info->id = query.value("id").value<qint64>();
         info->name = query.value("name").value<QString>();
         info->color = query.value("color").value<qint64>();
-        info->fieldNames = dbStringToStringList(query.value("field_names").value<QString>());
-        //info->fieldTypes = //;dbStringToStringList(query.value.value<QString>());
-        info->displayFormat = query.value("display_format").value<QString>();
-        info->displayRules = query.value("display_rules").value<QString>();
 
         m_activityInfos.insert(info->id, info);
         m_activityInfoList.append(info);
@@ -241,7 +237,7 @@ bool DatabaseManager::saveActivityInfo(ActivityInfo* info)
     if (!isInsertAction)
     {
         // Update activity info.
-        query.prepare("UPDATE activity_info SET name = :name, color = :color, field_names = :field_names, field_types = :field_types, display_format = :display_format, display_rules = :display_rules WHERE id = :id");
+        query.prepare("UPDATE activity_info SET name = :name, color = :color, WHERE id = :id");
         query.bindValue(":id", info->id);
     }
     else
@@ -251,11 +247,7 @@ bool DatabaseManager::saveActivityInfo(ActivityInfo* info)
     }
 
     query.bindValue(":name", info->name);
-    query.bindValue(":field_names", dbStringListToString(info->fieldNames));
     query.bindValue(":color", info->color);
-    query.bindValue(":field_types", dbActivityInfoFieldTypeVectorToString(info->fieldTypes));
-    query.bindValue(":display_format", info->displayFormat);
-    query.bindValue(":display_rules", info->displayRules);
 
     if (!query.exec())
     {

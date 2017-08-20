@@ -58,21 +58,6 @@ void AddActivityDialog::setActivityInfo(ActivityInfo* info)
 
     m_currentActivityInfo = info;
     ui->scrollArea->setEnabled(true);
-
-    for (const QString& field : m_currentActivityInfo->fieldNames)
-    {
-        QLayout* layout = ui->verticalLayout_3;
-        QLabel* label = new QLabel();
-        label->setText(field);
-        QLineEdit* lineEdit = new QLineEdit();
-        layout->addWidget(label);
-        layout->addWidget(lineEdit);
-        m_activityInfoWidgets.append(label);
-        m_activityInfoWidgets.append(lineEdit);
-        m_activityInfoFieldWidgets.append(lineEdit);
-    }
-
-    qDebug() << "Activity Info changed to" << m_currentActivityInfo->name;
 }
 
 void AddActivityDialog::on_addFieldButton_clicked()

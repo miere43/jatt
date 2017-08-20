@@ -30,10 +30,6 @@ struct ActivityInfo
     qint64 id = 0;
     qint64 color = 0;
     QString name;
-    QStringList fieldNames;
-    QVector<ActivityInfoFieldType> fieldTypes;
-    QString displayFormat;
-    QString displayRules;
 };
 
 struct Activity

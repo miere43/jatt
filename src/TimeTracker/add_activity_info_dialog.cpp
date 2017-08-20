@@ -29,8 +29,6 @@ ActivityInfo* AddActivityInfoDialog::constructActivityInfo()
 
     info->id = -1;
     info->name = ui->nameLineEdit->text();
-    info->displayFormat = ui->displayFormatLineEdit->text();
-    info->displayRules = "";
     info->color = m_selectedColor;
 
     g_app.database()->saveActivityInfo(info);
