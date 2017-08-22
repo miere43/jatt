@@ -40,7 +40,7 @@ public:
 
     void setMainWindow(MainWindow* mainWindow);
 
-    BlockAllocator<ActivityInfo> m_activityInfoAllocator;
+    BlockAllocator<ActivityCategory> m_activityCategoryAllocator;
     BlockAllocator<Activity> m_activityAllocator;
 private slots:
 //    void appAboutToQuit();

@@ -68,7 +68,7 @@ QVariant ActivityTableModel::data(const QModelIndex &index, int role) const
             case 0:  return activity->name;
             case 1:  return activity->note;
             case 2:  return formatDuration(activity->duration());
-            case 3:  return activity->info->name;
+            case 3:  return activity->category->name;
             default: return QVariant();
         }
     }
@@ -79,6 +79,9 @@ QVariant ActivityTableModel::data(const QModelIndex &index, int role) const
 
 bool ActivityTableModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
+    Q_UNUSED(index);
+    Q_UNUSED(value);
+    Q_UNUSED(role);
 //    if (data(index, role) != value) {
 //        // FIXME: Implement me!
 //        emit dataChanged(index, index, QVector<int>() << role);

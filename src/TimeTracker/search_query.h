@@ -29,7 +29,7 @@ public:
         QVector<QString> searchWords;
     };
 
-    explicit SearchQuery(QString query, QVector<ActivityInfo *> activityInfos);
+    explicit SearchQuery(QString query, QVector<ActivityCategory *> categories);
 
     GeneratedSqlQuery sqlQuery();
     bool isValid();
@@ -39,15 +39,15 @@ private:
     QVector<QString> tokenize(QString query);
     ParseResult parse(QVector<QString> tokens);
 
-    // Search activity info by name (case insensitive) in 'm_activityInfos' array.
-    ActivityInfo * findActivityInfoByName(QString name);
+    // Search activity category by name (case insensitive) in 'm_activityCategories' array.
+    ActivityCategory * findActivityCategoryByName(QString name);
 
     QString m_sourceQuery;
 
     bool m_isValid = false;
     GeneratedSqlQuery m_sqlQuery;
 
-    QVector<ActivityInfo *> m_activityInfos;
+    QVector<ActivityCategory *> m_activityCategories;
 };
 
 #endif // SEARCH_QUERY_H

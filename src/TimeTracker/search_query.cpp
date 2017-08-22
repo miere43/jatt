@@ -3,9 +3,9 @@
 
 #include <QDebug>
 
-SearchQuery::SearchQuery(QString query, QVector<ActivityInfo *> activityInfos)
+SearchQuery::SearchQuery(QString query, QVector<ActivityCategory *> categories)
 {
-    m_activityInfos = activityInfos;
+    m_activityCategories = categories;
     parseQueryString(query);
 }
 
@@ -152,7 +152,7 @@ bool SearchQuery::buildSqlQueryString(SearchQuery::GeneratedSqlQuery * result, Q
         {
             if (property->key == QStringLiteral("category"))
             {
-                ActivityInfo * category = findActivityInfoByName(property->value);
+                ActivityCategory * category = findActivityCategoryByName(property->value);
                 if (category == nullptr)
                 {
                     qDebug() << "unknown category" << property->value;
@@ -234,13 +234,13 @@ bool SearchQuery::parseQueryString(QString query)
     return true;
 }
 
-ActivityInfo * SearchQuery::findActivityInfoByName(QString name)
+ActivityCategory * SearchQuery::findActivityCategoryByName(QString name)
 {
-    for (auto info : m_activityInfos)
+    for (auto category : m_activityCategories)
     {
-        if (name.compare(info->name, Qt::CaseInsensitive) == 0)
+        if (name.compare(category->name, Qt::CaseInsensitive) == 0)
         {
-            return info;
+            return category;
         }
     }
 

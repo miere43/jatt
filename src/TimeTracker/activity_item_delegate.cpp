@@ -55,7 +55,7 @@ void ActivityItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &
 
     painter->setRenderHint(QPainter::Antialiasing);
     painter->setPen(QPen(QColor(0,0,0), 0.8));
-    painter->setBrush(QBrush(QColor((QRgb)activity->info->color)));
+    painter->setBrush(QBrush(QColor((QRgb)activity->category->color)));
     painter->drawEllipse(QRect(option.rect.x(), option.rect.y(), option.fontMetrics.height(), option.fontMetrics.height()).marginsRemoved(QMargins(4,4,4,4)));
 }
 

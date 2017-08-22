@@ -17,7 +17,7 @@ public:
     explicit AddActivityInfoDialog(QWidget *parent = 0);
     ~AddActivityInfoDialog();
 
-    ActivityInfo* constructActivityInfo();
+    ActivityCategory* constructActivityInfo();
 signals:
     void infoAdded();
 private slots:

@@ -3,8 +3,7 @@
 
 #include <QString>
 
-enum class ActivityInfoFieldType;
-struct ActivityInfo;
+struct ActivityCategory;
 
 qint64 getCurrentDateTimeUtc();
 inline qint64 getCompleteDaysSinceEpoch(qint64 utcMsecs) { return utcMsecs / 86400000; }
@@ -12,6 +11,6 @@ inline qint64 getCompleteDaysSinceEpoch(qint64 utcMsecs) { return utcMsecs / 864
 // Formats milliseconds as HH:MM:SS.MS
 QString formatDuration(qint64 milliseconds);
 
-bool activityInfoLessThanByName(const ActivityInfo * a, const ActivityInfo * b);
+bool activityCategoryLessThanByName(const ActivityCategory * a, const ActivityCategory * b);
 
 #endif // UTILITIES_H

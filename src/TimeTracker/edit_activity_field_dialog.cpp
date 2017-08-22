@@ -5,7 +5,7 @@
 
 #include <QDebug>
 
-EditActivityFieldDialog::EditActivityFieldDialog(Activity* activity, QWidget *parent) :
+EditActivityFieldDialog::EditActivityFieldDialog(Activity * activity, QWidget * parent) :
     QDialog(parent),
     ui(new Ui::EditActivityFieldDialog)
 {
@@ -14,19 +14,19 @@ EditActivityFieldDialog::EditActivityFieldDialog(Activity* activity, QWidget *pa
     m_activity = activity;
 
     ERR_VERIFY_NULL(m_activity);
-    ERR_VERIFY_NULL(m_activity->info);
+    ERR_VERIFY_NULL(m_activity->category);
 
     ui->nameEdit->setText(activity->name);
     ui->nameEdit->selectAll();
     ui->noteEdit->setText(activity->note);
 
-    QList<ActivityInfo*> infos = g_app.database()->activityInfos();
+    QList<ActivityCategory*> categories = g_app.database()->activityCategories();
 
     int i = 0;
-    for (const ActivityInfo* info : infos)
+    for (const ActivityCategory* category : categories)
     {
-        ui->typeComboBox->addItem(info->name, QVariant::fromValue<void*>((void*)info));
-        if (info == activity->info) {
+        ui->typeComboBox->addItem(category->name, QVariant::fromValue<void*>((void*)category));
+        if (category == activity->category) {
             ui->typeComboBox->setCurrentIndex(i);
         }
         ++i;
@@ -43,18 +43,17 @@ QString EditActivityFieldDialog::newNote() const
     return ui->noteEdit->toPlainText();
 }
 
-ActivityInfo * EditActivityFieldDialog::newActivityInfo() const
+ActivityCategory * EditActivityFieldDialog::newActivityCategory() const
 {
-    QVariant infoVariant = ui->typeComboBox->currentData();
-    qDebug() << "type:" << infoVariant.type();
-    if (infoVariant.isValid())
+    QVariant categoryVariant = ui->typeComboBox->currentData();
+    qDebug() << "type:" << categoryVariant.type();
+    if (categoryVariant.isValid())
     {
-        return (ActivityInfo*)infoVariant.value<void*>();
-
+        return (ActivityCategory*)categoryVariant.value<void*>();
     }
     else
     {
-        return m_activity->info;
+        return m_activity->category;
     }
 }
 
@@ -71,12 +70,12 @@ bool EditActivityFieldDialog::isNoteFieldChanged() const
     return document->isModified();
 }
 
-bool EditActivityFieldDialog::isActivityInfoChanged() const
+bool EditActivityFieldDialog::isActivityCategoryChanged() const
 {
-    QVariant infoVariant = ui->typeComboBox->currentData();
-    if (!infoVariant.isValid()) return false;
-    ActivityInfo* info = (ActivityInfo*)infoVariant.value<void*>();
-    return info != m_activity->info;
+    QVariant categoryVariant = ui->typeComboBox->currentData();
+    if (!categoryVariant.isValid()) return false;
+    ActivityCategory* category = (ActivityCategory*)categoryVariant.value<void*>();
+    return category != m_activity->category;
 }
 
 EditActivityFieldDialog::~EditActivityFieldDialog()

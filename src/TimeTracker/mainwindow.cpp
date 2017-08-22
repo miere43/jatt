@@ -68,7 +68,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_activityItemMenu.addAction(ui->joinNextActivityAction);
     m_activityItemMenu.addAction(ui->splitActivityAction);
 
-    g_app.database()->loadActivityInfos();
+    g_app.database()->loadActivityCategories();
 
     addQuickActivityButtons();
     readAndApplySettings();
@@ -187,10 +187,10 @@ void MainWindow::editActivityFieldDialogFinished(int result)
             activity->note = dialog->newNote();
         }
 
-        if (dialog->isActivityInfoChanged())
+        if (dialog->isActivityCategoryChanged())
         {
             changed = true;
-            activity->info = dialog->newActivityInfo();
+            activity->category = dialog->newActivityCategory();
         }
 
         if (changed)
@@ -240,7 +240,7 @@ void MainWindow::activitiesListViewMenuRequested(const QPoint &pos)
     {
         Activity* activity = (Activity*)item.data(Qt::UserRole).value<void*>();
         ERR_VERIFY_NULL(activity);
-        ERR_VERIFY_NULL(activity->info);
+        ERR_VERIFY_NULL(activity->category);
         m_activityItemMenu_activity = activity;
 
         m_activityItemMenu.exec(ui->activitiesListView->mapToGlobal(pos));
@@ -465,7 +465,7 @@ void MainWindow::activityRecorderRecordEvent(ActivityRecorderEvent event)
         }
 
         m_lastActiveActivity = currentActivity;
-        this->setWindowTitle("(" + currentActivity->info->name + ") " + g_app.appTitle);
+        this->setWindowTitle("(" + currentActivity->category->name + ") " + g_app.appTitle);
     }
     else if (event == ActivityRecorderEvent::RecordingStopped)
     {
@@ -586,16 +586,16 @@ void MainWindow::startQuickActivityButtonClicked()
     QPushButton* button = qobject_cast<QPushButton*>(sender);
     ERR_VERIFY_NULL(button);
 
-    ActivityInfo* info = (ActivityInfo*)button->property("activityInfo").value<void*>();
-    ERR_VERIFY_NULL(info);
+    ActivityCategory* category = (ActivityCategory*)button->property("category").value<void*>();
+    ERR_VERIFY_NULL(category);
 
-    startQuickActivity(info);
+    startQuickActivity(category);
 }
 
 void MainWindow::addQuickActivityButtons()
 {
-    QList<ActivityInfo*> infos = g_app.database()->activityInfos();
-    for (ActivityInfo* info : infos)
+    QList<ActivityCategory*> categories = g_app.database()->activityCategories();
+    for (ActivityCategory* category : categories)
     {
         QPushButton* button = new QPushButton(this);
         button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
@@ -612,18 +612,17 @@ void MainWindow::addQuickActivityButtons()
                     "}"
                     )
                     );
-        button->setText(info->name);
+        button->setText(category->name);
         connect(button, &QPushButton::clicked,
                 this, &MainWindow::startQuickActivityButtonClicked);
-        button->setProperty("activityInfo", QVariant::fromValue<void*>(info));
+        button->setProperty("category", QVariant::fromValue<void*>(category));
         ui->quickActivityLayout->addWidget(button);
     }
 }
 
-void MainWindow::startQuickActivity(ActivityInfo* info)
+void MainWindow::startQuickActivity(ActivityCategory* category)
 {
-
-    ERR_VERIFY_NULL(info);
+    ERR_VERIFY_NULL(category);
 
     if (m_activityRecorder.isRecording())
     {
@@ -633,9 +632,9 @@ void MainWindow::startQuickActivity(ActivityInfo* info)
 
     Activity* activity = g_app.m_activityAllocator.allocate();
     activity->id = -1;
-    activity->info = info;
+    activity->category = category;
 
-    activity->name = info->name;
+    activity->name = category->name;
     activity->note = QStringLiteral("");
 
     activity->startTime = activity->endTime = getCurrentDateTimeUtc();
@@ -670,9 +669,9 @@ void MainWindow::joinActivities(Activity * targetActivity, QVector<Activity *> a
 
     for (const Activity * activity : activitiesToJoin)
     {
-        if (activity->info != temp.info)
+        if (activity->category != temp.category)
         {
-            QMessageBox::critical(this, "Join Error", QString("Unable to join activity \"%1\" to \"%2\" because their types are different.")
+            QMessageBox::critical(this, "Join Error", QString("Unable to join activity \"%1\" to \"%2\" because their categories are different.")
                                                       .arg(activity->name)
                                                       .arg(targetActivity->name));
             return;
@@ -779,7 +778,7 @@ void MainWindow::splitActivity(Activity * activity)
         newActivity->id          = -1;
         newActivity->startTime   = interval.startTime;
         newActivity->endTime     = interval.endTime;
-        newActivity->info        = activity->info;
+        newActivity->category        = activity->category;
         newActivity->name        = activity->name;
         newActivity->note        = activity->note;
         newActivity->intervals.append(interval);
@@ -872,15 +871,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::on_openSettingsAction_triggered()
 {
-//    QSettings s;
-//    QString settingsFileName = s.fileName();
-//    QFileInfo info = QFileInfo(settingsFileName);
-//    QDir dir = info.absoluteDir();
-//    QString fileName = info.fileName();
-//    dir.path();
-
-//    QProcess* process = new QProcess(this);
-//    process->start(dir.path());
 }
 
 void MainWindow::on_statisticsAction_triggered()
@@ -937,12 +927,12 @@ void MainWindow::on_joinNextActivityAction_triggered()
         return;
     }
 
-    if (sel->info != next->info) {
+    if (sel->category != next->category) {
         QMessageBox::critical(this, "Error", QString("Activity \"%1\" type doesn't match \"%2\" type (\"%3\" vs \"%4\").")
                                              .arg(sel->name)
                                              .arg(next->name)
-                                             .arg(sel->info->name)
-                                             .arg(next->info->name));
+                                             .arg(sel->category->name)
+                                             .arg(next->category->name));
         return;
     }
 

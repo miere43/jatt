@@ -17,24 +17,25 @@ AddActivityDialog::AddActivityDialog(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    g_app.database()->loadActivityInfos();
-    QList<ActivityInfo*> infos = g_app.database()->activityInfos();
+    g_app.database()->loadActivityCategories();
+    QList<ActivityCategory*> categories = g_app.database()->activityCategories();
 
-    if (infos.count() == 0)
+    if (categories.count() == 0)
     {
-        QMessageBox::critical(this, "Error", "No activity infos present.");
+        QMessageBox::critical(this, "Error", "No categories are present.");
         close();
         return;
     }
 
-    for (const ActivityInfo* info : infos)
+    for (const ActivityCategory* category : categories)
     {
-        ui->activityInfoComboBox->addItem(info->name, QVariant::fromValue((void*)info));
+        ui->activityInfoComboBox->addItem(category->name, QVariant::fromValue((void*)category));
     }
 
     ui->activityInfoComboBox->setCurrentIndex(0);
     ui->scrollArea->setEnabled(false);
-    setActivityInfo(infos[0]);
+
+    setActivityCategory(categories[0]);
 }
 
 AddActivityDialog::~AddActivityDialog()
@@ -42,9 +43,9 @@ AddActivityDialog::~AddActivityDialog()
     delete ui;
 }
 
-void AddActivityDialog::setActivityInfo(ActivityInfo* info)
+void AddActivityDialog::setActivityCategory(ActivityCategory * category)
 {
-    ERR_VERIFY_NULL(info);
+    ERR_VERIFY_NULL(category);
 
     if (m_currentActivityInfo)
     {
@@ -56,7 +57,7 @@ void AddActivityDialog::setActivityInfo(ActivityInfo* info)
         m_activityInfoFieldWidgets.clear();
     }
 
-    m_currentActivityInfo = info;
+    m_currentActivityInfo = category;
     ui->scrollArea->setEnabled(true);
 }
 
@@ -76,7 +77,7 @@ void AddActivityDialog::addFieldDialogFieldAdded()
     AddFieldDialog* dialog = qobject_cast<AddFieldDialog*>(sender);
     ERR_VERIFY_NULL(dialog);
 
-    setActivityInfo(m_currentActivityInfo);
+    setActivityCategory(m_currentActivityInfo);
 }
 
 void AddActivityDialog::addFieldDialogFinished(int result)
@@ -92,10 +93,10 @@ void AddActivityDialog::addFieldDialogFinished(int result)
 
 void AddActivityDialog::on_activityInfoComboBox_currentIndexChanged(int index)
 {
-    ActivityInfo* activityInfo = (ActivityInfo*)ui->activityInfoComboBox->itemData(index, Qt::UserRole).value<void*>();
+    ActivityCategory* activityInfo = (ActivityCategory*)ui->activityInfoComboBox->itemData(index, Qt::UserRole).value<void*>();
     ERR_VERIFY_NULL(activityInfo);
 
-    setActivityInfo(activityInfo);
+    setActivityCategory(activityInfo);
 }
 
 Activity* AddActivityDialog::constructActivity()
@@ -111,7 +112,7 @@ Activity* AddActivityDialog::constructActivity()
     ERR_VERIFY_NULL_V(activity, nullptr);
 
     activity->id = -1;
-    activity->info = m_currentActivityInfo;
+    activity->category = m_currentActivityInfo;
     activity->startTime = getCurrentDateTimeUtc();
     activity->endTime = activity->startTime;
 
@@ -166,7 +167,7 @@ void AddActivityDialog::addActivityInfoDialogInfoAdded()
     AddActivityInfoDialog* dialog = qobject_cast<AddActivityInfoDialog*>(sender);
     ERR_VERIFY(dialog);
 
-    ActivityInfo* info = dialog->constructActivityInfo();
+    ActivityCategory* info = dialog->constructActivityInfo();
     ERR_VERIFY(info);
 
     ui->activityInfoComboBox->addItem(info->name, QVariant::fromValue((void*)info));

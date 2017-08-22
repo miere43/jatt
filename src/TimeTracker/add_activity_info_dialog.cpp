@@ -19,19 +19,19 @@ AddActivityInfoDialog::~AddActivityInfoDialog()
     delete ui;
 }
 
-ActivityInfo* AddActivityInfoDialog::constructActivityInfo()
+ActivityCategory* AddActivityInfoDialog::constructActivityInfo()
 {
     ERR_VERIFY_V(!m_activityInfoConstructed, nullptr);
     ERR_VERIFY_V(m_dialogAccepted, nullptr);
 
-    ActivityInfo* info = g_app.m_activityInfoAllocator.allocate();
+    ActivityCategory* info = g_app.m_activityCategoryAllocator.allocate();
     ERR_VERIFY_NULL_V(info, nullptr);
 
     info->id = -1;
     info->name = ui->nameLineEdit->text();
     info->color = m_selectedColor;
 
-    g_app.database()->saveActivityInfo(info);
+    g_app.database()->saveActivityCategory(info);
 
     m_activityInfoConstructed = true;
     return info;
@@ -48,8 +48,8 @@ bool AddActivityInfoDialog::validate(QString* errorMessage)
         return false;
     }
 
-    g_app.database()->loadActivityInfos();
-    for (const ActivityInfo* activityInfo : g_app.database()->activityInfos())
+    g_app.database()->loadActivityCategories();
+    for (const ActivityCategory* activityInfo : g_app.database()->activityCategories())
     {
         if (activityInfo->name.compare(name, Qt::CaseInsensitive) == 0)
         {

@@ -34,12 +34,12 @@ private slots:
     void on_buttonBox_rejected();
 private:
     Ui::AddActivityDialog *ui;
-    ActivityInfo* m_currentActivityInfo;
+    ActivityCategory* m_currentActivityInfo;
     QList<QWidget*> m_activityInfoWidgets;
     QList<QWidget*> m_activityInfoFieldWidgets;
 
     bool m_activityWasConstructed = false;
-    void setActivityInfo(ActivityInfo* info);
+    void setActivityCategory(ActivityCategory* info);
 };
 
 #endif // ADD_ACTIVITY_DIALOG_H

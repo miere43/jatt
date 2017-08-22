@@ -12,7 +12,7 @@ QModelIndex ActivityListModel::addActivity(Activity *activity)
 {
     QModelIndex invalidIndex = QModelIndex();
     ERR_VERIFY_NULL_V(activity, invalidIndex);
-    ERR_VERIFY_NULL_V(activity->info, invalidIndex);
+    ERR_VERIFY_NULL_V(activity->category, invalidIndex);
     ERR_VERIFY_V(activity->id > 0, invalidIndex);
 
     beginInsertRows(QModelIndex(), m_activities.count(), m_activities.count());

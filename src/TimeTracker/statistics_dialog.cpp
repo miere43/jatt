@@ -228,10 +228,10 @@ void StatisticsDialog::calcStatisticsForTimeRange(qint64 startTime, qint64 endTi
     ERR_VERIFY(endTime >= 0);
     ERR_VERIFY(startTime <= endTime);
 
-    QList<ActivityInfo*> activityInfos = g_app.database()->activityInfos();
-    if (activityInfos.length() == 0)
+    QList<ActivityCategory*> categories = g_app.database()->activityCategories();
+    if (categories.length() == 0)
     {
-        QMessageBox::critical(this, "Statistics Error", "No activity infos available to count statistics.");
+        QMessageBox::critical(this, "Statistics Error", "No categories available to count statistics.");
         return;
     }
 
@@ -242,16 +242,16 @@ void StatisticsDialog::calcStatisticsForTimeRange(qint64 startTime, qint64 endTi
         return;
     }
 
-    QHash<ActivityInfo*, qint64> count;
-    count.reserve(activityInfos.length());
-    for (ActivityInfo* activityInfo : activityInfos)
+    QHash<ActivityCategory*, qint64> count;
+    count.reserve(categories.length());
+    for (ActivityCategory* category : categories)
     {
-        count.insert(activityInfo, 0);
+        count.insert(category, 0);
     }
 
     for (const Activity* activity : activities)
     {
-        auto it = count.find(activity->info);
+        auto it = count.find(activity->category);
         if (it != count.end())
         {
             qint64 storedDuration = it.value();

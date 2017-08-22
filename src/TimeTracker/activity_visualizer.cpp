@@ -110,7 +110,7 @@ void ActivityVisualizer::paintEvent(QPaintEvent *event)
     {
         if (activity->intervals.count() == 0)
             continue;
-        currentBrush = activity == m_selectedActivity ? QBrush(QColor(127, 201, 255, 255)) : QBrush(QColor((QRgb)activity->info->color));
+        currentBrush = activity == m_selectedActivity ? QBrush(QColor(127, 201, 255, 255)) : QBrush(QColor((QRgb)activity->category->color));
         painter.setBrush(currentBrush);
 
         for (const Interval& interval : activity->intervals)

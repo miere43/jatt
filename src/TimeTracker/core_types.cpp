@@ -4,43 +4,6 @@
 #include <QVariant>
 #include <QDebug>
 
-//bool IntervalTag::createFromDatabaseQuery(IntervalTag* target, QSqlQuery* query)
-//{
-//    bool ok = false;
-//    target->id = query->value("id").toInt(&ok);
-//    if (!ok) return false;
-//    target->name = query->value("name").toString();
-//    target->color = query->value("color").toInt(&ok);
-//    if (!ok) return false;
-//    return true;
-//}
-
-//QString tagsToString(Tag2** tags, size_t length)
-//{
-//    QString result;
-//    size_t reserveSize = 0;
-
-//    for (size_t i = 0; i < length; ++i)
-//    {
-//        reserveSize += tags[i]->name.length();
-//        reserveSize += 2;
-//    }
-
-//    if (reserveSize >= 2)
-//        reserveSize -= 2;
-
-//    result.reserve(reserveSize);
-
-//    for (size_t i = 0; i < length; ++i)
-//    {
-//        result.append(tags[i]->name);
-//        if (i != length - 1)
-//            result.append(QLatin1String(", "));
-//    }
-
-//    return result;
-//}
-
 bool Interval::isInTimePeriod(qint64 start, qint64 end) const
 {
     return ((start >= startTime && end <= endTime) ||
@@ -111,7 +74,3 @@ qint64 Activity::duration() const
     // qDebug() << field(0) << duration / (1000.0 * 60.0);
     return duration;
 }
-
-//bool operator==(const Interval& lhs, const Interval& rhs) const {
-//    return (lhs.startTime == rhs.startTime && lhs.endTime == rhs.endTime);
-//}

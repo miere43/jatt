@@ -81,7 +81,7 @@ private:
     void updateActivityDurationLabel();
 
     void addQuickActivityButtons();
-    void startQuickActivity(ActivityInfo* info);
+    void startQuickActivity(ActivityCategory * category);
 
     void deleteActivity(Activity* activity);
     void joinActivities(Activity* targetActivity, QVector<Activity*> activitiesToJoin);

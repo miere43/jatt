@@ -61,7 +61,7 @@ bool ApplicationState::initialize(QString* error)
     }
 
     qDebug() << "Using database" << databasePath;
-    if (!m_databaseManager.establishDatabaseConnection(databasePath, error)) {
+    if (!m_databaseManager.connectToDatabase(databasePath, error)) {
         return false;
     }
 

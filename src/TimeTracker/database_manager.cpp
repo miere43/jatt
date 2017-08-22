@@ -13,7 +13,7 @@ DatabaseManager::DatabaseManager(QObject *parent)
 
 }
 
-bool DatabaseManager::establishDatabaseConnection(QString databasePath, QString* error)
+bool DatabaseManager::connectToDatabase(QString databasePath, QString* error)
 {
     ERR_VERIFY_NULL_V(error, false);
 
@@ -48,7 +48,7 @@ bool DatabaseManager::establishDatabaseConnection(QString databasePath, QString*
     return true;
 }
 
-bool DatabaseManager::closeDatabaseConnection()
+bool DatabaseManager::closeDatabase()
 {
     if (!m_database.isValid()) {
         return false;
@@ -61,9 +61,9 @@ bool DatabaseManager::closeDatabaseConnection()
     return true;
 }
 
-bool DatabaseManager::loadActivityInfos()
+bool DatabaseManager::loadActivityCategories()
 {
-    if (m_activityInfosLoaded)
+    if (m_activityCategoriesLoaded)
         return true;
 
     QSqlQuery query = QSqlQuery(m_database);
@@ -76,26 +76,26 @@ bool DatabaseManager::loadActivityInfos()
 
     while (query.next())
     {
-        ActivityInfo* info = g_app.m_activityInfoAllocator.allocate();
-        ERR_VERIFY_CONTINUE(info);
+        ActivityCategory* category = g_app.m_activityCategoryAllocator.allocate();
+        ERR_VERIFY_CONTINUE(category);
 
-        info->id = query.value("id").value<qint64>();
-        info->name = query.value("name").value<QString>();
-        info->color = query.value("color").value<qint64>();
+        category->id    = query.value("id").value<qint64>();
+        category->name  = query.value("name").value<QString>();
+        category->color = query.value("color").value<qint64>();
 
-        m_activityInfos.insert(info->id, info);
-        m_activityInfoList.append(info);
+        m_activityCategories.insert(category->id, category);
+        m_activityCategoriesList.append(category);
     }
 
-    qSort(m_activityInfoList.begin(), m_activityInfoList.end(), activityInfoLessThanByName);
-    m_activityInfosLoaded = true;
+    qSort(m_activityCategoriesList.begin(), m_activityCategoriesList.end(), activityCategoryLessThanByName);
+    m_activityCategoriesLoaded = true;
     return true;
 }
 
-QList<ActivityInfo*> DatabaseManager::activityInfos() const
+QList<ActivityCategory*> DatabaseManager::activityCategories() const
 {
-    ERR_VERIFY_V(m_activityInfosLoaded, QList<ActivityInfo*>());
-    return m_activityInfoList;
+    ERR_VERIFY_V(m_activityCategoriesLoaded, QList<ActivityCategory*>());
+    return m_activityCategoriesList;
 }
 
 Activity* DatabaseManager::loadActivity(qint64 id)
@@ -120,12 +120,12 @@ Activity* DatabaseManager::loadActivity(qint64 id)
 
         copyActivityValuesFromQuery(activity, &query);
 
-        if (!m_activityInfosLoaded) {
-            loadActivityInfos();
+        if (!m_activityCategoriesLoaded) {
+            loadActivityCategories();
         }
 
-        qint64 infoId = query.value("activity_info_id").value<qint64>();
-        activity->info = m_activityInfos.value(infoId);
+        qint64 categoryId = query.value("activity_info_id").value<qint64>();
+        activity->category = m_activityCategories.value(categoryId);
 
         m_activities.insert(id, activity);
     }
@@ -133,15 +133,15 @@ Activity* DatabaseManager::loadActivity(qint64 id)
     return activity;
 }
 
-bool DatabaseManager::loadActivitiesAssociatedWithActivityInfo(ActivityInfo* info, QVector<Activity*>* associatedActivities)
+bool DatabaseManager::loadActivitiesAssociatedWithActivityCategory(ActivityCategory* category, QVector<Activity*>* associatedActivities)
 {
-    ERR_VERIFY_NULL_V(info, false);
-    ERR_VERIFY_V(info->id > 0, false);
+    ERR_VERIFY_NULL_V(category, false);
+    ERR_VERIFY_V(category->id > 0, false);
     ERR_VERIFY_NULL_V(associatedActivities, false);
 
     QSqlQuery query = QSqlQuery(m_database);
     query.prepare("SELECT * FROM activity WHERE activity_info_id = :activity_info_id");
-    query.bindValue(":activity_info_id", info->id);
+    query.bindValue(":activity_info_id", category->id);
 
     if (!query.exec())
     {
@@ -157,7 +157,7 @@ bool DatabaseManager::loadActivitiesAssociatedWithActivityInfo(ActivityInfo* inf
             activity = g_app.m_activityAllocator.allocate();
             ERR_VERIFY_NULL_V(activity, false);
 
-            activity->info = info;
+            activity->category = category;
             copyActivityValuesFromQuery(activity, &query);
             m_activities.insert(activity->id, activity);
         }
@@ -171,7 +171,7 @@ bool DatabaseManager::loadActivitiesAssociatedWithActivityInfo(ActivityInfo* inf
 bool DatabaseManager::saveActivity(Activity* activity)
 {
     ERR_VERIFY_NULL_V(activity, false);
-    ERR_VERIFY_NULL_V(activity->info, false);
+    ERR_VERIFY_NULL_V(activity->category, false);
     ERR_VERIFY_V(activity->startTime <= activity->endTime, false);
 
     QSqlQuery query = QSqlQuery(m_database);
@@ -187,7 +187,7 @@ bool DatabaseManager::saveActivity(Activity* activity)
         query.prepare("INSERT INTO activity(activity_info_id, name, note, start_time, end_time, intervals) VALUES(:activity_info_id, :name, :note, :start_time, :end_time, :intervals)");
     }
 
-    query.bindValue(":activity_info_id", activity->info->id);
+    query.bindValue(":activity_info_id", activity->category->id);
     query.bindValue(":start_time", activity->startTime);
     query.bindValue(":end_time", activity->endTime);
     query.bindValue(":name", activity->name);
@@ -226,28 +226,28 @@ bool DatabaseManager::deleteActivity(qint64 activityId) {
     return true;
 }
 
-bool DatabaseManager::saveActivityInfo(ActivityInfo* info)
+bool DatabaseManager::saveActivityCategory(ActivityCategory * category)
 {
-    ERR_VERIFY_NULL_V(info, false);
+    ERR_VERIFY_NULL_V(category, false);
 
     QSqlQuery query = QSqlQuery(m_database);
 
-    bool isInsertAction = info->id <= 0;
+    bool isInsertAction = category->id <= 0;
 
     if (!isInsertAction)
     {
-        // Update activity info.
+        // Update activity category.
         query.prepare("UPDATE activity_info SET name = :name, color = :color WHERE id = :id");
-        query.bindValue(":id", info->id);
+        query.bindValue(":id", category->id);
     }
     else
     {
-        // Insert activity info.
+        // Insert activity category.
         query.prepare("INSERT INTO activity_info(name, color) VALUES(:name, :color)");
     }
 
-    query.bindValue(":name", info->name);
-    query.bindValue(":color", info->color);
+    query.bindValue(":name", category->name);
+    query.bindValue(":color", category->color);
 
     if (!query.exec())
     {
@@ -256,10 +256,10 @@ bool DatabaseManager::saveActivityInfo(ActivityInfo* info)
 
     if (isInsertAction)
     {
-        info->id = query.lastInsertId().value<qint64>();
-        ERR_VERIFY_V(info->id > 0, false);
+        category->id = query.lastInsertId().value<qint64>();
+        ERR_VERIFY_V(category->id > 0, false);
 
-        m_activityInfos.insert(info->id, info);
+        m_activityCategories.insert(category->id, category);
     }
 
     return true;
@@ -293,7 +293,7 @@ bool DatabaseManager::loadActivitiesBetweenStartAndEndTime(QVector<Activity*>* a
             ERR_VERIFY_CONTINUE(activity);
 
             copyActivityValuesFromQuery(activity, &query);
-            loadAssociatedActivityInfo(activity, &query);
+            loadAssociatedActivityCategory(activity, &query);
 
             m_activities.insert(activityId, activity);
         }
@@ -430,7 +430,7 @@ bool DatabaseManager::executeSearchQuery(QVector<Activity *> * activities, Searc
                 ERR_VERIFY_CONTINUE(activity);
 
                 copyActivityValuesFromQuery(activity, &query);
-                loadAssociatedActivityInfo(activity, &query);
+                loadAssociatedActivityCategory(activity, &query);
 
                 m_activities.insert(activityId, activity);
             }
@@ -442,23 +442,23 @@ bool DatabaseManager::executeSearchQuery(QVector<Activity *> * activities, Searc
     return true;
 }
 
-void DatabaseManager::loadAssociatedActivityInfo(Activity * activity, QSqlQuery * query)
+void DatabaseManager::loadAssociatedActivityCategory(Activity * activity, QSqlQuery * query)
 {
-    qint64 activityInfoId = query->value("activity_info_id").value<qint64>();
-    ActivityInfo* info = m_activityInfos.value(activityInfoId);
-    if (!info)
+    qint64 activityCategoryId = query->value("activity_info_id").value<qint64>();
+    ActivityCategory* category = m_activityCategories.value(activityCategoryId);
+    if (!category)
     {
-        if (!loadActivityInfos())
+        if (!loadActivityCategories())
         {
-            qDebug() << __FUNCTION__ << "unable to load activity infos";
+            qDebug() << __FUNCTION__ << "unable to load activity categories.";
             return;
         }
-        info = m_activityInfos.value(activityInfoId);
-        if (!info)
+        category = m_activityCategories.value(activityCategoryId);
+        if (!category)
         {
-            qDebug() << __FUNCTION__ << "activity info with id" << activityInfoId << "is missing.";
+            qDebug() << __FUNCTION__ << "activity info with id" << activityCategoryId << "is missing.";
             return;
         }
     }
-    activity->info = info;
+    activity->category = category;
 }

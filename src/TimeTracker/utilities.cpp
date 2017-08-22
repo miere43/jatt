@@ -26,7 +26,7 @@ QString formatDuration(qint64 time)
             .arg(msecs, 4, 10, QLatin1Char('0'));
 }
 
-bool activityInfoLessThanByName(const ActivityInfo* a, const ActivityInfo* b) {
+bool activityCategoryLessThanByName(const ActivityCategory* a, const ActivityCategory* b) {
     ERR_VERIFY_NULL_V(a, false);
     ERR_VERIFY_NULL_V(b, false);
 

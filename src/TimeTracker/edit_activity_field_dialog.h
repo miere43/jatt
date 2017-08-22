@@ -13,20 +13,20 @@ class EditActivityFieldDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit EditActivityFieldDialog(Activity* activity, QWidget *parent = 0);
+    explicit EditActivityFieldDialog(Activity * activity, QWidget * parent = 0);
     ~EditActivityFieldDialog();
 
     QString newName() const;
     QString newNote() const;
-    ActivityInfo* newActivityInfo() const;
+    ActivityCategory* newActivityCategory() const;
     bool isNameFieldChanged() const;
     bool isNoteFieldChanged() const;
-    bool isActivityInfoChanged() const;
+    bool isActivityCategoryChanged() const;
 
-    inline Activity* activity() const { return m_activity; }
+    inline Activity * activity() const { return m_activity; }
 private:
-    Ui::EditActivityFieldDialog *ui;
-    Activity* m_activity = nullptr;
+    Ui::EditActivityFieldDialog * ui;
+    Activity * m_activity = nullptr;
 };
 
 #endif // EDIT_ACTIVITY_FIELD_DIALOG_H
