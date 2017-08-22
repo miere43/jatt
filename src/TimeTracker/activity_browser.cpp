@@ -27,7 +27,7 @@ void ActivityBrowser::search(QString query)
     m_activities.clear();
     m_activityTableModel->setActivities(m_activities);
 
-    SearchQuery searchQuery = SearchQuery(query);
+    SearchQuery searchQuery = SearchQuery(query, g_app.database()->activityInfos().toVector());
     if (!searchQuery.isValid())
     {
         QMessageBox::critical(this, "Error", "Search query is not valid.");

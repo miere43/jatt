@@ -237,13 +237,13 @@ bool DatabaseManager::saveActivityInfo(ActivityInfo* info)
     if (!isInsertAction)
     {
         // Update activity info.
-        query.prepare("UPDATE activity_info SET name = :name, color = :color, WHERE id = :id");
+        query.prepare("UPDATE activity_info SET name = :name, color = :color WHERE id = :id");
         query.bindValue(":id", info->id);
     }
     else
     {
         // Insert activity info.
-        query.prepare("INSERT INTO activity_info(name, color, field_names, field_types, display_format, display_rules) VALUES(:name, :color, :field_names, :field_types, :display_format, :display_rules)");
+        query.prepare("INSERT INTO activity_info(name, color) VALUES(:name, :color)");
     }
 
     query.bindValue(":name", info->name);
