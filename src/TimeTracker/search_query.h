@@ -42,10 +42,20 @@ private:
     // Search activity category by name (case insensitive) in 'm_activityCategories' array.
     ActivityCategory * findActivityCategoryByName(QString name);
 
+    void beginGroup();
+    void endGroup();
+    void appendSql(QString seperator, QString text);
+
+
     QString m_sourceQuery;
 
     bool m_isValid = false;
     GeneratedSqlQuery m_sqlQuery;
+    bool m_hasGroup = false;
+    int  m_groupItems = 0;
+    int  m_groups = 0;
+
+    QString m_groupTempText;
 
     QVector<ActivityCategory *> m_activityCategories;
 };

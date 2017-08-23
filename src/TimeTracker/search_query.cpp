@@ -137,80 +137,112 @@ SearchQuery::ParseResult SearchQuery::parse(QVector<QString> tokens)
     return result;
 }
 
+void SearchQuery::beginGroup()
+{
+    ERR_VERIFY(!m_hasGroup);
+    m_hasGroup = true;
+    m_groupItems = 0;
+    m_groups += 1;
+    m_groupTempText.clear();
+}
+
+void SearchQuery::appendSql(QString seperator, QString text)
+{
+    ERR_VERIFY(m_hasGroup);
+    if (m_groupItems == 0)
+    {
+        if (m_groups != 1) m_groupTempText.append(" and");
+        m_groupTempText.append(" (");
+    }
+    else if (m_groupItems > 0)
+    {
+        m_groupTempText.append(seperator);
+    }
+    m_groupTempText.append(text);
+    ++m_groupItems;
+}
+
+void SearchQuery::endGroup()
+{
+    ERR_VERIFY(m_hasGroup);
+    if (m_groupItems > 0)
+    {
+        m_groupTempText.append(")");
+        m_sqlQuery.query.append(m_groupTempText);
+    }
+    m_hasGroup = false;
+}
+
 bool SearchQuery::buildSqlQueryString(SearchQuery::GeneratedSqlQuery * result, QVector<Property> properties, QVector<QString> searchWords)
 {
     ERR_VERIFY_NULL_V(result, false);
     result->isValid = false;
+    result->query = QStringLiteral("SELECT * FROM activity WHERE");
+    QString & query = result->query;
 
-    QString query = "SELECT * FROM activity WHERE";
     bool propertiesAdded = false;
 
+    QVector<ActivityCategory *> categories;
+    QVector<QString> names;
+
+    for (auto property = properties.constBegin(); property != properties.constEnd(); ++property)
     {
-        bool bracketsAdded = false;
-        bool appendOr = false;
-        for (auto property = properties.constBegin(); property != properties.constEnd(); ++property)
+        if (property->key == QStringLiteral("category"))
         {
-            if (property->key == QStringLiteral("category"))
+            ActivityCategory * category = findActivityCategoryByName(property->value);
+            if (category == nullptr)
             {
-                ActivityCategory * category = findActivityCategoryByName(property->value);
-                if (category == nullptr)
-                {
-                    qDebug() << "unknown category" << property->value;
-                    continue;
-                }
-
-                if (!bracketsAdded)
-                {
-                    query.append(QStringLiteral(" ("));
-                    bracketsAdded = true;
-                }
-
-                if (appendOr) query.append(QStringLiteral(" or"));
-
-                query.append(QStringLiteral(" activity_info_id = ?"));
-                result->args.append(category->id);
-
-                appendOr = true;
-                propertiesAdded = true;
+                qDebug() << "unknown category" << property->value;
+                continue;
             }
-            else
-            {
-                qDebug() << "unknown property" << property->key;
-            }
+
+            categories.append(category);
         }
-
-        if (bracketsAdded)
+        else if (property->key == QStringLiteral("name"))
         {
-            query.append(')');
+            names.append(property->value);
+            // select * from activity where (activity_info_id = 1 or activity_info_id = 2) and (name = "hello")
+        }
+        else
+        {
+            qDebug() << "unknown property" << property->key;
         }
     }
 
+    if (categories.count() > 0)
     {
-        bool bracketsAdded = false;
-        bool appendOr = false;
+        beginGroup();
+        for (const ActivityCategory * category : categories)
+        {
+            appendSql(" and", " activity_info_id = ?");
+            m_sqlQuery.args.append(category->id);
+        }
+        endGroup();
+    }
+
+    if (names.count() > 0)
+    {
+        beginGroup();
+        for (const QString & name : names)
+        {
+            appendSql(" or", " name = ?");
+            m_sqlQuery.args.append(name);
+        }
+        endGroup();
+    }
+
+    if (searchWords.count() > 0)
+    {
+        beginGroup();
         for (auto searchWord = searchWords.constBegin(); searchWord != searchWords.constEnd(); ++searchWord)
         {
-            if (propertiesAdded && !bracketsAdded)
-            {
-                query.append(" and (");
-                bracketsAdded = true;
-            }
-
-            if (appendOr) query.append(" or");
-
-            query.append(" name LIKE ?");
+            appendSql(" or", " name LIKE ?"); // @TODO: 'or note LIKE ?'
             result->args.append(QStringLiteral("%") + searchWord + QStringLiteral("%"));
-
-            appendOr = true;
         }
-
-        if (bracketsAdded)
-        {
-            query.append(')');
-        }
+        endGroup();
     }
 
-    qDebug() << "query" << query;
+    qDebug() << "query" << result->query;
     qDebug() << "args" << result->args;
 
     result->query   = query;
