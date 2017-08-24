@@ -21,23 +21,34 @@ public:
 
     void setTimePeriod(qint64 startTime, qint64 endTime, QVector<Activity*>* activities);
     void setTimelineRenderMode(TimelineRenderMode mode);
-//    void selectInterval(const Interval* interval);
-    void selectActivity(const Activity* activity);
+
+    void setActiveActivity(const Activity* activity);
+
+    // 'point' should in window coordinate space.
+    bool isPointInSelection(const QPoint & point);
+    void clearSelection();
+
+    inline int selectionStart() const { return m_selectionAreaStart; }
+    inline int selectionLength() const { return m_selectionAreaLength; }
+
+    void selectionInterval(qint64 & startTime, qint64 & endTime);
 
     void paintEvent(QPaintEvent *event) override;
+    void mousePressEvent(QMouseEvent * event) override;
+    void mouseMoveEvent(QMouseEvent * event) override;
+
     QSize sizeHint() const;
-private slots:
-    void switchRenderModeTriggered(bool checked);
-    void contextMenuRequested(const QPoint& pos);
 private:
     qint64 m_startTime;
     qint64 m_endTime;
-    TimelineRenderMode m_timelineRenderMode = Effective;
-    const Activity* m_selectedActivity = nullptr;
-    QVector<Activity*>* m_activities;
+    TimelineRenderMode m_timelineRenderMode = Full;
+    const Activity * m_activeActivity = nullptr;
+    QVector<Activity *> * m_activities;
 
-    QAction* m_mode;
-    QMenu* m_menu;
+    bool m_selecting    = false;
+    bool m_hasSelection = false;
+    int m_selectionAreaStart = 0;  // in pixels.
+    int m_selectionAreaLength = 0;
 };
 
 #endif // SESSION_VISUALIZER_H

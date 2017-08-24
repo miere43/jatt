@@ -5,30 +5,20 @@
 #include <QPainter>
 #include <QDebug>
 
-ActivityVisualizer::ActivityVisualizer(QWidget *parent) : QWidget(parent)
+ActivityVisualizer::ActivityVisualizer(QWidget * parent) : QWidget(parent)
 {
-    connect(this, &ActivityVisualizer::customContextMenuRequested,
-            this, &ActivityVisualizer::contextMenuRequested);
-    this->setContextMenuPolicy(Qt::CustomContextMenu);
     this->setMinimumHeight(50);
-
-    m_menu = new QMenu(this);
-    m_mode = m_menu->addAction("Switch render mode");
-    connect(m_mode, &QAction::triggered,
-            this, &ActivityVisualizer::switchRenderModeTriggered);
 }
 
-void ActivityVisualizer::switchRenderModeTriggered(bool checked)
+bool ActivityVisualizer::isPointInSelection(const QPoint &point)
 {
-    Q_UNUSED(checked);
-    TimelineRenderMode m = m_timelineRenderMode == TimelineRenderMode::Effective ?
-                           TimelineRenderMode::Full : TimelineRenderMode::Effective;
-    setTimelineRenderMode(m);
-}
+    if (!m_hasSelection || m_selectionAreaLength == 0) return false;
 
-void ActivityVisualizer::contextMenuRequested(const QPoint &pos)
-{
-    m_menu->exec(this->mapToGlobal(pos));
+    int x = point.x();
+    if (m_selectionAreaLength > 0)
+        return x >= m_selectionAreaStart && x <= (m_selectionAreaStart + m_selectionAreaLength);
+    else
+        return x <= m_selectionAreaStart && x >= (m_selectionAreaStart + m_selectionAreaLength);
 }
 
 void ActivityVisualizer::setTimelineRenderMode(TimelineRenderMode mode)
@@ -39,7 +29,7 @@ void ActivityVisualizer::setTimelineRenderMode(TimelineRenderMode mode)
     this->update();
 }
 
-void ActivityVisualizer::setTimePeriod(qint64 startTime, qint64 endTime, QVector<Activity *> *activities)
+void ActivityVisualizer::setTimePeriod(qint64 startTime, qint64 endTime, QVector<Activity *> * activities)
 {
     ERR_VERIFY_NULL(activities);
 
@@ -50,7 +40,7 @@ void ActivityVisualizer::setTimePeriod(qint64 startTime, qint64 endTime, QVector
     this->update();
 }
 
-void ActivityVisualizer::paintEvent(QPaintEvent *event)
+void ActivityVisualizer::paintEvent(QPaintEvent * event)
 {
     Q_UNUSED(event);
 
@@ -79,7 +69,7 @@ void ActivityVisualizer::paintEvent(QPaintEvent *event)
     {
         qint64 minTime = INT64_MAX;
         qint64 maxTime = INT64_MIN;
-        for (const Activity* activity : *m_activities)
+        for (const Activity * activity : *m_activities)
         {
             if (activity->intervals.count() == 0)
                 continue;
@@ -106,11 +96,11 @@ void ActivityVisualizer::paintEvent(QPaintEvent *event)
     }
 
     QBrush currentBrush;
-    for (const Activity* activity : *m_activities)
+    for (const Activity * activity : *m_activities)
     {
         if (activity->intervals.count() == 0)
             continue;
-        currentBrush = activity == m_selectedActivity ? QBrush(QColor(127, 201, 255, 255)) : QBrush(QColor((QRgb)activity->category->color));
+        currentBrush = activity == m_activeActivity ? QBrush(QColor(127, 201, 255, 255)) : QBrush(QColor((QRgb)activity->category->color));
         painter.setBrush(currentBrush);
 
         for (const Interval& interval : activity->intervals)
@@ -123,6 +113,46 @@ void ActivityVisualizer::paintEvent(QPaintEvent *event)
             painter.drawRect(QRectF(startPixel, 0, endPixel - startPixel, height()));
         }
     }
+
+    if (m_hasSelection && m_selectionAreaLength != 0)
+    {
+        static QBrush selectionBrush = QBrush(QColor(0, 0, 255, 100));
+        painter.setBrush(selectionBrush);
+
+        painter.drawRect(QRectF(m_selectionAreaStart, 0, m_selectionAreaLength, height()));
+    }
+}
+
+void ActivityVisualizer::clearSelection()
+{
+    m_selecting = false;
+    m_hasSelection = false;
+    m_selectionAreaStart = 0;
+    m_selectionAreaLength = 0;
+
+    this->update(); // @TODO: update only selection region.
+}
+
+void ActivityVisualizer::mousePressEvent(QMouseEvent * event)
+{
+    if (!(event->button() & Qt::LeftButton)) return;
+
+    m_selecting = true;
+    m_hasSelection = true;
+    m_selectionAreaStart = event->x();
+    m_selectionAreaLength = 0;
+}
+
+void ActivityVisualizer::mouseMoveEvent(QMouseEvent * event)
+{
+    if (!m_selecting) return;
+    // @TODO: mouse leave
+    m_selectionAreaLength = event->x() - m_selectionAreaStart;
+
+    // @TODO: only update region of selection area
+    // if area increased: update from start to start+length
+    // if area decreased: update old area from start to start+length
+    this->update();
 }
 
 QSize ActivityVisualizer::sizeHint() const
@@ -130,12 +160,35 @@ QSize ActivityVisualizer::sizeHint() const
     return QSize(100, 100);
 }
 
-void ActivityVisualizer::selectActivity(const Activity *activity)
+void ActivityVisualizer::setActiveActivity(const Activity * activity)
 {
-    if (activity == nullptr) {
-        m_selectedActivity = nullptr;
-    } else {
-        m_selectedActivity = activity;
-    }
+    if (activity == nullptr)
+        m_activeActivity = nullptr;
+    else
+        m_activeActivity = activity;
     this->update();
+}
+
+void ActivityVisualizer::selectionInterval(qint64 & startTime, qint64 & endTime)
+{
+    int start, length;
+    if (m_selectionAreaLength < 0)
+    {
+        length = -m_selectionAreaLength;
+        start = m_selectionAreaStart - length;
+    }
+    else
+    {
+        length = m_selectionAreaLength;
+        start = m_selectionAreaStart;
+    }
+
+    ERR_VERIFY(start > 0);
+    ERR_VERIFY(length > 0);
+
+    qint64 msPerPixel = (m_endTime - m_startTime) / (qint64)this->width();
+    ERR_VERIFY(msPerPixel > 0);
+
+    startTime = m_startTime + (msPerPixel * start);
+    endTime   = startTime + (msPerPixel * length);
 }

@@ -65,6 +65,8 @@ private slots:
     void on_joinNextActivityAction_triggered();
     void on_openActivityBrowserAction_triggered();
 
+    void activityVisualizerMenuRequested(const QPoint & pos);
+    void visualizerCreateActivityFromSelection(bool checked);
 private:
     void closeEvent(QCloseEvent *event) override;
     void readAndApplySettings();
@@ -97,15 +99,15 @@ private:
 
     qint64 getCurrentDayIndex() const;
 
-    Activity* selectedActivity() const;
+    Activity * selectedActivity() const;
     QModelIndex selectedActivityIndex() const;
     // ActivityListItem* selectedActivityListItem() const;
 
-    Ui::MainWindow *ui = nullptr;
-    ActivityListModel* m_activityListModel = nullptr; // bunch of stuff relies on this variable, don't touch.
-    ActivityVisualizer* m_activityVisualizer = nullptr;
-    ActivityItemDelegate* m_activityItemDelegate = nullptr;
-    QVector<Activity*> m_currentViewTimePeriodActivities;
+    Ui::MainWindow * ui = nullptr;
+    ActivityListModel * m_activityListModel = nullptr; // bunch of stuff relies on this variable, don't touch.
+    ActivityVisualizer * m_activityVisualizer = nullptr;
+    ActivityItemDelegate * m_activityItemDelegate = nullptr;
+    QVector<Activity *> m_currentViewTimePeriodActivities;
     // Starts with 0!
     qint64 m_viewDay = -1;
 
@@ -113,11 +115,14 @@ private:
     qint64 m_currentViewTimePeriodEndTime = -1;
 
     ActivityRecorder m_activityRecorder;
-    Hotkey* m_recorderHotkey;
-    Activity* m_lastActiveActivity = nullptr;
+    Hotkey * m_recorderHotkey;
+    Activity * m_lastActiveActivity = nullptr;
+
+    QMenu m_visualizerMenu;
+    QAction * m_visualizerCreateActivityFromSelection = nullptr;
 
     QMenu m_activityItemMenu;
-    Activity* m_activityItemMenu_activity = nullptr;
+    Activity * m_activityItemMenu_activity = nullptr;
     QMenu m_activityMenu;
 
     QShortcut* m_changePageLeftShortcut;

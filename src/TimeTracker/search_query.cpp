@@ -142,7 +142,6 @@ void SearchQuery::beginGroup()
     ERR_VERIFY(!m_hasGroup);
     m_hasGroup = true;
     m_groupItems = 0;
-    m_groups += 1;
     m_groupTempText.clear();
 }
 
@@ -151,7 +150,7 @@ void SearchQuery::appendSql(QString seperator, QString text)
     ERR_VERIFY(m_hasGroup);
     if (m_groupItems == 0)
     {
-        if (m_groups != 1) m_groupTempText.append(" and");
+        if (m_groups != 0) m_groupTempText.append(" and");
         m_groupTempText.append(" (");
     }
     else if (m_groupItems > 0)
@@ -169,6 +168,7 @@ void SearchQuery::endGroup()
     {
         m_groupTempText.append(")");
         m_sqlQuery.query.append(m_groupTempText);
+        m_groups += 1;
     }
     m_hasGroup = false;
 }

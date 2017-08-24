@@ -60,6 +60,12 @@ MainWindow::MainWindow(QWidget *parent)
             this, &MainWindow::changePageRightShortcutActivated);
 
     m_activityVisualizer->setTimelineRenderMode(ActivityVisualizer::Full);
+    m_activityVisualizer->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(m_activityVisualizer,
+            &ActivityVisualizer::customContextMenuRequested,
+            this,
+            &MainWindow::activityVisualizerMenuRequested);
+
     m_activityMenu.addAction(ui->addActivityAction);
 
     m_activityItemMenu.addAction(ui->editActivityAction);
@@ -67,6 +73,13 @@ MainWindow::MainWindow(QWidget *parent)
     m_activityItemMenu.addSeparator();
     m_activityItemMenu.addAction(ui->joinNextActivityAction);
     m_activityItemMenu.addAction(ui->splitActivityAction);
+
+    m_visualizerCreateActivityFromSelection =
+        m_visualizerMenu.addAction("Create activity from selection");
+    connect(m_visualizerCreateActivityFromSelection,
+            &QAction::triggered,
+            this,
+            &MainWindow::visualizerCreateActivityFromSelection);
 
     g_app.database()->loadActivityCategories();
 
@@ -460,7 +473,7 @@ void MainWindow::activityRecorderRecordEvent(ActivityRecorderEvent event)
             {
                 m_currentViewTimePeriodActivities.append(currentActivity);
             }
-            m_activityVisualizer->selectActivity(currentActivity);
+            m_activityVisualizer->setActiveActivity(currentActivity);
             m_activityItemDelegate->setCurrentActivity(currentActivity);
         }
 
@@ -524,12 +537,12 @@ void MainWindow::selectedActivityChanged(const QItemSelection &selected, const Q
     if (activity == nullptr)
     {
         ui->activityDurationLabel->setText(QStringLiteral("00:00:00"));
-        m_activityVisualizer->selectActivity(nullptr);
+        m_activityVisualizer->setActiveActivity(nullptr);
     }
     else
     {
         ui->activityDurationLabel->setText(createDurationStringFromMsecs(activity->duration()));
-        m_activityVisualizer->selectActivity(activity);
+        m_activityVisualizer->setActiveActivity(activity);
     }
 }
 
@@ -950,4 +963,54 @@ void MainWindow::on_openActivityBrowserAction_triggered()
 {
     ActivityBrowser * browser = new ActivityBrowser(this);
     browser->showNormal(); // @TODO: delete it.
+}
+
+void MainWindow::activityVisualizerMenuRequested(const QPoint &pos)
+{
+    if (m_activityVisualizer->isPointInSelection(pos))
+    {
+        qDebug() << "show menu";
+        m_visualizerMenu.exec(m_activityVisualizer->mapToGlobal(pos));
+    }
+}
+
+void MainWindow::visualizerCreateActivityFromSelection(bool checked)
+{
+    Q_UNUSED(checked);
+
+    qint64 startTime, endTime;
+    m_activityVisualizer->selectionInterval(startTime, endTime);
+
+    // @TODO: show activity edit dialog.
+
+    Activity * activity = g_app.m_activityAllocator.allocate();
+    ERR_VERIFY(activity);
+
+    activity->category = g_app.database()->activityCategories().first();
+    activity->startTime = startTime;
+    activity->endTime   = endTime;
+    activity->name = activity->category->name;
+    activity->intervals.append(Interval { activity->startTime, activity->endTime });
+
+    if (!g_app.database()->saveActivity(activity))
+    {
+        g_app.m_activityAllocator.deallocate(activity);
+        QMessageBox::critical(this, "Error", "Unable to create activity: cannot save to database.");
+        return;
+    }
+
+    if (activity->belongsToTimePeriod(m_currentViewTimePeriodStartTime, m_currentViewTimePeriodEndTime))
+    {
+        // @TODO: probably it's always true
+        m_currentViewTimePeriodActivities.append(activity);
+    }
+    else
+    {
+        qDebug() << "weird";
+    }
+
+    // m_activityListModel->addActivity(activity);
+    m_activityListModel->clear();
+    m_activityListModel->addActivities(m_currentViewTimePeriodActivities);
+    m_activityVisualizer->clearSelection();
 }
