@@ -10,7 +10,7 @@ qint64 getCurrentDateTimeUtc()
     return time.currentMSecsSinceEpoch();
 }
 
-QString formatDuration(qint64 time)
+QString formatDuration(qint64 time, bool withMilliseconds)
 {
     qint64 secs = time / 1000;
     qint64 mins = secs / 60;
@@ -19,11 +19,21 @@ QString formatDuration(qint64 time)
     mins = mins % 60;
     secs = secs % 60;
 
-    return QString(QStringLiteral("%1:%2:%3.%4"))
-            .arg(hrs, 2, 10, QLatin1Char('0'))
-            .arg(mins, 2, 10, QLatin1Char('0'))
-            .arg(secs, 2, 10, QLatin1Char('0'))
-            .arg(msecs, 4, 10, QLatin1Char('0'));
+    if (withMilliseconds)
+    {
+        return QString(QStringLiteral("%1:%2:%3.%4"))
+                .arg(hrs, 2, 10, QLatin1Char('0'))
+                .arg(mins, 2, 10, QLatin1Char('0'))
+                .arg(secs, 2, 10, QLatin1Char('0'))
+                .arg(msecs, 4, 10, QLatin1Char('0'));
+    }
+    else
+    {
+        return QString(QStringLiteral("%1:%2:%3"))
+                .arg(hrs, 2, 10, QLatin1Char('0'))
+                .arg(mins, 2, 10, QLatin1Char('0'))
+                .arg(secs, 2, 10, QLatin1Char('0'));
+    }
 }
 
 bool activityCategoryLessThanByName(const ActivityCategory* a, const ActivityCategory* b) {
@@ -32,4 +42,3 @@ bool activityCategoryLessThanByName(const ActivityCategory* a, const ActivityCat
 
     return a->name < b->name;
 }
-

@@ -20,10 +20,10 @@ EditActivityFieldDialog::EditActivityFieldDialog(Activity * activity, QWidget * 
     ui->nameEdit->selectAll();
     ui->noteEdit->setPlainText(activity->note);
 
-    QList<ActivityCategory*> categories = g_app.database()->activityCategories();
+    QList<ActivityCategory *> categories = g_app.database()->activityCategories();
 
     int i = 0;
-    for (const ActivityCategory* category : categories)
+    for (const ActivityCategory * category : categories)
     {
         ui->typeComboBox->addItem(category->name, QVariant::fromValue<void*>((void*)category));
         if (category == activity->category) {
@@ -46,10 +46,10 @@ QString EditActivityFieldDialog::newNote() const
 ActivityCategory * EditActivityFieldDialog::newActivityCategory() const
 {
     QVariant categoryVariant = ui->typeComboBox->currentData();
-    qDebug() << "type:" << categoryVariant.type();
+
     if (categoryVariant.isValid())
     {
-        return (ActivityCategory*)categoryVariant.value<void*>();
+        return (ActivityCategory *)categoryVariant.value<void *>();
     }
     else
     {
@@ -74,7 +74,7 @@ bool EditActivityFieldDialog::isActivityCategoryChanged() const
 {
     QVariant categoryVariant = ui->typeComboBox->currentData();
     if (!categoryVariant.isValid()) return false;
-    ActivityCategory* category = (ActivityCategory*)categoryVariant.value<void*>();
+    ActivityCategory * category = (ActivityCategory *)categoryVariant.value<void *>();
     return category != m_activity->category;
 }
 

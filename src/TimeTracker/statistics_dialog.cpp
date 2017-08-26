@@ -78,7 +78,7 @@ QVariant StatisticsTableModel::data(const QModelIndex &index, int role) const
         }
         case 1:
         {
-            return formatDuration(item.time);
+            return formatDuration(item.time, true);
         }
         default:
         {

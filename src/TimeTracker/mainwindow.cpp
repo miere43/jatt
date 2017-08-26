@@ -59,7 +59,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_changePageRightShortcut, &QShortcut::activated,
             this, &MainWindow::changePageRightShortcutActivated);
 
-    m_activityVisualizer->setTimelineRenderMode(ActivityVisualizer::Full);
     m_activityVisualizer->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(m_activityVisualizer,
             &ActivityVisualizer::customContextMenuRequested,
@@ -358,11 +357,12 @@ void MainWindow::setViewTimePeriod(qint64 startTime, qint64 endTime)
 
 void MainWindow::updateVisibleActivitiesDurationLabel()
 {
-    ui->timePeriodTotalTimeLabel->setText(
-        createDurationStringFromMsecs(
-            visibleActivitiesDuration(m_currentViewTimePeriodActivities,
-                                      m_currentViewTimePeriodStartTime,
-                                      m_currentViewTimePeriodEndTime)));
+    const qint64 duration =
+        visibleActivitiesDuration(m_currentViewTimePeriodActivities,
+                                  m_currentViewTimePeriodStartTime,
+                                  m_currentViewTimePeriodEndTime);
+
+    ui->timePeriodTotalTimeLabel->setText(formatDuration(duration, false));
 }
 
 void MainWindow::updateActivityDurationLabel()
@@ -384,7 +384,7 @@ void MainWindow::updateActivityDurationLabel()
     }
     else
     {
-        ui->activityDurationLabel->setText(createDurationStringFromMsecs(currentActivity->duration()));
+        ui->activityDurationLabel->setText(formatDuration(currentActivity->duration(), false));
     }
 }
 
@@ -541,7 +541,7 @@ void MainWindow::selectedActivityChanged(const QItemSelection &selected, const Q
     }
     else
     {
-        ui->activityDurationLabel->setText(createDurationStringFromMsecs(activity->duration()));
+        ui->activityDurationLabel->setText(formatDuration(activity->duration(), false));
         m_activityVisualizer->setActiveActivity(activity);
     }
 }
@@ -833,7 +833,7 @@ void MainWindow::splitActivity(Activity * activity)
     dberror:
     g_app.database()->rollback();
     QMessageBox::critical(this, "Error", "Unable to save changes in the database.");
-    for (Activity* a : newActivities)
+    for (Activity * a : newActivities)
     {
         if (a) g_app.m_activityAllocator.deallocate(a);
     }
@@ -969,7 +969,6 @@ void MainWindow::activityVisualizerMenuRequested(const QPoint &pos)
 {
     if (m_activityVisualizer->isPointInSelection(pos))
     {
-        qDebug() << "show menu";
         m_visualizerMenu.exec(m_activityVisualizer->mapToGlobal(pos));
     }
 }
@@ -979,7 +978,11 @@ void MainWindow::visualizerCreateActivityFromSelection(bool checked)
     Q_UNUSED(checked);
 
     qint64 startTime, endTime;
-    m_activityVisualizer->selectionInterval(startTime, endTime);
+    if (!m_activityVisualizer->selectionInterval(&startTime, &endTime))
+    {
+        QMessageBox::critical(this, "Error", "Cannot get selection interval.");
+        return;
+    }
 
     // @TODO: show activity edit dialog.
 

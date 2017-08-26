@@ -18,8 +18,10 @@ public:
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
     QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 private:
-    QBrush m_currentActivityBrush = QBrush((QColor(224, 248, 255)));
-    Activity* m_currentActivity = nullptr;
+    Activity * m_currentActivity = nullptr;
+
+    int m_itemMaxWidth = -1;
+    int m_itemMaxIndex = -1;
 };
 
 #endif // ACTIVITY_ITEM_DELEGATE_H

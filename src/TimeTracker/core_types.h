@@ -41,11 +41,4 @@ struct Activity
     qint64 duration() const;
 };
 
-/**
- * @brief Creates string in format hh:mm:ss from milliseconds.
- * @param msecs
- * @return 'msecs' formatted in hh:mm:ss format.
- */
-QString createDurationStringFromMsecs(qint64 msecs);
-
 #endif // CORE_TYPES_H

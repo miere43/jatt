@@ -11,18 +11,6 @@ bool Interval::isInTimePeriod(qint64 start, qint64 end) const
             (start <= startTime && end >= startTime));
 }
 
-QString createDurationStringFromMsecs(qint64 msecs)
-{
-    int secs  = msecs / 1000;
-    int mins  = secs  / 60;
-    int hours = mins  / 60;
-    mins = mins % 60;
-    secs = secs % 60;
-    return QString("%1:%2:%3").arg(hours, 2, 10, QChar('0'))
-                              .arg(mins,  2, 10, QChar('0'))
-                              .arg(secs,  2, 10, QChar('0'));
-}
-
 void Activity::updateStartAndEndTime()
 {
     qint64 min = INT64_MAX, max = INT64_MIN;

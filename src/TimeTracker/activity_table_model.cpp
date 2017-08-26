@@ -67,7 +67,7 @@ QVariant ActivityTableModel::data(const QModelIndex &index, int role) const
         {
             case 0:  return activity->name;
             case 1:  return activity->note;
-            case 2:  return formatDuration(activity->duration());
+            case 2:  return formatDuration(activity->duration(), true);
             case 3:  return activity->category->name;
             default: return QVariant();
         }

@@ -19,13 +19,15 @@ Activity* ActivityItemDelegate::currentActivity() const
     return m_currentActivity;
 }
 
-void ActivityItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+void ActivityItemDelegate::paint(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const
 {
-    Activity* activity = (Activity*)index.data(Qt::UserRole).value<void*>();
+    static const QBrush g_currentActivityBrush = QBrush((QColor(224, 248, 255)));
+
+    Activity * activity = (Activity *)index.data(Qt::UserRole).value<void *>();
     ERR_VERIFY_NULL(activity);
 
     if (m_currentActivity == activity) {
-        painter->setBrush(m_currentActivityBrush);
+        painter->setBrush(g_currentActivityBrush);
     } else {
         painter->setBrush(option.backgroundBrush);
     }
@@ -34,9 +36,11 @@ void ActivityItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &
 
     QString displayText = index.data(Qt::DisplayRole).value<QString>();
 
+    const int fontHeight = option.fontMetrics.height();
+
     QPen textPen;
     QRect textPos = option.rect;
-    textPos.adjust(option.fontMetrics.height(), 0, 0, 0);
+    textPos.adjust(fontHeight, 0, 0, 0);
 
     if (option.state & QStyle::State_Selected)
     {
@@ -56,11 +60,12 @@ void ActivityItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &
     painter->setRenderHint(QPainter::Antialiasing);
     painter->setPen(QPen(QColor(0,0,0), 0.8));
     painter->setBrush(QBrush(QColor((QRgb)activity->category->color)));
-    painter->drawEllipse(QRect(option.rect.x(), option.rect.y(), option.fontMetrics.height(), option.fontMetrics.height()).marginsRemoved(QMargins(4,4,4,4)));
+    painter->drawEllipse(QRect(option.rect.x(), option.rect.y(), fontHeight, fontHeight).marginsRemoved(QMargins(4,4,4,4)));
 }
 
 QSize ActivityItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-    Q_UNUSED(index);
-    return QSize(option.rect.width(), option.fontMetrics.height());
+    const int ellipseWidth = option.fontMetrics.height() + (4 * 2);
+    const int textWidth    = option.fontMetrics.width(index.data(Qt::DisplayRole).value<QString>());
+    return QSize(ellipseWidth + textWidth, option.fontMetrics.height());
 }
