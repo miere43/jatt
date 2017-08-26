@@ -72,18 +72,8 @@ QVariant StatisticsTableModel::data(const QModelIndex &index, int role) const
     const StatisticsTableItem& item = m_items[index.row()];
     switch (index.column())
     {
-        case 0:
-        {
-            return item.name;
-        }
-        case 1:
-        {
-            return formatDuration(item.time, true);
-        }
-        default:
-        {
-            ERR_VERIFY_V(false, QVariant());
-        }
+        case 0:  return item.name;
+        case 1:  return formatDuration(item.time, true);
     }
 
     ERR_VERIFY_V(false, QVariant());
@@ -97,7 +87,6 @@ QVariant StatisticsTableModel::headerData(int section, Qt::Orientation orientati
         {
             if (section == 0) return QStringLiteral("Activities");
             if (section == 1) return QStringLiteral("Time");
-            ERR_VERIFY_V(false, QVariant());
         }
         else if (orientation == Qt::Vertical)
         {
@@ -109,27 +98,26 @@ QVariant StatisticsTableModel::headerData(int section, Qt::Orientation orientati
     return QVariant();
 }
 
-static inline bool tableItemTimeLessThanAsc(const StatisticsTableItem& a, const StatisticsTableItem& b)
+static inline bool tableItemTimeLessThanAsc(const StatisticsTableItem & a, const StatisticsTableItem & b)
 {
     return a.time < b.time;
 }
 
-static inline bool tableItemTimeLessThanDesc(const StatisticsTableItem& a, const StatisticsTableItem& b)
+static inline bool tableItemTimeLessThanDesc(const StatisticsTableItem & a, const StatisticsTableItem & b)
 {
     return a.time > b.time;
 }
 
-static inline bool tableItemNameLessThanAsc(const StatisticsTableItem& a, const StatisticsTableItem& b)
+static inline bool tableItemNameLessThanAsc(const StatisticsTableItem & a, const StatisticsTableItem & b)
 {
     // @TODO: maybe this isn't right way to do it.
     return a.name.toLower() < b.name.toLower();
 }
 
-static inline bool tableItemNameLessThanDesc(const StatisticsTableItem& a, const StatisticsTableItem& b)
+static inline bool tableItemNameLessThanDesc(const StatisticsTableItem & a, const StatisticsTableItem & b)
 {
     return a.name.toLower() > b.name.toLower();
 }
-
 
 void StatisticsTableModel::sort(int column, Qt::SortOrder order)
 {
@@ -152,7 +140,7 @@ void StatisticsTableModel::sort(int column, Qt::SortOrder order)
     emit layoutChanged();
 }
 
-StatisticsDialog::StatisticsDialog(QWidget *parent) :
+StatisticsDialog::StatisticsDialog(QWidget * parent) :
     QDialog(parent),
     ui(new Ui::StatisticsDialog)
 {

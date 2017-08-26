@@ -6,8 +6,10 @@
 
 bool Interval::isInTimePeriod(qint64 start, qint64 end) const
 {
-    return ((start >= startTime && end <= endTime) ||
-            (start >= startTime && end >= startTime && endTime >= start) ||
+    return ((start >= startTime && end <= endTime)
+             ||
+            (start >= startTime && end >= startTime && endTime >= start)
+             ||
             (start <= startTime && end >= startTime));
 }
 
@@ -15,33 +17,39 @@ void Activity::updateStartAndEndTime()
 {
     qint64 min = INT64_MAX, max = INT64_MIN;
     if (intervals.count() == 0) return;
-    for (const Interval& interval : intervals)
+
+    for (const Interval & interval : intervals)
     {
-        if (interval.startTime < min)
-            min = interval.startTime;
-        if (interval.endTime > max)
-            max = interval.endTime;
+        if (interval.startTime < min) min = interval.startTime;
+        if (interval.endTime   > max) max = interval.endTime;
     }
+
     startTime = min;
-    endTime = max;
+    endTime   = max;
 }
 
-bool Activity::belongsToTimePeriod(qint64 startTime, qint64 endTime)
+bool Activity::belongsToTimePeriod(qint64 startTime, qint64 endTime) const
 {
-    if (intervals.count() == 0) {
-        return (startTime >= this->startTime && endTime <= this->endTime) ||
-                (startTime >= this->startTime && endTime >= this->startTime && this->endTime >= startTime) ||
-                (startTime <= this->startTime && endTime >= this->startTime);
+    if (intervals.count() == 0)
+    {
+        return (startTime >= this->startTime && endTime <= this->endTime)
+                ||
+               (startTime >= this->startTime && endTime >= this->startTime && this->endTime >= startTime)
+                ||
+               (startTime <= this->startTime && endTime >= this->startTime);
     }
-    for (const Interval& interval : intervals)
+
+    for (const Interval & interval : intervals)
     {
         /* this one is better i guess
         (startTime >= interval.startTime && endTime >= interval.startTime && interval.endTime >= startTime)
         ||
         (startTime <= interval.startTime && endTime >= interval.startTime);
         */
-       if ((startTime >= interval.startTime && endTime <= interval.endTime) ||
-           (startTime >= interval.startTime && endTime >= interval.startTime && interval.endTime >= startTime) ||
+       if ((startTime >= interval.startTime && endTime <= interval.endTime)
+            ||
+           (startTime >= interval.startTime && endTime >= interval.startTime && interval.endTime >= startTime)
+            ||
            (startTime <= interval.startTime && endTime >= interval.startTime))
        {
            return true;
@@ -55,10 +63,11 @@ bool Activity::belongsToTimePeriod(qint64 startTime, qint64 endTime)
 qint64 Activity::duration() const
 {
     qint64 duration = 0;
-    int length = intervals.length();
-    for (int i = 0; i < length; ++i) {
-        duration += intervals[i].duration();
+
+    for (const Interval & interval : intervals)
+    {
+        duration += interval.duration();
     }
-    // qDebug() << field(0) << duration / (1000.0 * 60.0);
+
     return duration;
 }

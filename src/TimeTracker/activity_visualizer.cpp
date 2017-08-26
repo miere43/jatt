@@ -114,7 +114,7 @@ void ActivityVisualizer::mouseMoveEvent(QMouseEvent * event)
 {
     if (!m_selecting) return;
 
-    m_selectionAreaEnd   = clamp(event->x(), 0, this->width());
+    m_selectionAreaEnd = clamp(event->x(), 0, this->width());
 
     qint64 startTime, endTime;
     ERR_VERIFY(selectionInterval(&startTime, &endTime));

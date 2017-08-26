@@ -19,9 +19,6 @@ public:
     QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 private:
     Activity * m_currentActivity = nullptr;
-
-    int m_itemMaxWidth = -1;
-    int m_itemMaxIndex = -1;
 };
 
 #endif // ACTIVITY_ITEM_DELEGATE_H

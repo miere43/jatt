@@ -7,7 +7,7 @@
 
 #include <QMessageBox>
 
-ActivityBrowser::ActivityBrowser(QWidget *parent) :
+ActivityBrowser::ActivityBrowser(QWidget * parent) :
     QMainWindow(parent),
     ui(new Ui::ActivityBrowser)
 {

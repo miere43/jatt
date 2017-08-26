@@ -7,6 +7,7 @@
 #include "error_macros.h"
 #include "statistics_dialog.h"
 #include "activity_browser.h"
+#include "utilities.h"
 
 #include <QtAlgorithms>
 #include <QDebug>
@@ -97,13 +98,13 @@ MainWindow::MainWindow(QWidget *parent)
     }
 }
 
-void hotkeyCallback(Hotkey* hotkey, void* userdata)
+void hotkeyCallback(Hotkey * hotkey, void * userdata)
 {
     MainWindow* window = (MainWindow*)userdata;
     window->handleHotkey(hotkey);
 }
 
-void MainWindow::handleHotkey(Hotkey *hotkey)
+void MainWindow::handleHotkey(Hotkey * hotkey)
 {
     if (hotkey == m_recorderHotkey)
     {
@@ -121,14 +122,7 @@ void MainWindow::handleHotkey(Hotkey *hotkey)
     }
 }
 
-inline qint64 clamp(qint64 value, qint64 min, qint64 max)
-{
-    if (value < min) return min;
-    if (value > max) return max;
-    return value;
-}
-
-qint64 visibleActivitiesDuration(const QVector<Activity*>& activities, qint64 lowBound, qint64 highBound)
+qint64 visibleActivitiesDuration(const QVector<Activity *> & activities, qint64 lowBound, qint64 highBound)
 {
     ERR_VERIFY_V(lowBound < highBound, 0);
 
@@ -153,7 +147,7 @@ qint64 visibleActivitiesDuration(const QVector<Activity*>& activities, qint64 lo
 
 void MainWindow::editSelectedActivityShortcutActivated()
 {
-    Activity* activity = selectedActivity();
+    Activity * activity = selectedActivity();
     if (!activity) return;
 
     showEditActivityFieldDialog(activity);
@@ -178,14 +172,14 @@ MainWindow::~MainWindow()
 
 void MainWindow::editActivityFieldDialogFinished(int result)
 {
-    QObject* sender = QObject::sender();
-    EditActivityFieldDialog* dialog = qobject_cast<EditActivityFieldDialog*>(sender);
+    QObject * sender = QObject::sender();
+    EditActivityFieldDialog * dialog = qobject_cast<EditActivityFieldDialog *>(sender);
     ERR_VERIFY_NULL(dialog);
 
     bool changed = false;
     if (result == QDialog::Accepted)
     {
-        Activity* activity = dialog->activity();
+        Activity * activity = dialog->activity();
 
         if (dialog->isNameFieldChanged())
         {
@@ -219,7 +213,7 @@ void MainWindow::editActivityFieldDialogFinished(int result)
     dialog->deleteLater();
 }
 
-void MainWindow::showEditActivityFieldDialog(Activity* activity)
+void MainWindow::showEditActivityFieldDialog(Activity * activity)
 {
     EditActivityFieldDialog * dialog = new EditActivityFieldDialog(activity, this);
     connect(dialog, &EditActivityFieldDialog::finished,
@@ -232,7 +226,7 @@ void MainWindow::activityMenuItemActionTriggered(bool checked)
     Q_UNUSED(checked);
 
     QObject * sender = QObject::sender();
-    QAction * action = qobject_cast<QAction*>(sender);
+    QAction * action = qobject_cast<QAction *>(sender);
     ERR_VERIFY_NULL(action);
 
     Activity * activity = selectedActivity();
@@ -241,7 +235,7 @@ void MainWindow::activityMenuItemActionTriggered(bool checked)
     showEditActivityFieldDialog(activity);
 }
 
-void MainWindow::activitiesListViewMenuRequested(const QPoint &pos)
+void MainWindow::activitiesListViewMenuRequested(const QPoint & pos)
 {
     QModelIndex item = ui->activitiesListView->indexAt(pos);
     if (!item.isValid())
@@ -250,7 +244,7 @@ void MainWindow::activitiesListViewMenuRequested(const QPoint &pos)
     }
     else
     {
-        Activity* activity = (Activity*)item.data(Qt::UserRole).value<void*>();
+        Activity * activity = (Activity *)item.data(Qt::UserRole).value<void *>();
         ERR_VERIFY_NULL(activity);
         ERR_VERIFY_NULL(activity->category);
         m_activityItemMenu_activity = activity;
@@ -259,11 +253,11 @@ void MainWindow::activitiesListViewMenuRequested(const QPoint &pos)
     }
 }
 
-void MainWindow::activitiesListViewDoubleClicked(const QModelIndex &index)
+void MainWindow::activitiesListViewDoubleClicked(const QModelIndex & index)
 {
     if (index.isValid())
     {
-        Activity* activity = (Activity*)index.data(Qt::UserRole).value<void*>();
+        Activity* activity = (Activity *)index.data(Qt::UserRole).value<void *>();
         ERR_VERIFY_NULL(activity);
 
         showEditActivityFieldDialog(activity);
@@ -286,14 +280,14 @@ void MainWindow::showAddActivityDialog()
 void MainWindow::addActivityDialogFinished(int result)
 {
     QObject * sender = QObject::sender();
-    AddActivityDialog* dialog = qobject_cast<AddActivityDialog*>(sender);
+    AddActivityDialog * dialog = qobject_cast<AddActivityDialog *>(sender);
     ERR_VERIFY_NULL(dialog);
 
     dialog->deleteLater();
 
     if (result == QDialog::Accepted)
     {
-        Activity* activity = dialog->constructActivity();
+        Activity * activity = dialog->constructActivity();
         if (activity == nullptr)
         {
             QMessageBox::critical(this, "Error", "Unable to create activity.");
@@ -311,13 +305,12 @@ void MainWindow::addActivityDialogFinished(int result)
     }
 }
 
-#include <QtAlgorithms>
-bool activityLessThan(const Activity* a, const Activity* b)
+inline bool activityLessThan(const Activity * a, const Activity * b)
 {
     return a->startTime < b->startTime;
 }
 
-void activitySort(QVector<Activity*>* vec)
+void activitySort(QVector<Activity *> * vec)
 {
     qSort(vec->begin(), vec->end(), activityLessThan);
 }
@@ -333,7 +326,7 @@ void MainWindow::setViewTimePeriod(qint64 startTime, qint64 endTime)
 
     if (m_activityRecorder.isRecording())
     {
-        Activity* currentActivity = m_activityRecorder.activity();
+        Activity * currentActivity = m_activityRecorder.activity();
         ERR_VERIFY_NULL(currentActivity);
 
         if (currentActivity->belongsToTimePeriod(startTime, endTime))
@@ -392,8 +385,8 @@ void MainWindow::setViewDay(qint64 day)
 {
     if (day < 0) day = 0;
 
-    qint64 startTime = (day * 86400000LL) - g_app.localOffsetFromUtc();
-    qint64 endTime = startTime + 86400000LL;
+    const qint64 startTime = (day * 86400000LL) - g_app.localOffsetFromUtc();
+    const qint64 endTime = startTime + 86400000LL;
     setViewTimePeriod(startTime, endTime);
 
     ui->dayLabel->setText(QDateTime::fromMSecsSinceEpoch(startTime, Qt::LocalTime).toString("MMM <b>dd</b>, yyyy"));
@@ -444,7 +437,7 @@ void MainWindow::on_startActivityButton_clicked()
 Activity* MainWindow::selectedActivity() const
 {
     QModelIndex index = selectedActivityIndex();
-    return index.isValid() ? (Activity*)index.data(Qt::UserRole).value<void*>() : nullptr;
+    return index.isValid() ? (Activity *)index.data(Qt::UserRole).value<void *>() : nullptr;
 }
 
 QModelIndex MainWindow::selectedActivityIndex() const
@@ -460,7 +453,7 @@ QModelIndex MainWindow::selectedActivityIndex() const
 void MainWindow::activityRecorderRecordEvent(ActivityRecorderEvent event)
 {
     // qDebug() << m_activityRecorder.activity()->endTime;
-    Activity* currentActivity = m_activityRecorder.activity();
+    Activity * currentActivity = m_activityRecorder.activity();
     // Interval* currentInterval = m_activityRecorder.interval();
 
     if (event == ActivityRecorderEvent::RecordingStarted)
@@ -495,7 +488,9 @@ void MainWindow::activityRecorderRecordEvent(ActivityRecorderEvent event)
         // qDebug() << "Autosaved current activity";
     }
 
-    if (event == ActivityRecorderEvent::RecordingStarted || event == ActivityRecorderEvent::UpdateUITimer)
+    if (event == ActivityRecorderEvent::RecordingStarted ||
+        event == ActivityRecorderEvent::RecordingStopped ||
+        event == ActivityRecorderEvent::UpdateUITimer)
     {
         updateActivityDurationLabel();
     }

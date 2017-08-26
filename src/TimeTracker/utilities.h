@@ -17,7 +17,6 @@ T clamp(T value, T min, T max)
     return value;
 }
 
-
 // Formats milliseconds as HH:MM:SS.MS
 QString formatDuration(qint64 milliseconds, bool withMilliseconds);
 bool activityCategoryLessThanByName(const ActivityCategory * a, const ActivityCategory * b);

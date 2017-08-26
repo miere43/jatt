@@ -3,17 +3,16 @@
 
 #include <QtAlgorithms>
 
-ActivityListModel::ActivityListModel(QObject *parent)
+ActivityListModel::ActivityListModel(QObject * parent)
     : QAbstractListModel(parent)
 {
 }
 
-QModelIndex ActivityListModel::addActivity(Activity *activity)
+QModelIndex ActivityListModel::addActivity(Activity * activity)
 {
-    QModelIndex invalidIndex = QModelIndex();
-    ERR_VERIFY_NULL_V(activity, invalidIndex);
-    ERR_VERIFY_NULL_V(activity->category, invalidIndex);
-    ERR_VERIFY_V(activity->id > 0, invalidIndex);
+    ERR_VERIFY_NULL_V(activity, QModelIndex());
+    ERR_VERIFY_NULL_V(activity->category, QModelIndex());
+    ERR_VERIFY_V(activity->id > 0, QModelIndex());
 
     beginInsertRows(QModelIndex(), m_activities.count(), m_activities.count());
     m_activities.append(activity);
@@ -22,7 +21,7 @@ QModelIndex ActivityListModel::addActivity(Activity *activity)
     return this->index(m_activities.count() - 1);
 }
 
-void ActivityListModel::addActivities(const QVector<Activity *>& activities)
+void ActivityListModel::addActivities(const QVector<Activity *> & activities)
 {
     if (activities.count() > 0) {
         beginInsertRows(QModelIndex(), m_activities.count(), m_activities.count() + activities.count());
@@ -48,7 +47,7 @@ void ActivityListModel::clear()
     endRemoveRows();
 }
 
-int ActivityListModel::rowCount(const QModelIndex &parent) const
+int ActivityListModel::rowCount(const QModelIndex & parent) const
 {
     // For list models only the root node (an invalid parent) should return the list's size. For all
     // other (valid) parents, rowCount() should return 0 so that it does not become a tree model.
@@ -58,7 +57,7 @@ int ActivityListModel::rowCount(const QModelIndex &parent) const
     return m_activities.count();
 }
 
-QVariant ActivityListModel::data(const QModelIndex &index, int role) const
+QVariant ActivityListModel::data(const QModelIndex & index, int role) const
 {
     if (!index.isValid())
         return QVariant();
@@ -77,7 +76,7 @@ QVariant ActivityListModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
-bool ActivityListModel::removeRows(int row, int count, const QModelIndex &parent)
+bool ActivityListModel::removeRows(int row, int count, const QModelIndex & parent)
 {
     if (row < 0 || row + count > m_activities.count()) {
         return false;
@@ -90,11 +89,13 @@ bool ActivityListModel::removeRows(int row, int count, const QModelIndex &parent
     return true;
 }
 
-bool ActivityListModel::removeActivity(Activity *activity) {
+bool ActivityListModel::removeActivity(Activity * activity)
+{
     ERR_VERIFY_NULL_V(activity, false);
 
     int index = m_activities.indexOf(activity);
-    if (index != -1) {
+    if (index != -1)
+    {
         beginRemoveRows(QModelIndex(), index, index);
         m_activities.remove(index);
         endRemoveRows();
@@ -104,7 +105,8 @@ bool ActivityListModel::removeActivity(Activity *activity) {
     return false;
 }
 
-void ActivityListModel::dataChangedHint(Activity *activity) {
+void ActivityListModel::dataChangedHint(Activity * activity)
+{
     ERR_VERIFY_NULL(activity);
     int index = m_activities.indexOf(activity);
     ERR_VERIFY(index != -1);

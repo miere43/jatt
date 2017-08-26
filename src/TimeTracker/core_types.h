@@ -14,7 +14,7 @@ struct Interval
     qint64 startTime;
     qint64 endTime;
 
-    bool isInTimePeriod(qint64 start, qint64 end) const;
+    bool isInTimePeriod(qint64 startTime, qint64 endTime) const;
     inline qint64 duration() const { return endTime - startTime; }
 };
 
@@ -27,17 +27,17 @@ struct ActivityCategory
 
 struct Activity
 {
-    qint64 id;
-    ActivityCategory* category;
-    qint64 startTime;
-    qint64 endTime;
+    qint64 id = 0;
+    ActivityCategory * category = nullptr;
+    qint64 startTime = 0;
+    qint64 endTime = 0;
     QString name;
     QString note;
     QVector<Interval> intervals;
 
-    bool belongsToTimePeriod(qint64 startTime, qint64 endTime);
     void updateStartAndEndTime();
 
+    bool belongsToTimePeriod(qint64 startTime, qint64 endTime) const;
     qint64 duration() const;
 };
 
