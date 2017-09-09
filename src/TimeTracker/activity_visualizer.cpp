@@ -30,6 +30,7 @@ void ActivityVisualizer::setTimePeriod(qint64 startTime, qint64 endTime, QVector
     m_startTime = startTime;
     m_endTime = endTime;
     m_activities = activities;
+    clearSelection();
 
     this->update();
 }

@@ -9,7 +9,7 @@ QVariant ActivityTableModel::headerData(int section, Qt::Orientation orientation
 {
     if (role == Qt::DisplayRole && orientation == Qt::Vertical)
     {
-        return QString::number(section);
+        return QString::number(section + 1);
     }
 
     if (role == Qt::DisplayRole && orientation == Qt::Horizontal)
