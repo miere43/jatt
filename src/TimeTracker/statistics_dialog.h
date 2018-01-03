@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QAbstractTableModel>
+#include <QItemSelectionModel>
 
 namespace Ui {
 class StatisticsDialog;
@@ -42,6 +43,7 @@ public:
 
 private slots:
     void on_selectRangeCombobox_currentIndexChanged(int index);
+    void on_infoTable_selectionModel_selectionChanged(const QItemSelection & selected, const QItemSelection & deselected);
 
 private:
     Ui::StatisticsDialog *ui;
@@ -50,11 +52,7 @@ private:
     bool m_isFirstStatsCalc = true;
 
     void calcStatisticsForTimeRange(qint64 startTime, qint64 endTime);
+    void updateSelectedRowsTotalTimeLabel();
 };
-
-
-
-
-
 
 #endif // STATISTICS_DIALOG_H

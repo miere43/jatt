@@ -43,6 +43,9 @@
      </item>
      <item>
       <widget class="QTableView" name="infoTable">
+       <property name="selectionBehavior">
+        <enum>QAbstractItemView::SelectRows</enum>
+       </property>
        <property name="sortingEnabled">
         <bool>true</bool>
        </property>
@@ -61,6 +64,13 @@
       </widget>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QLabel" name="selectedRowsTimeLabel">
+     <property name="text">
+      <string>Selected rows total: no rows selected</string>
+     </property>
+    </widget>
    </item>
    <item>
     <layout class="QHBoxLayout" name="dialogButtonsLayout">

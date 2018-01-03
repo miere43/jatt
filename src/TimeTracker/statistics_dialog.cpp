@@ -9,7 +9,6 @@
 #include <QHash>
 
 
-
 static inline qint64 qint64_clamp(qint64 value, qint64 min, qint64 max)
 {
     if (value < min) return min;
@@ -67,13 +66,23 @@ int StatisticsTableModel::columnCount(const QModelIndex &parent) const
 
 QVariant StatisticsTableModel::data(const QModelIndex &index, int role) const
 {
-    if (role != Qt::DisplayRole) return QVariant();
-
     const StatisticsTableItem& item = m_items[index.row()];
-    switch (index.column())
+
+    if (role == Qt::DisplayRole)
     {
-        case 0:  return item.name;
-        case 1:  return formatDuration(item.time, true);
+        switch (index.column())
+        {
+            case 0:  return item.name;
+            case 1:  return formatDuration(item.time, true);
+        }
+    }
+    else if (role == Qt::UserRole)
+    {
+        return item.time;
+    }
+    else
+    {
+        return QVariant();
     }
 
     ERR_VERIFY_V(false, QVariant());
@@ -145,11 +154,16 @@ StatisticsDialog::StatisticsDialog(QWidget * parent) :
     ui(new Ui::StatisticsDialog)
 {
     ui->setupUi(this);
+
     m_tableModel = new StatisticsTableModel(this);
     ui->infoTable->setModel(m_tableModel);
 
     // @TODO: ugly
     this->on_selectRangeCombobox_currentIndexChanged(ui->selectRangeCombobox->currentIndex());
+
+    auto selectionModel = ui->infoTable->selectionModel();
+    QObject::connect(selectionModel, &QItemSelectionModel::selectionChanged,
+                     this, &StatisticsDialog::on_infoTable_selectionModel_selectionChanged);
 }
 
 StatisticsDialog::~StatisticsDialog()
@@ -269,4 +283,38 @@ void StatisticsDialog::calcStatisticsForTimeRange(qint64 startTime, qint64 endTi
     {
         m_tableModel->sort(headerView->sortIndicatorSection(), headerView->sortIndicatorOrder());
     }
+}
+
+void StatisticsDialog::on_infoTable_selectionModel_selectionChanged(const QItemSelection & selected, const QItemSelection & deselected)
+{
+    Q_UNUSED(deselected);
+
+    updateSelectedRowsTotalTimeLabel();
+}
+
+void StatisticsDialog::updateSelectedRowsTotalTimeLabel()
+{
+    QModelIndexList indexes = ui->infoTable->selectionModel()->selection().indexes();
+    if (indexes.count() == 0)
+    {
+        ui->selectedRowsTimeLabel->setText(QStringLiteral("Selected rows total: no rows selected"));
+        return;
+    }
+
+    qint64 totalDuration = 0;
+
+    for (const QModelIndex& index : indexes)
+    {
+        if (index.column() != 0)  continue;
+
+        qint64 rowDuration = index.data(Qt::UserRole).value<qint64>();
+        totalDuration += rowDuration;
+
+        qDebug() << "Selected index" << index.data(Qt::DisplayRole).value<QString>();
+    }
+
+    ui->selectedRowsTimeLabel->setText(
+        QString("Selected rows total: %1")
+        .arg(formatDuration(totalDuration, true))
+    );
 }
