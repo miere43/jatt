@@ -3,6 +3,7 @@
 #include "error_macros.h"
 #include "utilities.h"
 
+#include <QtGlobal>
 #include <QPainter>
 #include <QDebug>
 
@@ -105,7 +106,7 @@ void ActivityVisualizer::mousePressEvent(QMouseEvent * event)
 
     m_selecting = true;
     m_hasSelection = true;
-    m_selectionAreaStart = clamp(event->x(), 0, this->width());
+    m_selectionAreaStart = qBound(0, event->x(), this->width());
     m_selectionAreaEnd   = m_selectionAreaStart;
 
     this->update();
@@ -115,7 +116,7 @@ void ActivityVisualizer::mouseMoveEvent(QMouseEvent * event)
 {
     if (!m_selecting) return;
 
-    m_selectionAreaEnd = clamp(event->x(), 0, this->width());
+    m_selectionAreaEnd = qBound(0, event->x(), this->width());
 
     qint64 startTime, endTime;
     ERR_VERIFY(selectionInterval(&startTime, &endTime));

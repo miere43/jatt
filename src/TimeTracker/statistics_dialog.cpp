@@ -5,24 +5,18 @@
 #include "utilities.h"
 
 #include <algorithm>
+#include <QtGlobal>
 #include <QMessageBox>
 #include <QHash>
 
-
-static inline qint64 qint64_clamp(qint64 value, qint64 min, qint64 max)
-{
-    if (value < min) return min;
-    if (value > max) return max;
-    return value;
-}
 
 static inline qint64 clampActivityDuration(const Activity* activity, qint64 min, qint64 max)
 {
     qint64 total = 0i64;
     for (const Interval& interval : activity->intervals)
     {
-        qint64 intervalMin = qint64_clamp(interval.startTime, min, max);
-        qint64 intervalMax = qint64_clamp(interval.endTime, min, max);
+        qint64 intervalMin = qBound(min, interval.startTime, max);
+        qint64 intervalMax = qBound(min, interval.endTime,   max);
         total += intervalMax - intervalMin;
     }
     return total;

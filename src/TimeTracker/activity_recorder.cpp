@@ -1,6 +1,7 @@
 #include "activity_recorder.h"
 #include "error_macros.h"
 
+#include <QtGlobal>
 #include <QDebug>
 
 ActivityRecorder::ActivityRecorder(QObject* parent)
@@ -101,15 +102,10 @@ void ActivityRecorder::syncActivityState()
     m_activityInterval->endTime = m_activity->endTime;
 }
 
-inline qint64 qint64_max(qint64 a, qint64 b)
-{
-    return a > b ? a : b;
-}
-
 qint64 ActivityRecorder::duration() const
 {
     if (!isRecording()) return 0;
-    return qint64_max(0, getCurrentDateTimeUtc() - m_activityInterval->startTime);
+    return qMax<qint64>(0, getCurrentDateTimeUtc() - m_activityInterval->startTime);
 }
 
 void ActivityRecorder::setAutosaveTimerInterval(int msecs)

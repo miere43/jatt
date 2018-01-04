@@ -180,8 +180,6 @@ bool SearchQuery::buildSqlQueryString(SearchQuery::GeneratedSqlQuery * result, Q
     result->query = QStringLiteral("SELECT * FROM activity WHERE");
     QString & query = result->query;
 
-    bool propertiesAdded = false;
-
     QVector<ActivityCategory *> categories;
     QVector<QString> names;
 

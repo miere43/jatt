@@ -9,6 +9,7 @@
 #include "activity_browser.h"
 #include "utilities.h"
 
+#include <QtGlobal>
 #include <QtAlgorithms>
 #include <QDebug>
 #include <QMessageBox>
@@ -131,8 +132,8 @@ qint64 visibleActivitiesDuration(const QVector<Activity *> & activities, qint64 
     {
         for (const Interval& interval : activity->intervals)
         {
-            qint64 ist = clamp(interval.startTime, lowBound, highBound);
-            qint64 iet = clamp(interval.endTime,   lowBound, highBound);
+            qint64 ist = qBound(lowBound, interval.startTime, highBound);
+            qint64 iet = qBound(lowBound, interval.endTime,   highBound);
             if (ist > iet)
             {
                 qWarning() << "invalid time";
