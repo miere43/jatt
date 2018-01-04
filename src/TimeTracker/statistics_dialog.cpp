@@ -287,6 +287,7 @@ void StatisticsDialog::calcStatisticsForTimeRange(qint64 startTime, qint64 endTi
 
 void StatisticsDialog::on_infoTable_selectionModel_selectionChanged(const QItemSelection & selected, const QItemSelection & deselected)
 {
+    Q_UNUSED(selected);
     Q_UNUSED(deselected);
 
     updateSelectedRowsTotalTimeLabel();
@@ -309,8 +310,6 @@ void StatisticsDialog::updateSelectedRowsTotalTimeLabel()
 
         qint64 rowDuration = index.data(Qt::UserRole).value<qint64>();
         totalDuration += rowDuration;
-
-        qDebug() << "Selected index" << index.data(Qt::DisplayRole).value<QString>();
     }
 
     ui->selectedRowsTimeLabel->setText(

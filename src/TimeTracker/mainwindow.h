@@ -39,7 +39,7 @@ private slots:
 
     void selectedActivityChanged(const QItemSelection &selected, const QItemSelection &deselected);
     void activitiesListViewMenuRequested(const QPoint &pos);
-    void activitiesListViewDoubleClicked(const QModelIndex& index);
+    void activitiesListViewActivated(const QModelIndex& index);
 
     void on_nextDayButton_clicked();
     void on_prevDayButton_clicked();

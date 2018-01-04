@@ -47,8 +47,8 @@ MainWindow::MainWindow(QWidget *parent)
             this, &MainWindow::selectedActivityChanged);
     connect(ui->activitiesListView, &QListView::customContextMenuRequested,
             this, &MainWindow::activitiesListViewMenuRequested);
-    connect(ui->activitiesListView, &QListView::doubleClicked,
-            this, &MainWindow::activitiesListViewDoubleClicked);
+    connect(ui->activitiesListView, &QListView::activated,
+            this, &MainWindow::activitiesListViewActivated);
 
     m_editSelectedActivityShortcut = new QShortcut(QKeySequence(Qt::Key_Enter), this);
     m_changePageLeftShortcut = new QShortcut(QKeySequence(Qt::Key_Left), this);
@@ -253,7 +253,7 @@ void MainWindow::activitiesListViewMenuRequested(const QPoint & pos)
     }
 }
 
-void MainWindow::activitiesListViewDoubleClicked(const QModelIndex & index)
+void MainWindow::activitiesListViewActivated(const QModelIndex & index)
 {
     if (index.isValid())
     {
