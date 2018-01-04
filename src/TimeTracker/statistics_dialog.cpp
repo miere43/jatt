@@ -119,13 +119,12 @@ static inline bool tableItemTimeLessThanDesc(const StatisticsTableItem & a, cons
 
 static inline bool tableItemNameLessThanAsc(const StatisticsTableItem & a, const StatisticsTableItem & b)
 {
-    // @TODO: maybe this isn't right way to do it.
-    return a.name.toLower() < b.name.toLower();
+    return QString::compare(a.name, b.name, Qt::CaseInsensitive) < 0;
 }
 
 static inline bool tableItemNameLessThanDesc(const StatisticsTableItem & a, const StatisticsTableItem & b)
 {
-    return a.name.toLower() > b.name.toLower();
+    return QString::compare(a.name, b.name, Qt::CaseInsensitive) > 0;
 }
 
 void StatisticsTableModel::sort(int column, Qt::SortOrder order)
