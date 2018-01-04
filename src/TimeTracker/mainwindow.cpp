@@ -607,6 +607,7 @@ void MainWindow::addQuickActivityButtons()
     for (ActivityCategory* category : categories)
     {
         QPushButton* button = new QPushButton(this);
+        button->setFocusPolicy(Qt::ClickFocus);
         button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         button->setCursor(QCursor(Qt::PointingHandCursor));
         button->setStyleSheet(

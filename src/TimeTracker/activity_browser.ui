@@ -65,8 +65,8 @@
  </widget>
  <tabstops>
   <tabstop>searchQueryLineEdit</tabstop>
-  <tabstop>searchResultsTable</tabstop>
   <tabstop>searchButton</tabstop>
+  <tabstop>searchResultsTable</tabstop>
  </tabstops>
  <resources/>
  <connections>
