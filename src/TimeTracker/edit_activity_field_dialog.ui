@@ -72,6 +72,11 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>nameEdit</tabstop>
+  <tabstop>noteEdit</tabstop>
+  <tabstop>typeComboBox</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

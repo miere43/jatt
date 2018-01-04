@@ -17,7 +17,7 @@ EditActivityFieldDialog::EditActivityFieldDialog(Activity * activity, QWidget * 
     ERR_VERIFY_NULL(m_activity->category);
 
     ui->nameEdit->setText(activity->name);
-    ui->nameEdit->selectAll();
+    ui->nameEdit->setFocus();
     ui->noteEdit->setPlainText(activity->note);
 
     QList<ActivityCategory *> categories = g_app.database()->activityCategories();
