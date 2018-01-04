@@ -5,12 +5,27 @@
 
 #include <QtGlobal>
 #include <QPainter>
+#include <QGraphicsDropShadowEffect>
+#include <QGraphicsPixmapItem>
 #include <QDebug>
+#include <QFontMetricsF>
 
 ActivityVisualizer::ActivityVisualizer(QWidget * parent) : QWidget(parent)
 {
     this->setMinimumHeight(50);
     this->setCursor(Qt::PointingHandCursor);
+
+    m_dropShadow = new QGraphicsDropShadowEffect(this);
+    m_dropShadow->setColor(QColor(0, 0, 0, 255));
+    m_dropShadow->setBlurRadius(5.0);
+    m_dropShadow->setOffset(5.0);
+
+//    this->setGraphicsEffect(m_dropShadow);
+}
+
+ActivityVisualizer::~ActivityVisualizer()
+{
+    delete m_dropShadow;
 }
 
 bool ActivityVisualizer::isPointInSelection(const QPoint & point)
@@ -78,15 +93,25 @@ void ActivityVisualizer::paintEvent(QPaintEvent * event)
         painter.setBrush(selectionBrush);
 
         QRectF selectionRect = QRectF(m_selectionAreaStart, 0, m_selectionAreaEnd - m_selectionAreaStart, height());
-        const int textFlags = Qt::AlignHCenter | Qt::AlignVCenter;
+        const int textFlags = Qt::TextDontClip | Qt::AlignHCenter | Qt::AlignVCenter;
 
         painter.drawRect(selectionRect);
+
         painter.setFont(this->font());
 
+        QFontMetricsF metrics(this->font());
+        QRectF dropShadowRect = metrics
+                .boundingRect(selectionRect, Qt::AlignHCenter | Qt::AlignVCenter, m_selectionTimeText)
+                .marginsAdded(QMarginsF(2.0, 2.0, 2.0, 2.0));
+
+        // Drop shadow
+        painter.setBrush(QBrush(QColor(0, 0, 0, 100)));
+        painter.drawRect(dropShadowRect);
+
+        // Actual text
         painter.setPen(QPen(QColor(255, 255, 255, 255)));
-        painter.setClipping(true);
-        painter.setClipRect(selectionRect);
         painter.drawText(selectionRect, textFlags, m_selectionTimeText);
+
     }
 }
 

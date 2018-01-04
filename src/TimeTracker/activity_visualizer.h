@@ -5,6 +5,7 @@
 #include <QMenu>
 #include <QAction>
 #include <QPaintEvent>
+#include <QGraphicsDropShadowEffect>
 #include "core_types.h"
 
 class ActivityVisualizer : public QWidget
@@ -12,6 +13,7 @@ class ActivityVisualizer : public QWidget
     Q_OBJECT
 public:
     explicit ActivityVisualizer(QWidget * parent = 0);
+    ~ActivityVisualizer();
 
     void setTimePeriod(qint64 startTime, qint64 endTime, QVector<Activity *> * activities);
 
@@ -42,6 +44,8 @@ private:
     int m_selectionAreaStart = 0;  // in pixels.
     int m_selectionAreaEnd   = 0;
     QString m_selectionTimeText;
+
+    QGraphicsDropShadowEffect* m_dropShadow;
 };
 
 #endif // SESSION_VISUALIZER_H
