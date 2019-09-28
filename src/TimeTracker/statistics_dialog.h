@@ -20,7 +20,7 @@ class StatisticsTableModel : public QAbstractTableModel
     Q_OBJECT
 
 public:
-    explicit StatisticsTableModel(QObject* parent = 0);
+    explicit StatisticsTableModel(QObject* parent = nullptr);
     void setItems(QVector<StatisticsTableItem> items);
 
     int rowCount(const QModelIndex &parent) const override;
@@ -38,7 +38,7 @@ class StatisticsDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit StatisticsDialog(QWidget *parent = 0);
+    explicit StatisticsDialog(QWidget *parent = nullptr);
     ~StatisticsDialog();
 
 private slots:
@@ -48,7 +48,7 @@ private slots:
 private:
     Ui::StatisticsDialog *ui;
     QVector<StatisticsTableItem> m_items;
-    StatisticsTableModel * m_tableModel = 0;
+    StatisticsTableModel * m_tableModel = nullptr;
     bool m_isFirstStatsCalc = true;
 
     void calcStatisticsForTimeRange(qint64 startTime, qint64 endTime);

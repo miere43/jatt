@@ -26,8 +26,8 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
-    ~MainWindow();
+    explicit MainWindow(QWidget *parent = nullptr);
+    ~MainWindow() override;
 
     const QVector<Activity*>& currentActivities() const;
     bool canModifyActivityIntervals(const Activity* activity) const;
@@ -67,6 +67,8 @@ private slots:
 
     void activityVisualizerMenuRequested(const QPoint & pos);
     void visualizerCreateActivityFromSelection(bool checked);
+    void on_enableHotkeyAction_triggered();
+
 private:
     void closeEvent(QCloseEvent *event) override;
     void readAndApplySettings();
@@ -88,6 +90,11 @@ private:
     void deleteActivity(Activity* activity);
     void joinActivities(Activity* targetActivity, QVector<Activity*> activitiesToJoin);
 
+    /**
+     * @brief Enables or disabled 'Continue Activity' hotkey.
+     */
+    void setHotkeyEnabled(bool enabled);
+    bool m_hotkeyEnabled = false;
 
 //    void setCurrentActivity(Activity* activity);
 //    Activity* currentActivity();
@@ -115,7 +122,7 @@ private:
     qint64 m_currentViewTimePeriodEndTime = -1;
 
     ActivityRecorder m_activityRecorder;
-    Hotkey * m_recorderHotkey;
+    Hotkey * m_recorderHotkey = nullptr;
     Activity * m_lastActiveActivity = nullptr;
 
     QMenu m_visualizerMenu;

@@ -13,7 +13,7 @@ class EditActivityFieldDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit EditActivityFieldDialog(Activity * activity, QWidget * parent = 0);
+    explicit EditActivityFieldDialog(Activity * activity, QWidget * parent = nullptr);
     ~EditActivityFieldDialog();
 
     QString newName() const;

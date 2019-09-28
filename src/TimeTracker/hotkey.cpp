@@ -37,62 +37,76 @@ bool convertQtKeycodes(Qt::KeyboardModifiers modifiers, Qt::Key key, UINT* winMo
 }
 
 QString formatErrorMessage(DWORD msg) {
-    const wchar_t* errorMessage = nullptr;
-    if (!FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 0, msg, 0, (LPWSTR)&errorMessage, 65535*2, nullptr)) {
+    wchar_t* errorMessage = nullptr;
+    if (!FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, nullptr, msg, 0, reinterpret_cast<wchar_t*>(&errorMessage), 65535*2, nullptr)) {
         return QStringLiteral("unknown");
     } else {
         QString qstring = QString::fromWCharArray(errorMessage);
-        LocalFree((HLOCAL)errorMessage);
+        LocalFree(reinterpret_cast<HLOCAL>(errorMessage));
         return qstring;
     }
 }
 
 Hotkey::Hotkey(HWND window, int id, Qt::KeyboardModifiers modifiers, Qt::Key key, HotkeyCallback callback, void* userdata)
 {
+    Q_UNUSED(modifiers)
+    Q_UNUSED(key)
+
     m_isActive = false;
 
     ERR_VERIFY(id >= 0x0000 && id <= 0xBFFF);
-    ERR_VERIFY(window != 0);
+    ERR_VERIFY(window != nullptr);
     ERR_VERIFY_NULL(callback);
 
-    m_errorMessage = QString::null;
+    m_errorMessage = QString();
     m_callback = callback;
     m_userdata = userdata;
     m_window = window;
     m_id = id;
 
-    UINT winModifiers;
-    UINT winKey;
+    m_winModifiers = MOD_CONTROL;
+    m_winKey = VK_SPACE;
 
-    if (!convertQtKeycodes(modifiers, key, &winModifiers, &winKey)) {
-        m_errorMessage = QStringLiteral("Unsupported keyboard modifier or key.");
-        return;
-    }
-
-    winModifiers |= MOD_NOREPEAT;
-    if (RegisterHotKey(window, id, winModifiers, winKey)) {
-        m_isActive = true;
-        if (!HotkeyEventFilter::isInstalled()) {
-            HotkeyEventFilter::installEventFilter();
-        }
-        HotkeyEventFilter::registerHotkey(this);
-    } else {
-        m_errorMessage = formatErrorMessage(GetLastError());
-    }
+//    if (!convertQtKeycodes(modifiers, key, &m_winModifiers, &m_winKey)) {
+//        m_errorMessage = QStringLiteral("Unsupported keyboard modifier or key.");
+//        return;
+//    }
+    m_winModifiers |= MOD_NOREPEAT;
 }
 
-Hotkey::~Hotkey() {
-    unregister();
+Hotkey::~Hotkey()
+{
+    // @TODO: setActive crashes program
+    // setActive(false);
 }
 
-void Hotkey::unregister() {
-    if (m_isActive) {
-        if (!UnregisterHotKey(m_window, m_id)) {
-            qWarning() << "Unable to unregister hotkey with ID" << m_id;
+bool Hotkey::setActive(bool active)
+{
+    if (m_isActive == active)
+        return true;
+
+    if (m_isActive)
+    {
+        if (!UnregisterHotKey(m_window, m_id))
+        {
+            m_errorMessage = formatErrorMessage(GetLastError());
+            return false;
         }
         HotkeyEventFilter::unregisterHotkey(this);
-        m_isActive = false;
     }
+    else
+    {
+        if (!RegisterHotKey(m_window, m_id, m_winModifiers, m_winKey))
+        {
+            m_errorMessage = formatErrorMessage(GetLastError());
+            return false;
+        }
+        if (!HotkeyEventFilter::isInstalled())
+            HotkeyEventFilter::installEventFilter();
+        HotkeyEventFilter::registerHotkey(this);
+    }
+    m_isActive = active;
+    return true;
 }
 
 bool HotkeyEventFilter::isInstalled() {
@@ -108,7 +122,8 @@ void HotkeyEventFilter::installEventFilter() {
     app->installNativeEventFilter(m_eventFilter);
 }
 
-void HotkeyEventFilter::registerHotkey(Hotkey *hotkey) {
+void HotkeyEventFilter::registerHotkey(Hotkey *hotkey)
+{
     ERR_VERIFY_NULL(hotkey);
     ERR_VERIFY(hotkey->isActive());
     ERR_VERIFY_NULL(hotkey->m_callback);
@@ -124,16 +139,16 @@ void HotkeyEventFilter::unregisterHotkey(Hotkey *hotkey) {
 }
 
 bool HotkeyEventFilter::nativeEventFilter(const QByteArray &eventType, void *message, long *result) {
-    Q_UNUSED(eventType);
-    Q_UNUSED(message);
-    Q_UNUSED(result);
+    Q_UNUSED(eventType)
+    Q_UNUSED(message)
+    Q_UNUSED(result)
 #ifndef Q_OS_WIN32
     return false;
 #else
-    MSG* msg = (MSG*)message;
+    MSG* msg = reinterpret_cast<MSG*>(message);
     if (msg->message == WM_HOTKEY) {
         for (Hotkey* hotkey : m_hotkeys) {
-            if (hotkey->m_id == msg->wParam) {
+            if (hotkey->isActive() && hotkey->m_id == static_cast<int>(msg->wParam)) {
                 ERR_VERIFY_CONTINUE(hotkey->m_callback);
                 hotkey->m_callback(hotkey, hotkey->m_userdata);
                 return true;

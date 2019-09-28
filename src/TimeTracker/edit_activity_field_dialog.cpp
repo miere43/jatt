@@ -23,9 +23,9 @@ EditActivityFieldDialog::EditActivityFieldDialog(Activity * activity, QWidget * 
     QList<ActivityCategory *> categories = g_app.database()->activityCategories();
 
     int i = 0;
-    for (const ActivityCategory * category : categories)
+    for (ActivityCategory * category : categories)
     {
-        ui->typeComboBox->addItem(category->name, QVariant::fromValue<void*>((void*)category));
+        ui->typeComboBox->addItem(category->name, QVariant::fromValue<void*>(static_cast<void*>(category)));
         if (category == activity->category) {
             ui->typeComboBox->setCurrentIndex(i);
         }
@@ -49,7 +49,7 @@ ActivityCategory * EditActivityFieldDialog::newActivityCategory() const
 
     if (categoryVariant.isValid())
     {
-        return (ActivityCategory *)categoryVariant.value<void *>();
+        return static_cast<ActivityCategory*>(categoryVariant.value<void *>());
     }
     else
     {
@@ -74,7 +74,7 @@ bool EditActivityFieldDialog::isActivityCategoryChanged() const
 {
     QVariant categoryVariant = ui->typeComboBox->currentData();
     if (!categoryVariant.isValid()) return false;
-    ActivityCategory * category = (ActivityCategory *)categoryVariant.value<void *>();
+    auto category = static_cast<ActivityCategory *>(categoryVariant.value<void *>());
     return category != m_activity->category;
 }
 

@@ -10,7 +10,7 @@ class ActivityListModel : public QAbstractListModel
     Q_OBJECT
 
 public:
-    explicit ActivityListModel(QObject * parent = 0);
+    explicit ActivityListModel(QObject * parent = nullptr);
 
     QModelIndex addActivity(Activity * activity);
     void addActivities(const QVector<Activity *> & activities);
@@ -27,8 +27,9 @@ public:
     inline QVector<Activity *> & activities() { return m_activities; }
 
     QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
+    Qt::ItemFlags flags(const QModelIndex &index) const override;
 private:
-    void sort();
+    //void sort();
 
     qint64 m_startTime = -1;
     qint64 m_endTime   = -1;

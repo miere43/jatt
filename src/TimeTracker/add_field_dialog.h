@@ -13,7 +13,7 @@ class AddFieldDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit AddFieldDialog(ActivityCategory* category, QWidget *parent = 0);
+    explicit AddFieldDialog(ActivityCategory* category, QWidget *parent = nullptr);
     ~AddFieldDialog();
 private slots:
     void on_buttonBox_accepted();

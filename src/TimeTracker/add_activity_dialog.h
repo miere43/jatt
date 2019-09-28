@@ -14,7 +14,7 @@ class AddActivityDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit AddActivityDialog(QWidget *parent = 0);
+    explicit AddActivityDialog(QWidget *parent = nullptr);
     ~AddActivityDialog();
 
     Activity* constructActivity();

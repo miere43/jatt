@@ -41,10 +41,13 @@ void ActivityListModel::setTimePeriod(qint64 startTime, qint64 endTime)
 
 void ActivityListModel::clear()
 {
-    beginRemoveRows(QModelIndex(), 0, m_activities.count());
-    m_activities.clear();
-    //m_items.clear();
-    endRemoveRows();
+    auto count = m_activities.count();
+    if (count != 0) {
+        beginRemoveRows(QModelIndex(), 0, m_activities.count() - 1);
+        m_activities.clear();
+        //m_items.clear();
+        endRemoveRows();
+    }
 }
 
 int ActivityListModel::rowCount(const QModelIndex & parent) const
@@ -70,10 +73,19 @@ QVariant ActivityListModel::data(const QModelIndex & index, int role) const
     {
         // It's better to return ActivityListItem, but there is some code that relies
         // on returning object of type Activity.
-        return QVariant::fromValue((void*)m_activities.at(index.row()));
+        return QVariant::fromValue(static_cast<void*>(m_activities.at(index.row())));
     }
 
     return QVariant();
+}
+
+Qt::ItemFlags ActivityListModel::flags(const QModelIndex & index) const
+{
+    if (index.isValid())
+    {
+        return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+    }
+    return Qt::NoItemFlags;
 }
 
 bool ActivityListModel::removeRows(int row, int count, const QModelIndex & parent)

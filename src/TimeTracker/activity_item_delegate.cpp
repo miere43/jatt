@@ -6,7 +6,6 @@
 
 ActivityItemDelegate::ActivityItemDelegate()
 {
-
 }
 
 void ActivityItemDelegate::setCurrentActivity(Activity * activity)
@@ -23,7 +22,7 @@ void ActivityItemDelegate::paint(QPainter * painter, const QStyleOptionViewItem 
 {
     static const QBrush g_currentActivityBrush = QBrush((QColor(224, 248, 255)));
 
-    const Activity * activity = (Activity *)index.data(Qt::UserRole).value<void *>();
+    auto activity = reinterpret_cast<const Activity *>(index.data(Qt::UserRole).value<void *>());
     ERR_VERIFY_NULL(activity);
 
     painter->setBrush(m_currentActivity == activity ? g_currentActivityBrush : option.backgroundBrush);
@@ -55,13 +54,15 @@ void ActivityItemDelegate::paint(QPainter * painter, const QStyleOptionViewItem 
 
     painter->setRenderHint(QPainter::Antialiasing);
     painter->setPen(QPen(QColor(0, 0, 0), 0.8));
-    painter->setBrush(QBrush(QColor((QRgb)activity->category->color)));
+    painter->setBrush(QBrush(QColor(static_cast<QRgb>(activity->category->color))));
     painter->drawEllipse(QRect(option.rect.x(), option.rect.y(), fontHeight, fontHeight).marginsRemoved(QMargins(4, 4, 4, 4)));
 }
 
 QSize ActivityItemDelegate::sizeHint(const QStyleOptionViewItem & option, const QModelIndex & index) const
 {
+    auto text = index.data(Qt::DisplayRole).value<QString>();
+    auto rect = option.fontMetrics.boundingRect(text);
     const int ellipseWidth = option.fontMetrics.height() + (4 * 2);
-    const int textWidth    = option.fontMetrics.width(index.data(Qt::DisplayRole).value<QString>());
+    const int textWidth    = rect.width();
     return QSize(ellipseWidth + textWidth, option.fontMetrics.height());
 }

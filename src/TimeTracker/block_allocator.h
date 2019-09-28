@@ -34,7 +34,7 @@ public:
         {
             const size_t itemsOffset = offsetof(Block, items);
             uintptr_t slot = ((uintptr_t)value - ((uintptr_t)this + (uintptr_t)itemsOffset)) / (uintptr_t)sizeof(T);
-            Q_ASSERT(slot >= 0 && slot <= BLOCK_MAX_ITEMS);
+            Q_ASSERT(slot >= 0 && slot < BLOCK_MAX_ITEMS);
             usedSlots = usedSlots & (~(1 << slot));
 #ifdef QT_DEBUG
             memset(value, 0xCD, sizeof(T));
@@ -79,7 +79,7 @@ public:
     Block* last = nullptr;
 
     Block* pushNewBlock() {
-        Block* block = (Block*)malloc(sizeof(Block));
+        auto block = reinterpret_cast<Block*>(malloc(sizeof(Block)));
         // @TODO: Handle out of memory condition.
         if (block == nullptr)
         {
@@ -131,17 +131,18 @@ public:
 
     void deallocate(T* value)
     {
-        Q_ASSERT(first != nullptr);
-        Block* block = first;
-        do
+        for (auto block = first; block; block = block->next)
         {
-            if ((void*)value >= (void*)block && (void*)value <= (void*)((char*)block + sizeof(Block)))
+            auto blockStart = static_cast<void*>(block);
+            auto blockEnd = static_cast<void*>(reinterpret_cast<char*>(block) + sizeof(Block));
+
+            if (value >= blockStart && value <= blockEnd)
             {
                 value->~T();
                 block->unset(value); // unset in debug releases clears up memory with 0xCD bytes, it call after destructor.
                 return;
             }
-        } while (block = block->next);
+        }
         Q_ASSERT(false); // value was not allocated by this allocator!
     }
 

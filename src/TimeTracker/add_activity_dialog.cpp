@@ -27,9 +27,9 @@ AddActivityDialog::AddActivityDialog(QWidget *parent) :
         return;
     }
 
-    for (const ActivityCategory* category : categories)
+    for (ActivityCategory* category : categories)
     {
-        ui->activityInfoComboBox->addItem(category->name, QVariant::fromValue((void*)category));
+        ui->activityInfoComboBox->addItem(category->name, QVariant::fromValue(reinterpret_cast<void*>(category)));
     }
 
     ui->activityInfoComboBox->setCurrentIndex(0);
@@ -82,7 +82,7 @@ void AddActivityDialog::addFieldDialogFieldAdded()
 
 void AddActivityDialog::addFieldDialogFinished(int result)
 {
-    Q_UNUSED(result);
+    Q_UNUSED(result)
 
     QObject* sender = QObject::sender();
     AddFieldDialog* dialog = qobject_cast<AddFieldDialog*>(sender);
@@ -93,7 +93,7 @@ void AddActivityDialog::addFieldDialogFinished(int result)
 
 void AddActivityDialog::on_activityInfoComboBox_currentIndexChanged(int index)
 {
-    ActivityCategory* activityInfo = (ActivityCategory*)ui->activityInfoComboBox->itemData(index, Qt::UserRole).value<void*>();
+    auto activityInfo = reinterpret_cast<ActivityCategory*>(ui->activityInfoComboBox->itemData(index, Qt::UserRole).value<void*>());
     ERR_VERIFY_NULL(activityInfo);
 
     setActivityCategory(activityInfo);
@@ -137,7 +137,7 @@ Activity* AddActivityDialog::constructActivity()
 
 void AddActivityDialog::on_AddActivityDialog_finished(int result)
 {
-    Q_UNUSED(result);
+    Q_UNUSED(result)
 }
 
 void AddActivityDialog::on_buttonBox_accepted()
@@ -170,13 +170,13 @@ void AddActivityDialog::addActivityInfoDialogInfoAdded()
     ActivityCategory* info = dialog->constructActivityInfo();
     ERR_VERIFY(info);
 
-    ui->activityInfoComboBox->addItem(info->name, QVariant::fromValue((void*)info));
+    ui->activityInfoComboBox->addItem(info->name, QVariant::fromValue(reinterpret_cast<void*>(info)));
     ui->activityInfoComboBox->setCurrentIndex(ui->activityInfoComboBox->children().count() - 1);
 }
 
 void AddActivityDialog::addActivityInfoDialogFinished(int result)
 {
-    Q_UNUSED(result);
+    Q_UNUSED(result)
 
     QObject* sender = QObject::sender();
     AddActivityInfoDialog* dialog = qobject_cast<AddActivityInfoDialog*>(sender);

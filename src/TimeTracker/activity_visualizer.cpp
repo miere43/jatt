@@ -53,7 +53,7 @@ void ActivityVisualizer::setTimePeriod(qint64 startTime, qint64 endTime, QVector
 
 void ActivityVisualizer::paintEvent(QPaintEvent * event)
 {
-    Q_UNUSED(event);
+    Q_UNUSED(event)
 
     QPainter painter(this);
     painter.setPen(Qt::NoPen);
@@ -64,15 +64,15 @@ void ActivityVisualizer::paintEvent(QPaintEvent * event)
     if (m_activities != nullptr && !m_activities->isEmpty())
     {
         qint64 width = m_endTime - m_startTime;
-        if (width == 0) width += 0.01;
-        const double unit  = (double)this->width() / width;
+        if (width == 0) width = 1;
+        const double unit  = static_cast<double>(this->width()) / width;
 
         QBrush currentBrush;
         for (const Activity * activity : *m_activities)
         {
             if (activity->intervals.count() == 0)
                 continue;
-            currentBrush = activity == m_activeActivity ? QBrush(QColor(127, 201, 255, 255)) : QBrush(QColor((QRgb)activity->category->color));
+            currentBrush = activity == m_activeActivity ? QBrush(QColor(127, 201, 255, 255)) : QBrush(QColor(static_cast<QRgb>(activity->category->color)));
             painter.setBrush(currentBrush);
 
             for (const Interval& interval : activity->intervals)
@@ -81,7 +81,7 @@ void ActivityVisualizer::paintEvent(QPaintEvent * event)
                 double endPixel   = (interval.endTime   - m_startTime) * unit;
 
                 if (endPixel - startPixel < 1) endPixel += 1;
-                if (startPixel == INFINITY || endPixel == INFINITY) continue;
+                if (qIsInf(startPixel) || qIsInf(endPixel)) continue;
                 painter.drawRect(QRectF(startPixel, 0, endPixel - startPixel, height()));
             }
         }
@@ -104,11 +104,9 @@ void ActivityVisualizer::paintEvent(QPaintEvent * event)
                 .boundingRect(selectionRect, Qt::AlignHCenter | Qt::AlignVCenter, m_selectionTimeText)
                 .marginsAdded(QMarginsF(2.0, 2.0, 2.0, 2.0));
 
-        // Drop shadow
         painter.setBrush(QBrush(QColor(0, 0, 0, 100)));
         painter.drawRect(dropShadowRect);
 
-        // Actual text
         painter.setPen(QPen(QColor(255, 255, 255, 255)));
         painter.drawText(selectionRect, textFlags, m_selectionTimeText);
 
@@ -148,9 +146,6 @@ void ActivityVisualizer::mouseMoveEvent(QMouseEvent * event)
 
     m_selectionTimeText = formatDuration(endTime - startTime, false);
 
-    // @TODO: only update region of selection area
-    // if area increased: update from start to start+length
-    // if area decreased: update old area from start to start+length
     this->update();
 }
 
@@ -170,7 +165,7 @@ bool ActivityVisualizer::selectionInterval(qint64 * startTime, qint64 * endTime)
     ERR_VERIFY_NULL_V(startTime, false);
     ERR_VERIFY_NULL_V(endTime, false);
 
-    qint64 msPerPixel = (m_endTime - m_startTime) / (qint64)this->width();
+    qint64 msPerPixel = (m_endTime - m_startTime) / static_cast<qint64>(this->width());
 
     *startTime = m_startTime + (msPerPixel * m_selectionAreaStart);
     *endTime   = m_startTime + (msPerPixel * m_selectionAreaEnd);

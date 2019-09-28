@@ -29,10 +29,10 @@ public:
     QString appTitle;
 
     inline int localOffsetFromUtc() { return m_localOffsetFromUtc; }
-    inline int currentDaySinceEpochUtc() { return getCompleteDaysSinceEpoch(getCurrentDateTimeUtc()); }
-    inline int currentDaySinceEpochLocal() { return getCompleteDaysSinceEpoch(getCurrentDateTimeUtc() + localOffsetFromUtc()); }
+    inline qint64 currentDaySinceEpochUtc() { return getCompleteDaysSinceEpoch(getCurrentDateTimeUtc()); }
+    inline qint64 currentDaySinceEpochLocal() { return getCompleteDaysSinceEpoch(getCurrentDateTimeUtc() + localOffsetFromUtc()); }
 
-    explicit ApplicationState(QObject *parent = 0);
+    explicit ApplicationState(QObject *parent = nullptr);
     bool initialize(QString* errorMessage);
 
     DatabaseManager* database();

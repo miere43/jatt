@@ -33,7 +33,7 @@ void shutdownErrorListeners() {
     }
 }
 
-void _callErrorListeners(const char *function, const char *file, int line, const char *message) {
+void callErrorListeners(const char *function, const char *file, int line, const char *message) {
     ErrorListenerListItem* curr = errorListenerList;
     while (curr != nullptr) {
         curr->func(function, file, line, message, curr->userdata);

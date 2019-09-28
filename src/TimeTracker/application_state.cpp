@@ -23,7 +23,7 @@ ApplicationState::ApplicationState(QObject *parent)
 }
 
 void errorListener(const char* function, const char* file, int line, const char* message, void* userdata) {
-    Q_UNUSED(userdata);
+    Q_UNUSED(userdata)
 
     QString errorMessage = QString(QStringLiteral("Error at \"%1:%2\" in %3: \"%4\""))
             .arg(file).arg(line).arg(function).arg(message);
@@ -41,7 +41,7 @@ bool ApplicationState::initialize(QString* error)
     if (m_initialized)
         return true;
 
-    addErrorListener(errorListener, (void*)this);
+    addErrorListener(errorListener, reinterpret_cast<void*>(this));
     ERR_VERIFY_NULL_V(error, false);
 
     QSettings settings;

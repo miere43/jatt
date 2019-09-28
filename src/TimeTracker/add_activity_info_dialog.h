@@ -14,7 +14,7 @@ class AddActivityInfoDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit AddActivityInfoDialog(QWidget *parent = 0);
+    explicit AddActivityInfoDialog(QWidget *parent = nullptr);
     ~AddActivityInfoDialog();
 
     ActivityCategory* constructActivityInfo();
@@ -29,7 +29,7 @@ private:
 
     Ui::AddActivityInfoDialog *ui;
 
-    qint64 m_selectedColor = 0x000000;
+    qint64 m_selectedColor = 0; // @TODO: Why it is qint64?? Replace with QRgb?
     bool m_activityInfoConstructed = false;
     bool m_dialogAccepted = false;
 };

@@ -141,6 +141,7 @@
    <addaction name="openActivityBrowserAction"/>
    <addaction name="openSettingsAction"/>
    <addaction name="statisticsAction"/>
+   <addaction name="enableHotkeyAction"/>
   </widget>
   <action name="newSessionAction">
    <property name="text">
@@ -225,6 +226,17 @@
   <action name="openActivityBrowserAction">
    <property name="text">
     <string>Activity Browser</string>
+   </property>
+  </action>
+  <action name="enableHotkeyAction">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Enable Hotkey</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggles enabled state of hotkey</string>
    </property>
   </action>
  </widget>

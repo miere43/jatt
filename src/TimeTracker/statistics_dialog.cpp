@@ -47,13 +47,13 @@ void StatisticsTableModel::setItems(QVector<StatisticsTableItem> items)
 
 int StatisticsTableModel::rowCount(const QModelIndex &parent) const
 {
-    Q_UNUSED(parent);
+    Q_UNUSED(parent)
     return m_items.count();
 }
 
 int StatisticsTableModel::columnCount(const QModelIndex &parent) const
 {
-    Q_UNUSED(parent);
+    Q_UNUSED(parent)
     if (m_items.count() == 0) return 0;
     return 2;
 }
@@ -126,7 +126,6 @@ void StatisticsTableModel::sort(int column, Qt::SortOrder order)
     if (column < 0 || column > 1 || m_items.count() <= 1) return;
     emit layoutAboutToBeChanged();
 
-
     // We assume that last item is 'Total' row, don't sort it.
     if (column == 0)
     {
@@ -174,47 +173,78 @@ void StatisticsDialog::on_selectRangeCombobox_currentIndexChanged(int index)
             // Today
             qint64 startTime = g_app.currentDaySinceEpochUtc() * 86400000LL - g_app.localOffsetFromUtc();
             qint64 endTime = startTime + 86400000LL;
+
             calcStatisticsForTimeRange(startTime, endTime);
-            return;
+            break;
         }
         case 1:
         {
-            // @TODO: all stuff below probably doesn't care about local offset from UTC...
-            // Week
-            QDateTime now = QDateTime::currentDateTimeUtc();
-            qint64 currentDayLocal = g_app.currentDaySinceEpochLocal();
-            qint64 dateWeekDay = now.date().dayOfWeek() - 1; // because dayOfWeek() starts from one.
-            qint64 weekStartLocal = currentDayLocal - dateWeekDay;
+            // Yesterday
+            qint64 startTime = (g_app.currentDaySinceEpochUtc() - 1) * 86400000LL - g_app.localOffsetFromUtc();
+            qint64 endTime = startTime + 86400000LL;
 
-            qint64 startTime = weekStartLocal * 86400000LL;
-            qint64 endTime = currentDayLocal * 86400000LL + 86400000LL;
             calcStatisticsForTimeRange(startTime, endTime);
-            return;
+            break;
         }
         case 2:
         {
-            // Month
-            QDateTime now = QDateTime::currentDateTimeUtc();
-            qint64 currentDayLocal = g_app.currentDaySinceEpochLocal();
-            qint64 dateMonthDay = now.date().day() - 1; // because day() starts from one.
-            qint64 monthStartLocal = currentDayLocal - dateMonthDay;
+            // This month
+            QDate now = QDate::currentDate();
 
-            qint64 startTime = monthStartLocal * 86400000LL;
-            qint64 endTime = currentDayLocal * 86400000LL + 86400000LL;
+            QDateTime monthStart = QDateTime(QDate(now.year(), now.month(), 1), QTime(), Qt::UTC);
+            QDateTime monthEnd = monthStart.addMonths(1).addMSecs(-1);
+
+            qint64 offset = g_app.localOffsetFromUtc();
+
+            qint64 startTime = monthStart.toMSecsSinceEpoch() - offset;
+            qint64 endTime = monthEnd.toMSecsSinceEpoch() - offset;
+
             calcStatisticsForTimeRange(startTime, endTime);
-            return;
+            break;
         }
         case 3:
         {
-            // Lifetime
-            qint64 startTime = 0i64;
-            qint64 endTime = INT64_MAX;
+            // This year
+            QDate now = QDate::currentDate();
+
+            QDateTime yearStart = QDateTime(QDate(now.year(), 1, 1), QTime(), Qt::UTC);
+            QDateTime yearEnd = yearStart.addYears(1).addMSecs(-1);
+
+            qint64 offset = g_app.localOffsetFromUtc();
+
+            qint64 startTime = yearStart.toMSecsSinceEpoch() - offset;
+            qint64 endTime = yearEnd.toMSecsSinceEpoch() - offset;
+
             calcStatisticsForTimeRange(startTime, endTime);
-            return;
+            break;
         }
-    default:
-        ERR_VERIFY(false);
+        case 4:
+        {
+            // Last year
+            QDate now = QDate::currentDate();
+
+            QDateTime yearStart = QDateTime(QDate(now.year() - 1, 1, 1), QTime(), Qt::UTC);
+            QDateTime yearEnd = yearStart.addYears(1).addMSecs(-1);
+
+            qint64 offset = g_app.localOffsetFromUtc();
+
+            qint64 startTime = yearStart.toMSecsSinceEpoch() - offset;
+            qint64 endTime = yearEnd.toMSecsSinceEpoch() - offset;
+
+            calcStatisticsForTimeRange(startTime, endTime);
+            break;
+        }
+        case 5:
+        {
+            // Lifetime
+            calcStatisticsForTimeRange(0LL, INT64_MAX);
+            break;
+        }
+        default:
+            ERR_VERIFY(false);
     }
+
+    updateSelectedRowsTotalTimeLabel();
 }
 
 void StatisticsDialog::calcStatisticsForTimeRange(qint64 startTime, qint64 endTime)
@@ -280,8 +310,8 @@ void StatisticsDialog::calcStatisticsForTimeRange(qint64 startTime, qint64 endTi
 
 void StatisticsDialog::on_infoTable_selectionModel_selectionChanged(const QItemSelection & selected, const QItemSelection & deselected)
 {
-    Q_UNUSED(selected);
-    Q_UNUSED(deselected);
+    Q_UNUSED(selected)
+    Q_UNUSED(deselected)
 
     updateSelectedRowsTotalTimeLabel();
 }

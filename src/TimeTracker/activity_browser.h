@@ -14,7 +14,7 @@ class ActivityBrowser : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit ActivityBrowser(QWidget *parent = 0);
+    explicit ActivityBrowser(QWidget *parent = nullptr);
     ~ActivityBrowser();
 
 private slots:

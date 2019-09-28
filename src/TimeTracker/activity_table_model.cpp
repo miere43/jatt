@@ -79,9 +79,9 @@ QVariant ActivityTableModel::data(const QModelIndex &index, int role) const
 
 bool ActivityTableModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    Q_UNUSED(index);
-    Q_UNUSED(value);
-    Q_UNUSED(role);
+    Q_UNUSED(index)
+    Q_UNUSED(value)
+    Q_UNUSED(role)
 //    if (data(index, role) != value) {
 //        // FIXME: Implement me!
 //        emit dataChanged(index, index, QVector<int>() << role);

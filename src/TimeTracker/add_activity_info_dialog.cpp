@@ -88,7 +88,7 @@ void AddActivityInfoDialog::on_buttonBox_rejected()
 
 void AddActivityInfoDialog::on_pickColorButton_clicked()
 {
-    QColor color = QColorDialog::getColor(QColor((QRgb)m_selectedColor), this, "Select Color");
+    QColor color = QColorDialog::getColor(QColor(static_cast<QRgb>(m_selectedColor)), this, "Select Color");
     if (!color.isValid())
     {
         m_selectedColor = 0;

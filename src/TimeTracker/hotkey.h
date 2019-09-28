@@ -20,15 +20,19 @@ public:
     Hotkey(HWND window, int id, Qt::KeyboardModifiers modifiers, Qt::Key key, HotkeyCallback callback, void* userdata);
     ~Hotkey();
 
-    inline bool isActive() const { return m_isActive; }
-    inline QString errorMessage() const { return m_errorMessage; }
+    bool setActive(bool active);
 
-    void unregister();
+    inline bool isActive() const { return m_isActive; }
+public:
+    // @TODO: temp
+    QString m_errorMessage = QString();
 private:
-    QString m_errorMessage;
+    UINT m_winModifiers = 0;
+    UINT m_winKey = 0;
+
     bool m_isActive = false;
-    int m_id;
-    HWND m_window;
+    int m_id = 0;
+    HWND m_window = nullptr;
     void* m_userdata = nullptr;
     HotkeyCallback m_callback;
 };

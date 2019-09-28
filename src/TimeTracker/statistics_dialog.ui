@@ -92,12 +92,22 @@
        </item>
        <item>
         <property name="text">
-         <string>Week</string>
+         <string>Yesterday</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>Month</string>
+         <string>This month</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>This year</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Last year</string>
         </property>
        </item>
        <item>

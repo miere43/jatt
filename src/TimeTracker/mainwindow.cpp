@@ -17,6 +17,7 @@
 #include <QFileDialog>
 #include <QSettings>
 #include <QProcess>
+#include <algorithm>
 
 void hotkeyCallback(Hotkey* hotkey, void* userdata);
 
@@ -87,21 +88,12 @@ MainWindow::MainWindow(QWidget *parent)
     addQuickActivityButtons();
     readAndApplySettings();
 
-    // @TODO: load key combination from settings
-    m_recorderHotkey = new Hotkey((HWND)this->winId(), 1, Qt::ControlModifier, Qt::Key_Space, hotkeyCallback, (void*)this);
-    if (!m_recorderHotkey->isActive())
-    {
-#ifdef QT_DEBUG
-        qDebug() << "Unable to register hotkey: " + m_recorderHotkey->errorMessage();
-#else
-        QMessageBox::critical(this, "Error", "Unable to register hotkey: " + m_recorderHotkey->errorMessage());
-#endif
-    }
+    setHotkeyEnabled(true);
 }
 
 void hotkeyCallback(Hotkey * hotkey, void * userdata)
 {
-    MainWindow* window = (MainWindow*)userdata;
+    auto window = reinterpret_cast<MainWindow*>(userdata);
     window->handleHotkey(hotkey);
 }
 
@@ -224,7 +216,7 @@ void MainWindow::showEditActivityFieldDialog(Activity * activity)
 
 void MainWindow::activityMenuItemActionTriggered(bool checked)
 {
-    Q_UNUSED(checked);
+    Q_UNUSED(checked)
 
     QObject * sender = QObject::sender();
     QAction * action = qobject_cast<QAction *>(sender);
@@ -245,7 +237,7 @@ void MainWindow::activitiesListViewMenuRequested(const QPoint & pos)
     }
     else
     {
-        Activity * activity = (Activity *)item.data(Qt::UserRole).value<void *>();
+        auto activity = reinterpret_cast<Activity*>(item.data(Qt::UserRole).value<void *>());
         ERR_VERIFY_NULL(activity);
         ERR_VERIFY_NULL(activity->category);
         m_activityItemMenu_activity = activity;
@@ -258,7 +250,7 @@ void MainWindow::activitiesListViewActivated(const QModelIndex & index)
 {
     if (index.isValid())
     {
-        Activity* activity = (Activity *)index.data(Qt::UserRole).value<void *>();
+        auto activity = reinterpret_cast<Activity*>(index.data(Qt::UserRole).value<void *>());
         ERR_VERIFY_NULL(activity);
 
         showEditActivityFieldDialog(activity);
@@ -313,7 +305,7 @@ inline bool activityLessThan(const Activity * a, const Activity * b)
 
 void activitySort(QVector<Activity *> * vec)
 {
-    qSort(vec->begin(), vec->end(), activityLessThan);
+    std::sort(vec->begin(), vec->end(), activityLessThan);
 }
 
 void MainWindow::setViewTimePeriod(qint64 startTime, qint64 endTime)
@@ -438,7 +430,7 @@ void MainWindow::on_startActivityButton_clicked()
 Activity* MainWindow::selectedActivity() const
 {
     QModelIndex index = selectedActivityIndex();
-    return index.isValid() ? (Activity *)index.data(Qt::UserRole).value<void *>() : nullptr;
+    return index.isValid() ? reinterpret_cast<Activity*>(index.data(Qt::UserRole).value<void *>()) : nullptr;
 }
 
 QModelIndex MainWindow::selectedActivityIndex() const
@@ -506,7 +498,7 @@ void MainWindow::activityRecorderRecordEvent(ActivityRecorderEvent event)
 
 void MainWindow::selectedActivityChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
-    Q_UNUSED(deselected);
+    Q_UNUSED(deselected)
 
     Activity* activity = nullptr;
     QModelIndexList indexes = selected.indexes();
@@ -595,7 +587,7 @@ void MainWindow::startQuickActivityButtonClicked()
     QPushButton* button = qobject_cast<QPushButton*>(sender);
     ERR_VERIFY_NULL(button);
 
-    ActivityCategory* category = (ActivityCategory*)button->property("category").value<void*>();
+    auto category = reinterpret_cast<ActivityCategory*>(button->property("category").value<void*>());
     ERR_VERIFY_NULL(category);
 
     startQuickActivity(category);
@@ -916,7 +908,7 @@ void MainWindow::on_joinNextActivityAction_triggered()
         return;
     }
 
-    Activity* sel = ((Activity*)selection.at(0).data(Qt::UserRole).value<void*>());
+    auto sel = reinterpret_cast<Activity*>(selection.at(0).data(Qt::UserRole).value<void*>());
     ERR_VERIFY_NULL(sel);
 
     int row = selection.at(0).row();
@@ -926,7 +918,7 @@ void MainWindow::on_joinNextActivityAction_triggered()
         return;
     }
 
-    Activity* next = (Activity*)m_activityListModel->data(idx, Qt::UserRole).value<void*>();
+    auto next = reinterpret_cast<Activity*>(m_activityListModel->data(idx, Qt::UserRole).value<void*>());
     if (!next) {
         QMessageBox::critical(this, "Error", "Next item is invalid (2).");
         return;
@@ -972,7 +964,7 @@ void MainWindow::activityVisualizerMenuRequested(const QPoint &pos)
 
 void MainWindow::visualizerCreateActivityFromSelection(bool checked)
 {
-    Q_UNUSED(checked);
+    Q_UNUSED(checked)
 
     qint64 startTime, endTime;
     if (!m_activityVisualizer->selectionInterval(&startTime, &endTime))
@@ -1013,4 +1005,28 @@ void MainWindow::visualizerCreateActivityFromSelection(bool checked)
     m_activityListModel->clear();
     m_activityListModel->addActivities(m_currentViewTimePeriodActivities);
     m_activityVisualizer->clearSelection();
+}
+
+void MainWindow::setHotkeyEnabled(bool enabled)
+{
+    Q_UNUSED(enabled)
+//    if (m_recorderHotkey == nullptr)
+//        m_recorderHotkey = new Hotkey((HWND)this->winId(), 1, Qt::ControlModifier, Qt::Key_Space, hotkeyCallback, (void*)this);
+//    if (!m_recorderHotkey)
+//        return;
+
+//    if (!m_recorderHotkey->setActive(enabled))
+//    {
+//        QMessageBox::critical(this, "Hotkey error", m_recorderHotkey->m_errorMessage);
+//        return;
+//    }
+//    m_hotkeyEnabled = enabled;
+
+    m_hotkeyEnabled = false; // @TODO: doesn't work for some reason
+}
+
+void MainWindow::on_enableHotkeyAction_triggered()
+{
+    bool checked = ui->enableHotkeyAction->isChecked();
+    setHotkeyEnabled(checked);
 }
