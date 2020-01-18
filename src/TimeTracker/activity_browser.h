@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QVector>
 #include "activity_table_model.h"
+#include "mainwindow.h"
 
 namespace Ui {
 class ActivityBrowser;
@@ -19,11 +20,12 @@ public:
 
 private slots:
     void executeSearchAction();
+    void on_searchResultsTable_activated(const QModelIndex &index);
+
 private:
     Ui::ActivityBrowser *ui;
     QVector<Activity *> m_activities;
     ActivityTableModel * m_activityTableModel = nullptr;
-
 
     void search(QString query);
 };

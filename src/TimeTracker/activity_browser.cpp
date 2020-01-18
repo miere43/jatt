@@ -53,3 +53,22 @@ void ActivityBrowser::executeSearchAction()
 
     this->search(query);
 }
+
+void ActivityBrowser::on_searchResultsTable_activated(const QModelIndex& index)
+{
+    QVariant data = index.data(Qt::UserRole);
+    void* value = data.value<void*>();
+
+    auto activity = reinterpret_cast<Activity*>(value);
+    if (!activity)
+    {
+        return;
+    }
+
+    auto main_window = qobject_cast<MainWindow*>(parent());
+    ERR_VERIFY(main_window);
+
+    const qint64 day = (activity->startTime + g_app.localOffsetFromUtc()) / 86400000LL;
+    main_window->setViewDay(day);
+    main_window->selectActivityById(activity->id);
+}

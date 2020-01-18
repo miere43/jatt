@@ -54,7 +54,6 @@ public:
 
         int getFreeSlotIndex()
         {
-            // INT32_MAX doesn't work for some reason :/
             if (usedSlots == 0xFFFFFFFF)
             {
                 return -1;

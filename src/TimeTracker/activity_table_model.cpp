@@ -59,7 +59,7 @@ QVariant ActivityTableModel::data(const QModelIndex &index, int role) const
 
     int row = index.row();
     int col = index.column();
-    const Activity * activity = m_activities[row];
+    Activity * activity = m_activities[row];
 
     if (role == Qt::DisplayRole)
     {
@@ -71,6 +71,10 @@ QVariant ActivityTableModel::data(const QModelIndex &index, int role) const
             case 3:  return activity->category->name;
             default: return QVariant();
         }
+    }
+    else if (role == Qt::UserRole)
+    {
+        return QVariant::fromValue(static_cast<void*>(activity));
     }
 
     // FIXME: Implement me!

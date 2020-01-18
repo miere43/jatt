@@ -33,6 +33,9 @@ public:
     bool canModifyActivityIntervals(const Activity* activity) const;
 
     void handleHotkey(Hotkey* hotkey);
+
+    void setViewDay(qint64 day);
+    void selectActivityById(qint64 id);
 private slots:
     void on_addActivityAction_triggered();
     void addActivityDialogFinished(int result);
@@ -77,7 +80,6 @@ private:
     void showEditActivityFieldDialog(Activity* activity);
 
     void setViewTimePeriod(qint64 startTime, qint64 endTime);
-    void setViewDay(qint64 day);
     void showAddActivityDialog();
 
     bool isTimePeriodInView(qint64 startTime, qint64 endTime) const;

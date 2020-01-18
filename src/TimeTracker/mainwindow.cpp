@@ -395,6 +395,36 @@ void MainWindow::setViewDay(qint64 day)
     m_viewDay = day;
 }
 
+void MainWindow::selectActivityById(qint64 id)
+{
+    if (id <= 0)
+    {
+        qDebug() << __func__ << ": invalid id =" << id;
+        return;
+    }
+
+    auto model = ui->activitiesListView->model();
+    ERR_VERIFY(model);
+
+    for (int row = 0; row < model->rowCount(); ++row)
+    {
+        const auto& index = model->index(row, 0);
+        if (!index.isValid())
+        {
+            continue;
+        }
+
+        const auto* activity = reinterpret_cast<const Activity*>(index.data(Qt::UserRole).value<void*>());
+        if (activity && activity->id == id)
+        {
+            ui->activitiesListView->setCurrentIndex(index);
+            return;
+        }
+    }
+
+    qDebug() << __func__ << ": activity with id =" << id << "not found";
+}
+
 void MainWindow::on_nextDayButton_clicked()
 {
     setViewDay(m_viewDay + 1);
