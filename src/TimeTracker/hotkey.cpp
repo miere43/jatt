@@ -125,7 +125,7 @@ void HotkeyEventFilter::installEventFilter() {
 void HotkeyEventFilter::registerHotkey(Hotkey *hotkey)
 {
     ERR_VERIFY_NULL(hotkey);
-    ERR_VERIFY(hotkey->isActive());
+    ERR_VERIFY(!hotkey->isActive());
     ERR_VERIFY_NULL(hotkey->m_callback);
     ERR_VERIFY(HotkeyEventFilter::isInstalled());
     HotkeyEventFilter::m_eventFilter->m_hotkeys.append(hotkey);

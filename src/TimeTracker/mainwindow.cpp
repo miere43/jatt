@@ -1039,20 +1039,23 @@ void MainWindow::visualizerCreateActivityFromSelection(bool checked)
 
 void MainWindow::setHotkeyEnabled(bool enabled)
 {
-    Q_UNUSED(enabled)
-//    if (m_recorderHotkey == nullptr)
-//        m_recorderHotkey = new Hotkey((HWND)this->winId(), 1, Qt::ControlModifier, Qt::Key_Space, hotkeyCallback, (void*)this);
-//    if (!m_recorderHotkey)
-//        return;
+    if (m_hotkeyEnabled == enabled)
+    {
+        return;
+    }
 
-//    if (!m_recorderHotkey->setActive(enabled))
-//    {
-//        QMessageBox::critical(this, "Hotkey error", m_recorderHotkey->m_errorMessage);
-//        return;
-//    }
-//    m_hotkeyEnabled = enabled;
+    if (!m_recorderHotkey)
+    {
+        m_recorderHotkey = new Hotkey(reinterpret_cast<HWND>(this->winId()), 1, Qt::ControlModifier, Qt::Key_Space, hotkeyCallback, this);
+    }
 
-    m_hotkeyEnabled = false; // @TODO: doesn't work for some reason
+    if (!m_recorderHotkey->setActive(enabled))
+    {
+        QMessageBox::critical(this, "Hotkey error", m_recorderHotkey->m_errorMessage);
+        return;
+    }
+    m_hotkeyEnabled = enabled;
+    ui->enableHotkeyAction->setChecked(enabled);
 }
 
 void MainWindow::on_enableHotkeyAction_triggered()
