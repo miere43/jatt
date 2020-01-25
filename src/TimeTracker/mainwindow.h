@@ -51,7 +51,7 @@ private slots:
     void activityRecorderRecordEvent(ActivityRecorderEvent event);
 
     void startQuickActivityButtonClicked();
-
+    void quickActivityButtonRightClicked();
 
     void editActivityFieldDialogFinished(int result);
     void activityMenuItemActionTriggered(bool checked);
@@ -86,6 +86,7 @@ private:
     void updateVisibleActivitiesDurationLabel();
     void updateActivityDurationLabel();
 
+    void loadQuickActivityVisibilityMenu();
     void addQuickActivityButtons();
     void startQuickActivity(ActivityCategory * category);
 
@@ -133,6 +134,8 @@ private:
     QMenu m_activityItemMenu;
     Activity * m_activityItemMenu_activity = nullptr;
     QMenu m_activityMenu;
+
+    QMenu m_quickActivityMenu;
 
     QShortcut* m_changePageLeftShortcut;
     QShortcut* m_changePageRightShortcut;

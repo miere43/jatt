@@ -79,9 +79,11 @@ bool DatabaseManager::loadActivityCategories()
     int idFieldIndex = query.record().indexOf(QStringLiteral("id"));
     int nameFieldIndex = query.record().indexOf(QStringLiteral("name"));
     int colorFieldIndex = query.record().indexOf(QStringLiteral("color"));
+    int quickVisibleFieldIndex = query.record().indexOf(QStringLiteral("quick_visible"));
     ERR_VERIFY_V(idFieldIndex != -1, false);
     ERR_VERIFY_V(nameFieldIndex != -1, false);
     ERR_VERIFY_V(colorFieldIndex != -1, false);
+    ERR_VERIFY_V(quickVisibleFieldIndex != -1, false);
 
     while (query.next())
     {
@@ -91,6 +93,7 @@ bool DatabaseManager::loadActivityCategories()
         category->id    = query.value(idFieldIndex).value<qint64>();
         category->name  = query.value(nameFieldIndex).value<QString>();
         category->color = query.value(colorFieldIndex).value<qint64>();
+        category->quickVisible = query.value(quickVisibleFieldIndex).value<qint64>() != 0;
 
         m_activityCategories.insert(category->id, category);
         m_activityCategoriesList.append(category);
@@ -105,6 +108,19 @@ QList<ActivityCategory*> DatabaseManager::activityCategories() const
 {
     ERR_VERIFY_V(m_activityCategoriesLoaded, QList<ActivityCategory*>());
     return m_activityCategoriesList;
+}
+
+ActivityCategory* DatabaseManager::activityCategoryById(qint64 id) 
+{
+    ERR_VERIFY_V(m_activityCategoriesLoaded, nullptr);
+    for (auto category : m_activityCategoriesList)
+    {
+        if (category->id == id)
+        {
+            return category;
+        }
+    }
+    return nullptr;
 }
 
 Activity* DatabaseManager::loadActivity(qint64 id)
@@ -250,17 +266,18 @@ bool DatabaseManager::saveActivityCategory(ActivityCategory * category)
     if (!isInsertAction)
     {
         // Update activity category.
-        query.prepare(QStringLiteral("UPDATE activity_info SET name = :name, color = :color WHERE id = :id"));
+        query.prepare(QStringLiteral("UPDATE activity_info SET name = :name, color = :color, quick_visible = :quick_visible WHERE id = :id"));
         query.bindValue(QStringLiteral(":id"), category->id);
     }
     else
     {
         // Insert activity category.
-        query.prepare(QStringLiteral("INSERT INTO activity_info(name, color) VALUES(:name, :color)"));
+        query.prepare(QStringLiteral("INSERT INTO activity_info(name, color, quick_visible) VALUES(:name, :color, :quick_visible)"));
     }
 
     query.bindValue(QStringLiteral(":name"), category->name);
     query.bindValue(QStringLiteral(":color"), category->color);
+    query.bindValue(QStringLiteral(":quick_visible"), category->quickVisible);
 
     if (!query.exec())
     {
@@ -387,10 +404,7 @@ bool DatabaseManager::createTables(QString * error) {
         "  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n"
         "  name TEXT NOT NULL,\n"
         "  color INTEGER,\n"
-        "  field_names TEXT,\n"
-        "  field_types TEXT,\n"
-        "  display_format TEXT,\n"
-        "  display_rules TEXT\n"
+        "  quick_visible INTEGER NOT NULL DEFAULT 1\n"
         ");\n",
 
         "CREATE TABLE activity(\n"

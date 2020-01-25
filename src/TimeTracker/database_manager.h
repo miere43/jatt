@@ -28,6 +28,7 @@ public:
 
     bool loadActivityCategories();
     QList<ActivityCategory*> activityCategories() const;
+    ActivityCategory* activityCategoryById(qint64 id);
 
     bool loadActivitiesAssociatedWithActivityCategory(ActivityCategory * category, QVector<Activity *> * associatedActivities);
     bool saveActivity(Activity* activity);

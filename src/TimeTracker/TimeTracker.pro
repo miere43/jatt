@@ -31,6 +31,7 @@ SOURCES += main.cpp\
     core_types.cpp \
     block_allocator.cpp \
     database_manager.cpp \
+    right_click_push_button.cpp \
     utilities.cpp \
     add_activity_dialog.cpp \
     add_field_dialog.cpp \
@@ -52,6 +53,7 @@ HEADERS  += mainwindow.h \
     core_types.h \
     block_allocator.h \
     database_manager.h \
+    right_click_push_button.h \
     utilities.h \
     add_activity_dialog.h \
     add_field_dialog.h \

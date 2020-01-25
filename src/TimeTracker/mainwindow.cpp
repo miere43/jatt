@@ -8,6 +8,7 @@
 #include "statistics_dialog.h"
 #include "activity_browser.h"
 #include "utilities.h"
+#include "right_click_push_button.h"
 
 #include <QtGlobal>
 #include <QtAlgorithms>
@@ -85,6 +86,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     g_app.database()->loadActivityCategories();
 
+    loadQuickActivityVisibilityMenu();
     addQuickActivityButtons();
     readAndApplySettings();
 
@@ -613,8 +615,7 @@ const QVector<Activity*>& MainWindow::currentActivities() const
 
 void MainWindow::startQuickActivityButtonClicked()
 {
-    QObject* sender = QObject::sender();
-    QPushButton* button = qobject_cast<QPushButton*>(sender);
+    RightClickPushButton* button = qobject_cast<RightClickPushButton*>(QObject::sender());
     ERR_VERIFY_NULL(button);
 
     auto category = reinterpret_cast<ActivityCategory*>(button->property("category").value<void*>());
@@ -623,12 +624,66 @@ void MainWindow::startQuickActivityButtonClicked()
     startQuickActivity(category);
 }
 
+void MainWindow::quickActivityButtonRightClicked()
+{
+    RightClickPushButton* button = qobject_cast<RightClickPushButton*>(QObject::sender());
+    ERR_VERIFY_NULL(button);
+
+    auto action = m_quickActivityMenu.exec(QCursor::pos());
+    if (action != nullptr)
+    {
+        auto categoryId = action->data().value<qint64>();
+        ERR_VERIFY(categoryId > 0);
+
+        auto category = g_app.database()->activityCategoryById(categoryId);
+        ERR_VERIFY_NULL(category);
+
+        category->quickVisible = !category->quickVisible;
+        if (!g_app.database()->saveActivityCategory(category))
+        {
+            category->quickVisible = !category->quickVisible;
+            QMessageBox::critical(this, QStringLiteral("Error"), QStringLiteral("Unable to update category visibility."));
+            return;
+        }
+
+        loadQuickActivityVisibilityMenu();
+        addQuickActivityButtons();
+    }
+}
+
+void MainWindow::loadQuickActivityVisibilityMenu() {
+    auto categories = g_app.database()->activityCategories();
+
+    m_quickActivityMenu.clear();
+    for (auto category : categories)
+    {
+        auto action = m_quickActivityMenu.addAction(category->name);
+        action->setCheckable(true);
+        action->setChecked(category->quickVisible);
+        action->setData(QVariant(category->id));
+    }
+}
+
 void MainWindow::addQuickActivityButtons()
 {
+    {
+        QLayoutItem* item;
+        while (item = ui->quickActivityLayout->takeAt(0))
+        {
+            item->widget()->deleteLater();
+            delete item;
+        }
+    }
+
     QList<ActivityCategory*> categories = g_app.database()->activityCategories();
     for (ActivityCategory* category : categories)
     {
-        QPushButton* button = new QPushButton(this);
+        if (!category->quickVisible)
+        {
+            continue;
+        }
+
+        auto button = new RightClickPushButton(this);
         button->setFocusPolicy(Qt::ClickFocus);
         button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         button->setCursor(QCursor(Qt::PointingHandCursor));
@@ -645,10 +700,14 @@ void MainWindow::addQuickActivityButtons()
                     )
                     );
         button->setText(category->name);
-        connect(button, &QPushButton::clicked,
+        connect(button, &RightClickPushButton::clicked,
                 this, &MainWindow::startQuickActivityButtonClicked);
         button->setProperty("category", QVariant::fromValue<void*>(category));
         ui->quickActivityLayout->addWidget(button);
+
+        connect(button, &RightClickPushButton::rightClicked,
+                this, &MainWindow::quickActivityButtonRightClicked);
+
     }
 }
 

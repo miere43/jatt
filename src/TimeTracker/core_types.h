@@ -22,6 +22,7 @@ struct ActivityCategory
 {
     qint64 id = 0;
     qint64 color = 0;
+    bool quickVisible = true;
     QString name;
 };
 
