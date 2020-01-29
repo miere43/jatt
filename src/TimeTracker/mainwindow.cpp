@@ -194,6 +194,12 @@ void MainWindow::editActivityFieldDialogFinished(int result)
             activity->category = dialog->newActivityCategory();
         }
 
+        if (dialog->isFavoriteChanged())
+        {
+            changed = true;
+            activity->favorite = dialog->newFavorite();
+        }
+
         if (changed)
         {
             if (m_activityListModel->activities().contains(activity))
@@ -730,7 +736,11 @@ void MainWindow::startQuickActivity(ActivityCategory* category)
 
     activity->startTime = activity->endTime = getCurrentDateTimeUtc();
 
-    g_app.database()->saveActivity(activity);
+    if (!g_app.database()->saveActivity(activity))
+    {
+        QMessageBox::critical(this, QStringLiteral("Error"), QStringLiteral("Unable to start quick activity."));
+        return;
+    }
 
     if (activity->belongsToTimePeriod(m_currentViewTimePeriodStartTime, m_currentViewTimePeriodEndTime))
     {

@@ -35,6 +35,7 @@ struct Activity
     QString name;
     QString note;
     QVector<Interval> intervals;
+    bool favorite = false;
 
     void updateStartAndEndTime();
 

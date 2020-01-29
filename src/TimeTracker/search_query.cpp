@@ -182,6 +182,7 @@ bool SearchQuery::buildSqlQueryString(SearchQuery::GeneratedSqlQuery * result, Q
 
     QVector<ActivityCategory *> categories;
     QVector<QString> names;
+    bool favorite = false;
 
     for (auto property = properties.constBegin(); property != properties.constEnd(); ++property)
     {
@@ -200,6 +201,17 @@ bool SearchQuery::buildSqlQueryString(SearchQuery::GeneratedSqlQuery * result, Q
         {
             names.append(property->value);
             // select * from activity where (activity_info_id = 1 or activity_info_id = 2) and (name = "hello")
+        }
+        else if (property->key == QStringLiteral("is"))
+        {
+            if (property->value == QStringLiteral("favorite"))
+            {
+                favorite = true;
+            }
+            else
+            {
+                qDebug() << "unknown 'is' property value" << property->value;
+            }
         }
         else
         {
@@ -237,6 +249,13 @@ bool SearchQuery::buildSqlQueryString(SearchQuery::GeneratedSqlQuery * result, Q
             appendSql(" or", " name LIKE ?"); // @TODO: 'or note LIKE ?'
             result->args.append(QStringLiteral("%") + searchWord + QStringLiteral("%"));
         }
+        endGroup();
+    }
+
+    if (favorite)
+    {
+        beginGroup();
+        appendSql(" and", " favorite = 1");
         endGroup();
     }
 

@@ -210,11 +210,11 @@ bool DatabaseManager::saveActivity(Activity * activity)
 
     if (!isInsertAction) {
         // Update activity.
-        query.prepare(QStringLiteral("UPDATE activity SET activity_info_id = :activity_info_id, name = :name, note = :note, start_time = :start_time, end_time = :end_time, intervals = :intervals WHERE id = :id"));
+        query.prepare(QStringLiteral("UPDATE activity SET activity_info_id = :activity_info_id, name = :name, note = :note, start_time = :start_time, end_time = :end_time, intervals = :intervals, favorite = :favorite WHERE id = :id"));
         query.bindValue(QStringLiteral(":id"), activity->id);
     } else {
         // Insert activity.
-        query.prepare(QStringLiteral("INSERT INTO activity(activity_info_id, name, note, start_time, end_time, intervals) VALUES(:activity_info_id, :name, :note, :start_time, :end_time, :intervals)"));
+        query.prepare(QStringLiteral("INSERT INTO activity(activity_info_id, name, note, start_time, end_time, intervals, favorite) VALUES(:activity_info_id, :name, :note, :start_time, :end_time, :intervals, :favorite)"));
     }
 
     query.bindValue(QStringLiteral(":activity_info_id"), activity->category->id);
@@ -222,6 +222,7 @@ bool DatabaseManager::saveActivity(Activity * activity)
     query.bindValue(QStringLiteral(":end_time"), activity->endTime);
     query.bindValue(QStringLiteral(":name"), activity->name);
     query.bindValue(QStringLiteral(":note"), activity->note);
+    query.bindValue(QStringLiteral(":favorite"), activity->favorite);
 
     QByteArray intervals(
         reinterpret_cast<const char *>(activity->intervals.data()),
@@ -350,6 +351,7 @@ void DatabaseManager::copyActivityValuesFromQuery(Activity * activity, QSqlQuery
     activity->note = query->value(QStringLiteral("note")).value<QString>();
     activity->startTime = query->value(QStringLiteral("start_time")).value<qint64>();
     activity->endTime = query->value(QStringLiteral("end_time")).value<qint64>();
+    activity->favorite = query->value(QStringLiteral("favorite")).value<bool>();
 
     QByteArray binaryIntervals = query->value(QStringLiteral("intervals")).toByteArray();
     ERR_VERIFY(binaryIntervals.count() % static_cast<int>(sizeof(Interval)) == 0);
@@ -415,6 +417,7 @@ bool DatabaseManager::createTables(QString * error) {
         "  start_time INTEGER NOT NULL,\n"
         "  end_time INTEGER NOT NULL,\n"
         "  intervals BLOB,\n"
+        "  favorite INTEGER NOT NULL DEFAULT 0,\n"
         "  FOREIGN KEY(activity_info_id) REFERENCES activity_info(id)\n"
         ");\n",
     };

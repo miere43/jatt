@@ -19,9 +19,11 @@ public:
     QString newName() const;
     QString newNote() const;
     ActivityCategory* newActivityCategory() const;
+    bool newFavorite() const;
     bool isNameFieldChanged() const;
     bool isNoteFieldChanged() const;
     bool isActivityCategoryChanged() const;
+    bool isFavoriteChanged() const;
 
     inline Activity * activity() const { return m_activity; }
 private:

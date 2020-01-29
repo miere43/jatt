@@ -19,6 +19,7 @@ EditActivityFieldDialog::EditActivityFieldDialog(Activity * activity, QWidget * 
     ui->nameEdit->setText(activity->name);
     ui->nameEdit->setFocus();
     ui->noteEdit->setPlainText(activity->note);
+    ui->favoriteCheckBox->setCheckState(activity->favorite ? Qt::Checked : Qt::Unchecked);
 
     QList<ActivityCategory *> categories = g_app.database()->activityCategories();
 
@@ -57,6 +58,11 @@ ActivityCategory * EditActivityFieldDialog::newActivityCategory() const
     }
 }
 
+bool EditActivityFieldDialog::newFavorite() const
+{
+    return ui->favoriteCheckBox->checkState() == Qt::Checked;
+}
+
 bool EditActivityFieldDialog::isNameFieldChanged() const
 {
     return ui->nameEdit->isModified();
@@ -76,6 +82,12 @@ bool EditActivityFieldDialog::isActivityCategoryChanged() const
     if (!categoryVariant.isValid()) return false;
     auto category = static_cast<ActivityCategory *>(categoryVariant.value<void *>());
     return category != m_activity->category;
+}
+
+bool EditActivityFieldDialog::isFavoriteChanged() const
+{
+    auto favorite = ui->favoriteCheckBox->checkState() == Qt::Checked;
+    return favorite != m_activity->favorite;
 }
 
 EditActivityFieldDialog::~EditActivityFieldDialog()
