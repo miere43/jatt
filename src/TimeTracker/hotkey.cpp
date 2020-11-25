@@ -6,11 +6,12 @@
 
 HotkeyEventFilter* HotkeyEventFilter::m_eventFilter = nullptr;
 
-bool convertQtKeycodes(Qt::KeyboardModifiers modifiers, Qt::Key key, UINT* winModifiers, UINT* winKey) {
+bool convertQtKeycodes(Qt::KeyboardModifiers modifiers, Qt::Key key, quint32* winModifiers, quint32* winKey) {
     if (modifiers & Qt::MetaModifier || modifiers & Qt::KeypadModifier || modifiers & Qt::GroupSwitchModifier) {
         return false;
     }
 
+#ifdef Q_OS_WIN
     *winModifiers = 0;
     if (modifiers & Qt::ShiftModifier) {
         *winModifiers |= MOD_SHIFT;
@@ -32,11 +33,15 @@ bool convertQtKeycodes(Qt::KeyboardModifiers modifiers, Qt::Key key, UINT* winMo
     default:
         return false;
     }
-
+#else
+    Q_UNUSED(winModifiers)
+    Q_UNUSED(winKey)
+#endif
     return true;
 }
 
-QString formatErrorMessage(DWORD msg) {
+QString formatErrorMessage(quint32 msg) {
+#ifdef Q_OS_WIN
     wchar_t* errorMessage = nullptr;
     if (!FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, nullptr, msg, 0, reinterpret_cast<wchar_t*>(&errorMessage), 65535*2, nullptr)) {
         return QStringLiteral("unknown");
@@ -45,9 +50,13 @@ QString formatErrorMessage(DWORD msg) {
         LocalFree(reinterpret_cast<HLOCAL>(errorMessage));
         return qstring;
     }
+#else
+    Q_UNUSED(msg);
+    return QString();
+#endif
 }
 
-Hotkey::Hotkey(HWND window, int id, Qt::KeyboardModifiers modifiers, Qt::Key key, HotkeyCallback callback, void* userdata)
+Hotkey::Hotkey(void* window, int id, Qt::KeyboardModifiers modifiers, Qt::Key key, HotkeyCallback callback, void* userdata)
 {
     Q_UNUSED(modifiers)
     Q_UNUSED(key)
@@ -64,6 +73,7 @@ Hotkey::Hotkey(HWND window, int id, Qt::KeyboardModifiers modifiers, Qt::Key key
     m_window = window;
     m_id = id;
 
+#ifdef Q_OS_WIN
     m_winModifiers = MOD_CONTROL;
     m_winKey = VK_SPACE;
 
@@ -72,6 +82,7 @@ Hotkey::Hotkey(HWND window, int id, Qt::KeyboardModifiers modifiers, Qt::Key key
 //        return;
 //    }
     m_winModifiers |= MOD_NOREPEAT;
+#endif
 }
 
 Hotkey::~Hotkey()
@@ -85,6 +96,7 @@ bool Hotkey::setActive(bool active)
     if (m_isActive == active)
         return true;
 
+#ifdef Q_OS_WIN
     if (m_isActive)
     {
         if (!UnregisterHotKey(m_window, m_id))
@@ -106,6 +118,7 @@ bool Hotkey::setActive(bool active)
         HotkeyEventFilter::registerHotkey(this);
     }
     m_isActive = active;
+#endif
     return true;
 }
 
@@ -142,7 +155,7 @@ bool HotkeyEventFilter::nativeEventFilter(const QByteArray &eventType, void *mes
     Q_UNUSED(eventType)
     Q_UNUSED(message)
     Q_UNUSED(result)
-#ifndef Q_OS_WIN32
+#ifndef Q_OS_WIN
     return false;
 #else
     MSG* msg = reinterpret_cast<MSG*>(message);

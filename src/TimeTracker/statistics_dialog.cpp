@@ -12,7 +12,7 @@
 
 static inline qint64 clampActivityDuration(const Activity* activity, qint64 min, qint64 max)
 {
-    qint64 total = 0i64;
+    qint64 total = 0LL;
     for (const Interval& interval : activity->intervals)
     {
         qint64 intervalMin = qBound(min, interval.startTime, max);

@@ -1115,7 +1115,7 @@ void MainWindow::setHotkeyEnabled(bool enabled)
 
     if (!m_recorderHotkey)
     {
-        m_recorderHotkey = new Hotkey(reinterpret_cast<HWND>(this->winId()), 1, Qt::ControlModifier, Qt::Key_Space, hotkeyCallback, this);
+        m_recorderHotkey = new Hotkey(reinterpret_cast<void*>(this->winId()), 1, Qt::ControlModifier, Qt::Key_Space, hotkeyCallback, this);
     }
 
     if (!m_recorderHotkey->setActive(enabled))

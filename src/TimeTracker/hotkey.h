@@ -1,9 +1,6 @@
 #ifndef HOTKEY_H
 #define HOTKEY_H
-
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-
+#include <QtGlobal>
 #include <QString>
 #include <QAbstractNativeEventFilter>
 #include <QKeySequence>
@@ -17,7 +14,7 @@ class Hotkey
 {
     friend class HotkeyEventFilter;
 public:
-    Hotkey(HWND window, int id, Qt::KeyboardModifiers modifiers, Qt::Key key, HotkeyCallback callback, void* userdata);
+    Hotkey(void* window, int id, Qt::KeyboardModifiers modifiers, Qt::Key key, HotkeyCallback callback, void* userdata);
     ~Hotkey();
 
     bool setActive(bool active);
@@ -27,12 +24,12 @@ public:
     // @TODO: temp
     QString m_errorMessage = QString();
 private:
-    UINT m_winModifiers = 0;
-    UINT m_winKey = 0;
+    quint32 m_winModifiers = 0;
+    quint32 m_winKey = 0;
 
     bool m_isActive = false;
     int m_id = 0;
-    HWND m_window = nullptr;
+    void* m_window = nullptr;
     void* m_userdata = nullptr;
     HotkeyCallback m_callback;
 };
