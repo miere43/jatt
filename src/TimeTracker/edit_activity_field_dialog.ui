@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>360</width>
-    <height>219</height>
+    <width>413</width>
+    <height>256</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -30,14 +30,14 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="0">
+   <item row="3" column="0">
     <widget class="QLabel" name="editNoteLabel">
      <property name="text">
       <string>Note</string>
      </property>
     </widget>
    </item>
-   <item row="2" column="1">
+   <item row="3" column="1">
     <widget class="QPlainTextEdit" name="noteEdit">
      <property name="tabChangesFocus">
       <bool>true</bool>
@@ -47,17 +47,17 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="0">
+   <item row="4" column="0">
     <widget class="QLabel" name="typeLabel">
      <property name="text">
       <string>Type</string>
      </property>
     </widget>
    </item>
-   <item row="3" column="1">
+   <item row="4" column="1">
     <widget class="QComboBox" name="typeComboBox"/>
    </item>
-   <item row="5" column="1">
+   <item row="6" column="1">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -70,10 +70,20 @@
    <item row="1" column="1">
     <widget class="QLineEdit" name="nameEdit"/>
    </item>
-   <item row="4" column="1">
+   <item row="5" column="1">
     <widget class="QCheckBox" name="favoriteCheckBox">
      <property name="text">
       <string>Favorite</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QLabel" name="prevActivityLabel">
+     <property name="text">
+      <string>&lt;a href=&quot;#&quot;&gt;&quot;previous activity name&quot;&lt;/a&gt;</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::RichText</enum>
      </property>
     </widget>
    </item>

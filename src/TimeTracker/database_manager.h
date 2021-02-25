@@ -40,6 +40,8 @@ public:
 
     bool executeSearchQuery(QVector<Activity *> * activities, SearchQuery::GeneratedSqlQuery * searchQuery);
 
+    QString loadFirstActivityNameBeforeEndTime(ActivityCategory * category, qint64 timestamp);
+
     bool m_activityCategoriesLoaded = false;
     QSqlDatabase m_database;
     QHash<qint64, ActivityCategory *> m_activityCategories;

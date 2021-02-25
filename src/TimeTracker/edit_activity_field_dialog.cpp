@@ -32,6 +32,22 @@ EditActivityFieldDialog::EditActivityFieldDialog(Activity * activity, QWidget * 
         }
         ++i;
     }
+
+    m_prevActivityName = g_app.database()->loadFirstActivityNameBeforeEndTime(activity->category, activity->endTime);
+    if (m_prevActivityName.isEmpty() || m_prevActivityName == activity->name)
+    {
+        ui->prevActivityLabel->hide();
+    }
+    else
+    {
+        // Truncate very long text
+        QFontMetrics metrics(ui->prevActivityLabel->font());
+        QString elidedText = metrics.elidedText(
+            "<a href=\"#\">" + m_prevActivityName.toHtmlEscaped() + "</a>",
+            Qt::ElideRight,
+            ui->prevActivityLabel->parentWidget()->width());
+        ui->prevActivityLabel->setText(elidedText);
+    }
 }
 
 QString EditActivityFieldDialog::newName() const
@@ -93,4 +109,11 @@ bool EditActivityFieldDialog::isFavoriteChanged() const
 EditActivityFieldDialog::~EditActivityFieldDialog()
 {
     delete ui;
+}
+
+void EditActivityFieldDialog::on_prevActivityLabel_linkActivated(const QString &link)
+{
+    Q_UNUSED(link);
+    ui->nameEdit->setText(m_prevActivityName);
+    ui->nameEdit->setFocus(Qt::OtherFocusReason);
 }

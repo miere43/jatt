@@ -99,7 +99,7 @@ bool Hotkey::setActive(bool active)
 #ifdef Q_OS_WIN
     if (m_isActive)
     {
-        if (!UnregisterHotKey(m_window, m_id))
+        if (!UnregisterHotKey((HWND)m_window, m_id))
         {
             m_errorMessage = formatErrorMessage(GetLastError());
             return false;
@@ -108,7 +108,7 @@ bool Hotkey::setActive(bool active)
     }
     else
     {
-        if (!RegisterHotKey(m_window, m_id, m_winModifiers, m_winKey))
+        if (!RegisterHotKey((HWND)m_window, m_id, m_winModifiers, m_winKey))
         {
             m_errorMessage = formatErrorMessage(GetLastError());
             return false;

@@ -478,6 +478,42 @@ bool DatabaseManager::executeSearchQuery(QVector<Activity *> * activities, Searc
     return true;
 }
 
+QString DatabaseManager::loadFirstActivityNameBeforeEndTime(ActivityCategory * category, qint64 timestamp)
+{
+    ERR_VERIFY_NULL_V(category, QString());
+
+    auto query = QSqlQuery(m_database);
+    query.prepare(
+        "SELECT id, name FROM activity "
+        "WHERE activity_info_id = ? AND end_time < ? "
+        "ORDER BY end_time DESC "
+        "LIMIT 1"
+    );
+    query.bindValue(0, category->id);
+    query.bindValue(1, timestamp);
+
+    if (!query.exec())
+    {
+        qDebug() << __FUNCTION__ << "query exec failed" << query.lastError();
+        return QString();
+    }
+
+    if (!query.next())
+    {
+        qDebug() << __FUNCTION__ << "query next failed" << query.lastError();
+        return QString();
+    }
+
+    auto id = query.value(query.record().indexOf("id")).value<qint64>();
+
+    // Try to use loaded activity name, so we don't get stale value from database
+    // if in-memory value wasn't flushed to database yet.
+    auto activity = m_activities.value(id);
+    return activity
+        ? activity->name
+        : query.value(query.record().indexOf("name")).value<QString>();
+}
+
 void DatabaseManager::loadAssociatedActivityCategory(Activity * activity, QSqlQuery * query)
 {
     qint64 activityCategoryId = query->value(QStringLiteral("activity_info_id")).value<qint64>();

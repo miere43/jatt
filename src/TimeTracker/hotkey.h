@@ -6,6 +6,10 @@
 #include <QKeySequence>
 #include <QVector>
 
+#ifdef Q_OS_WIN
+#include <Windows.h>
+#endif
+
 class Hotkey;
 class HotkeyEventFilter;
 typedef void (*HotkeyCallback)(Hotkey* hotkey, void* userdata);

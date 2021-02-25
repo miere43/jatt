@@ -26,9 +26,13 @@ public:
     bool isFavoriteChanged() const;
 
     inline Activity * activity() const { return m_activity; }
+private slots:
+    void on_prevActivityLabel_linkActivated(const QString &link);
+
 private:
     Ui::EditActivityFieldDialog * ui;
     Activity * m_activity = nullptr;
+    QString m_prevActivityName;
 };
 
 #endif // EDIT_ACTIVITY_FIELD_DIALOG_H
