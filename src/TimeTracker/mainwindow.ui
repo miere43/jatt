@@ -239,6 +239,11 @@
     <string>Toggles enabled state of hotkey</string>
    </property>
   </action>
+  <action name="activityFillBetweenAction">
+   <property name="text">
+    <string>Fill Between</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>

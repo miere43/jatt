@@ -76,6 +76,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_activityItemMenu.addSeparator();
     m_activityItemMenu.addAction(ui->joinNextActivityAction);
     m_activityItemMenu.addAction(ui->splitActivityAction);
+    m_activityItemMenu.addAction(ui->activityFillBetweenAction);
 
     m_visualizerCreateActivityFromSelection =
         m_visualizerMenu.addAction("Create activity from selection");
@@ -846,6 +847,43 @@ void MainWindow::on_splitActivityAction_triggered()
     Activity* a = selectedActivity();
     if (a == nullptr) return;
     splitActivity(a);
+}
+
+void MainWindow::on_activityFillBetweenAction_triggered()
+{
+    auto activity = selectedActivity();
+    if (!activity) return;
+
+    if (!canModifyActivityIntervals(activity) || (m_activityRecorder.isRecording() && m_activityRecorder.activity() == activity))
+    {
+        QMessageBox::critical(this, "Error", "Unable to fill between intervals in this activity right now.");
+        return;
+    }
+
+    if (!activity->intervals.size())
+    {
+        QMessageBox::information(this, "Error", "Activity has no intervals.");
+        return;
+    }
+
+    qint64 startTime = INT64_MAX;
+    qint64 endTime = INT64_MIN;
+    for (const auto& interval : activity->intervals)
+    {
+        startTime = min(startTime, interval.startTime);
+        endTime = max(endTime, interval.endTime);
+    }
+
+    activity->intervals.resize(1);
+    activity->intervals[0] = { startTime, endTime };
+    m_activityVisualizer->update();
+    updateVisibleActivitiesDurationLabel();
+    updateActivityDurationLabel();
+
+    if (!g_app.database()->saveActivity(activity))
+    {
+        QMessageBox::critical(this, "Error", "Unable to save changes in the database.");
+    }
 }
 
 void MainWindow::splitActivity(Activity * activity)
