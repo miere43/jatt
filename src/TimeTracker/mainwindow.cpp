@@ -674,7 +674,7 @@ void MainWindow::addQuickActivityButtons()
 {
     {
         QLayoutItem* item;
-        while (item = ui->quickActivityLayout->takeAt(0))
+        while ((item = ui->quickActivityLayout->takeAt(0)))
         {
             item->widget()->deleteLater();
             delete item;

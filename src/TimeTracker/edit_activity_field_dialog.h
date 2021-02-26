@@ -29,7 +29,11 @@ public:
 private slots:
     void on_prevActivityLabel_linkActivated(const QString &link);
 
+    void on_typeComboBox_currentIndexChanged(int index);
+
 private:
+    void updatePrevActivityName(ActivityCategory * category);
+
     Ui::EditActivityFieldDialog * ui;
     Activity * m_activity = nullptr;
     QString m_prevActivityName;

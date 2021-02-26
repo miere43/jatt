@@ -24,29 +24,15 @@ EditActivityFieldDialog::EditActivityFieldDialog(Activity * activity, QWidget * 
     QList<ActivityCategory *> categories = g_app.database()->activityCategories();
 
     int i = 0;
+    ui->typeComboBox->blockSignals(true); // Prevent "updatePrevActivityName" from firing.
     for (ActivityCategory * category : categories)
     {
         ui->typeComboBox->addItem(category->name, QVariant::fromValue<void*>(static_cast<void*>(category)));
         if (category == activity->category) {
+            ui->typeComboBox->blockSignals(false);
             ui->typeComboBox->setCurrentIndex(i);
         }
         ++i;
-    }
-
-    m_prevActivityName = g_app.database()->loadFirstActivityNameBeforeEndTime(activity->category, activity->endTime);
-    if (m_prevActivityName.isEmpty() || m_prevActivityName == activity->name)
-    {
-        ui->prevActivityLabel->hide();
-    }
-    else
-    {
-        // Truncate very long text
-        QFontMetrics metrics(ui->prevActivityLabel->font());
-        QString elidedText = metrics.elidedText(
-            "<a href=\"#\">" + m_prevActivityName.toHtmlEscaped() + "</a>",
-            Qt::ElideRight,
-            ui->prevActivityLabel->parentWidget()->width());
-        ui->prevActivityLabel->setText(elidedText);
     }
 }
 
@@ -116,4 +102,37 @@ void EditActivityFieldDialog::on_prevActivityLabel_linkActivated(const QString &
     Q_UNUSED(link);
     ui->nameEdit->setText(m_prevActivityName);
     ui->nameEdit->setFocus(Qt::OtherFocusReason);
+}
+
+void EditActivityFieldDialog::on_typeComboBox_currentIndexChanged(int index)
+{
+    auto currentData = ui->typeComboBox->itemData(index);
+    if (currentData.isValid())
+    {
+        auto category = static_cast<ActivityCategory*>(currentData.value<void*>());
+        ERR_VERIFY(category);
+        qDebug() << category->name;
+        updatePrevActivityName(category);
+    }
+}
+
+void EditActivityFieldDialog::updatePrevActivityName(ActivityCategory * category)
+{
+    m_prevActivityName = g_app.database()->loadFirstActivityNameBeforeEndTime(category, m_activity->endTime);
+    if (m_prevActivityName.isEmpty() || m_prevActivityName == m_activity->name)
+    {
+        ui->prevActivityLabel->hide();
+    }
+    else
+    {
+        ui->prevActivityLabel->show();
+
+        // Truncate very long text
+        QFontMetrics metrics(ui->prevActivityLabel->font());
+        QString elidedText = metrics.elidedText(
+            "<a href=\"#\">" + m_prevActivityName.toHtmlEscaped() + "</a>",
+            Qt::ElideRight,
+            ui->prevActivityLabel->parentWidget()->width());
+        ui->prevActivityLabel->setText(elidedText);
+    }
 }

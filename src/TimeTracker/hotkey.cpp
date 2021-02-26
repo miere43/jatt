@@ -34,8 +34,9 @@ bool convertQtKeycodes(Qt::KeyboardModifiers modifiers, Qt::Key key, quint32* wi
         return false;
     }
 #else
-    Q_UNUSED(winModifiers)
-    Q_UNUSED(winKey)
+    Q_UNUSED(winModifiers);
+    Q_UNUSED(key);
+    Q_UNUSED(winKey);
 #endif
     return true;
 }
