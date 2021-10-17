@@ -94,6 +94,8 @@ private:
     void deleteActivity(Activity* activity);
     void joinActivities(Activity* targetActivity, QVector<Activity*> activitiesToJoin);
 
+    void updateWindowIcon(ActivityCategory * category);
+
     /**
      * @brief Enables or disabled 'Continue Activity' hotkey.
      */

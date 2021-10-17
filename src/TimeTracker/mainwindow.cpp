@@ -504,6 +504,7 @@ void MainWindow::activityRecorderRecordEvent(ActivityRecorderEvent event)
 
         m_lastActiveActivity = currentActivity;
         this->setWindowTitle("(" + currentActivity->category->name + ") " + g_app.appTitle);
+        updateWindowIcon(currentActivity->category);
     }
     else if (event == ActivityRecorderEvent::RecordingStopped)
     {
@@ -513,6 +514,7 @@ void MainWindow::activityRecorderRecordEvent(ActivityRecorderEvent event)
         m_activityItemDelegate->setCurrentActivity(nullptr);
 
         this->setWindowTitle(g_app.appTitle);
+        updateWindowIcon(nullptr);
     }
     else if (event == ActivityRecorderEvent::Autosave)
     {
@@ -829,6 +831,32 @@ void MainWindow::joinActivities(Activity * targetActivity, QVector<Activity *> a
         g_app.m_activityAllocator.deallocate(activity);
     }
     updateActivityDurationLabel();
+}
+
+void MainWindow::updateWindowIcon(ActivityCategory * category) {
+    QImage icon(":/appicon.png");
+    QPixmap pixmap = QPixmap::fromImage(icon);
+
+    if (category) {
+        QPainter painter;
+        ERR_VERIFY(painter.begin(&pixmap));
+
+        painter.setRenderHint(QPainter::Antialiasing);
+
+        painter.setPen(QPen(QColor(255, 255, 255), 4));
+        painter.setBrush(QBrush(QColor(static_cast<QRgb>(category->color))));
+
+        auto width = pixmap.width() * 0.4;
+        auto height = pixmap.height() * 0.4;
+        painter.drawEllipse(QRect(pixmap.width() - width, 4, width, height)); // .marginsRemoved(QMargins(4, 4, 4, 4)
+
+        painter.end();
+    }
+
+    QIcon recordingIcon;
+    recordingIcon.addPixmap(pixmap);
+
+    setWindowIcon(recordingIcon);
 }
 
 bool MainWindow::canModifyActivityIntervals(const Activity * activity) const
