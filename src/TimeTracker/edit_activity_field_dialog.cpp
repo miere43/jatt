@@ -102,6 +102,7 @@ void EditActivityFieldDialog::on_prevActivityLabel_linkActivated(const QString &
     Q_UNUSED(link);
     ui->nameEdit->setText(m_prevActivityName);
     ui->nameEdit->setFocus(Qt::OtherFocusReason);
+    ui->nameEdit->setModified(true);
 }
 
 void EditActivityFieldDialog::on_typeComboBox_currentIndexChanged(int index)
