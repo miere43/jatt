@@ -244,10 +244,10 @@ bool SearchQuery::buildSqlQueryString(SearchQuery::GeneratedSqlQuery * result, Q
     if (searchWords.count() > 0)
     {
         beginGroup();
-        for (auto searchWord = searchWords.constBegin(); searchWord != searchWords.constEnd(); ++searchWord)
+        for (const auto& searchWord : searchWords)
         {
             appendSql(" or", " name LIKE ?"); // @TODO: 'or note LIKE ?'
-            result->args.append(QStringLiteral("%") + searchWord + QStringLiteral("%"));
+            result->args.append(QLatin1String("%") + searchWord + QLatin1String("%"));
         }
         endGroup();
     }

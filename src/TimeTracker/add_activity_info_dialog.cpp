@@ -44,7 +44,7 @@ bool AddActivityInfoDialog::validate(QString* errorMessage)
     QString name = ui->nameLineEdit->text();
     if (name.isNull() || name.isEmpty())
     {
-        *errorMessage = QLatin1Literal("Specify name.");
+        *errorMessage = QLatin1String("Specify name.");
         return false;
     }
 
@@ -53,14 +53,14 @@ bool AddActivityInfoDialog::validate(QString* errorMessage)
     {
         if (activityInfo->name.compare(name, Qt::CaseInsensitive) == 0)
         {
-            *errorMessage = QLatin1Literal("Activity Template with name '") + name + QLatin1Literal("' already exists.");
+            *errorMessage = QLatin1String("Activity Template with name '") + name + QLatin1String("' already exists.");
             return false;
         }
     }
 
     if (m_selectedColor < 0x00000000 || m_selectedColor > 0xFFFFFFFF)
     {
-        *errorMessage = QLatin1Literal("Invalid color.");
+        *errorMessage = QLatin1String("Invalid color.");
         return false;
     }
 

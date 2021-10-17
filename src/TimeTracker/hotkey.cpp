@@ -4,6 +4,10 @@
 #include <QCoreApplication>
 #include <QDebug>
 
+#ifdef Q_OS_WIN
+#include <Windows.h>
+#endif
+
 HotkeyEventFilter* HotkeyEventFilter::m_eventFilter = nullptr;
 
 bool convertQtKeycodes(Qt::KeyboardModifiers modifiers, Qt::Key key, quint32* winModifiers, quint32* winKey) {
@@ -152,7 +156,7 @@ void HotkeyEventFilter::unregisterHotkey(Hotkey *hotkey) {
     HotkeyEventFilter::m_eventFilter->m_hotkeys.removeOne(hotkey);
 }
 
-bool HotkeyEventFilter::nativeEventFilter(const QByteArray &eventType, void *message, long *result) {
+bool HotkeyEventFilter::nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result) {
     Q_UNUSED(eventType)
     Q_UNUSED(message)
     Q_UNUSED(result)

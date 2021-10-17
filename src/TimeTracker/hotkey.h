@@ -6,10 +6,6 @@
 #include <QKeySequence>
 #include <QVector>
 
-#ifdef Q_OS_WIN
-#include <Windows.h>
-#endif
-
 class Hotkey;
 class HotkeyEventFilter;
 typedef void (*HotkeyCallback)(Hotkey* hotkey, void* userdata);
@@ -46,7 +42,7 @@ public:
     static void registerHotkey(Hotkey* hotkey);
     static void unregisterHotkey(Hotkey* hotkey);
 
-    bool nativeEventFilter(const QByteArray &eventType, void *message, long *result) override;
+    bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result) override;
 private:
     QVector<Hotkey*> m_hotkeys;
     static HotkeyEventFilter* m_eventFilter;

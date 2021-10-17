@@ -870,8 +870,8 @@ void MainWindow::on_activityFillBetweenAction_triggered()
     qint64 endTime = INT64_MIN;
     for (const auto& interval : activity->intervals)
     {
-        startTime = min(startTime, interval.startTime);
-        endTime = max(endTime, interval.endTime);
+        startTime = std::min(startTime, interval.startTime);
+        endTime = std::max(endTime, interval.endTime);
     }
 
     activity->intervals.resize(1);
