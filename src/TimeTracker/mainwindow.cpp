@@ -20,6 +20,12 @@
 #include <QProcess>
 #include <algorithm>
 
+#ifdef Q_OS_WIN
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+#include <ShlObj_core.h>
+#endif
+
 void hotkeyCallback(Hotkey* hotkey, void* userdata);
 
 MainWindow::MainWindow(QWidget *parent)
@@ -92,6 +98,10 @@ MainWindow::MainWindow(QWidget *parent)
     readAndApplySettings();
 
     setHotkeyEnabled(true);
+
+#ifdef Q_OS_WIN
+    SetCurrentProcessExplicitAppUserModelID(L"miere.timetracker");
+#endif
 }
 
 void hotkeyCallback(Hotkey * hotkey, void * userdata)
